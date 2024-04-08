@@ -4,6 +4,20 @@
 
 Mesh::Mesh(float positions[], float uvs[], float posSize, float uvSize)
 {
+    for (int i = 0; i < posSize; i+=3)
+    {
+        Vertex vertex;
+        vertex.pos = glm::vec3(positions[i], positions[i+1], positions[i+2]);
+        int j = i/3*2;
+        vertex.uv = glm::vec2(uvs[j], uvs[j+1]);
+
+    }
+    for (int i = 0; i < posSize; i+=2)
+    {
+        Vertex vertex;
+        vertex.pos = glm::vec3(positions[i], positions[i+1], positions[i+2]);
+        
+    }
 }
 
 Mesh Mesh::interpolate(float t) const
