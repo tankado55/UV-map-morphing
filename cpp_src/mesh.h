@@ -8,6 +8,7 @@
 #include <glm/gtc/type_ptr.hpp>
 #include <vector>
 #include <string>
+#include <emscripten/bind.h>
 
 struct Vertex
 {
@@ -49,3 +50,11 @@ struct Mesh
 	void updateBB();
 	void updateToFlipBool();
 };
+
+// Binding code
+EMSCRIPTEN_BINDINGS(my_class_example) {
+  class_<Mesh>("Mesh")
+    .constructor<float[], float[], float, float>()
+    .function("interpolate", &Mesh::interpolate)
+    ;
+}

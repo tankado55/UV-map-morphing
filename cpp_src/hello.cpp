@@ -35,4 +35,4 @@ extern "C"
 }
 
 
-// em++ cpp_src/hello.cpp -o hello.js -sEXPORTED_FUNCTIONS=_interpolate,_plusOne,_free,_malloc -sEXPORTED_RUNTIME_METHODS=ccall,cwrap -g
+// em++ cpp_src/hello.cpp cpp_src/mesh.cpp-o hello.js -sEXPORTED_FUNCTIONS=_interpolate,_plusOne,_free,_malloc -sEXPORTED_RUNTIME_METHODS=ccall,cwrap -g

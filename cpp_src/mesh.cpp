@@ -1,6 +1,6 @@
 #include "mesh.h"
-#include <GL/glew.h>
 #include <glm/glm.hpp>
+#include <iostream>
 
 Mesh::Mesh(float positions[], float uvs[], float posSize, float uvSize)
 {
@@ -10,14 +10,9 @@ Mesh::Mesh(float positions[], float uvs[], float posSize, float uvSize)
         vertex.pos = glm::vec3(positions[i], positions[i+1], positions[i+2]);
         int j = i/3*2;
         vertex.uv = glm::vec2(uvs[j], uvs[j+1]);
-
+        v.push_back(vertex);
     }
-    for (int i = 0; i < posSize; i+=2)
-    {
-        Vertex vertex;
-        vertex.pos = glm::vec3(positions[i], positions[i+1], positions[i+2]);
-        
-    }
+    std::cout << "debug mesh class: " << v.size(); 
 }
 
 Mesh Mesh::interpolate(float t) const
