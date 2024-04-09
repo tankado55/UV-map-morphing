@@ -1,30 +1,35 @@
 #include "mesh.h"
 #include <iostream>
 
-Mesh::Mesh(int positions, int uvs, int posSize, int uvSize):
-    debugInt(5)
+Mesh::Mesh(int positions, int uvs, int posSize, int uvSize) : debugInt(5)
 {
-    float* posPtr = reinterpret_cast<float*>(positions);
-    float* uvPtr = reinterpret_cast<float*>(uvs);
+    float *posPtr = reinterpret_cast<float *>(positions);
+    float *uvPtr = reinterpret_cast<float *>(uvs);
     heapPosPtr = posPtr;
     heapUvPtr = uvPtr;
 
-    for (int i = 0; i < posSize; i+=3)
+    for (int i = 0; i < posSize; i += 3)
     {
         Vertex vertex;
-        vertex.pos = glm::vec3(posPtr[i], posPtr[i+1], posPtr[i+2]);
-        int j = i/3*2;
-        vertex.uv = glm::vec2(uvPtr[j], uvPtr[j+1]);
+        vertex.pos = glm::vec3(posPtr[i], posPtr[i + 1], posPtr[i + 2]);
+        int j = i / 3 * 2;
+        vertex.uv = glm::vec2(uvPtr[j], uvPtr[j + 1]);
         v.push_back(vertex);
+        Face face;
+        face.vi[0] = int(i / 3);
+        face.vi[1] = int(i / 3) + 1;
+        face.vi[2] = int(i / 3) + 2;
+        f.push_back(face);
     }
     debugInt = posSize;
-    std::cout << "debug mesh class: " << posSize << std::endl; 
+    std::cout << "debug mesh class: " << posSize << std::endl;
+    updateUVScaling();
 }
 
 void Mesh::interpolate(int t) const
 {
     float interpolationValue = (float)t / 100.0;
-    
+
     for (int i = 0; i < v.size(); i++)
     {
         Vertex vertex;
@@ -35,19 +40,16 @@ void Mesh::interpolate(int t) const
             targetUV.x = -targetUV.x + 1.0f;
         }*/
 
-        //float uvScaling = f[faceIndex].uvScaling;
+        // float uvScaling = f[faceIndex].uvScaling;
         vertex.pos = glm::mix(
-            this->v[i].pos /** bestRotation*/, 
-            targetUV /** averageScaling*/,
-            interpolationValue
-        );
+            this->v[i].pos /** bestRotation*/,
+            targetUV * averageScaling,
+            interpolationValue);
         int arrayIndex = i * 3;
         heapPosPtr[arrayIndex] = vertex.pos.x;
-        heapPosPtr[arrayIndex+1] = vertex.pos.y;
-        heapPosPtr[arrayIndex+2] = vertex.pos.z;
+        heapPosPtr[arrayIndex + 1] = vertex.pos.y;
+        heapPosPtr[arrayIndex + 2] = vertex.pos.z;
     }
-
-    
 }
 
 #define PI 3.14159265358979323846
@@ -69,7 +71,7 @@ void Mesh::buildCylinder()
 
         Vertex vertex;
 
-        // Top vertices 
+        // Top vertices
         vertex.pos[0] = x;
         vertex.pos[1] = height / 2;
         vertex.pos[2] = z;
@@ -94,7 +96,7 @@ void Mesh::buildCylinder()
 
         Vertex vertex;
 
-        // Top vertices 
+        // Top vertices
         vertex.pos[0] = x;
         vertex.pos[1] = height / 2;
         vertex.pos[2] = z;
@@ -111,13 +113,14 @@ void Mesh::buildCylinder()
         v.push_back(vertex);
     }
 
-    for (int i = 0; i < n * 2; i += 2) {
+    for (int i = 0; i < n * 2; i += 2)
+    {
         Face face;
         face.vi[0] = (i + 4);
         face.vi[1] = (i + 2);
         face.vi[2] = (i + 1);
         f.push_back(face);
-        
+
         face.vi[0] = (i + 1);
         face.vi[1] = (i + 3);
         face.vi[2] = (i + 4);
@@ -130,48 +133,46 @@ void Mesh::buildCylinder()
 void Mesh::buildPlane()
 {
     float vertices[] = {
-        -10.0, -0.5, -10.0, 0.0,1.0,
-        -10.0, -0.5, 10.0,  0.0,0.0,
-        10.0, -0.5, 10.0,   1.0, 0.0,
-        10.0, -0.5, 10.0,   1.0, 0.0,
-        10.0, -0.5,-10.0,   1.0, 1.0,
-        -10.0, -0.5, -10.0, 0.0, 1.0
-    };
+        -10.0, -0.5, -10.0, 0.0, 1.0,
+        -10.0, -0.5, 10.0, 0.0, 0.0,
+        10.0, -0.5, 10.0, 1.0, 0.0,
+        10.0, -0.5, 10.0, 1.0, 0.0,
+        10.0, -0.5, -10.0, 1.0, 1.0,
+        -10.0, -0.5, -10.0, 0.0, 1.0};
     float uvs[] = {
-        0.0,1.0,
-        0.0,0.0,
+        0.0, 1.0,
+        0.0, 0.0,
         1.0, 0.0,
         1.0, 0.0,
         1.0, 1.0,
-        0.0, 1.0
-    };
+        0.0, 1.0};
     v.clear();
     Vertex vertex;
-    for (int i = 0; i < sizeof(vertices) / sizeof(float); i+=5)
+    for (int i = 0; i < sizeof(vertices) / sizeof(float); i += 5)
     {
         vertex.pos.x = vertices[i];
         vertex.pos.y = vertices[i + 1];
         vertex.pos.z = vertices[i + 2];
-        vertex.uv.x =  vertices[i + 3];
-        vertex.uv.y =  vertices[i + 4];
+        vertex.uv.x = vertices[i + 3];
+        vertex.uv.y = vertices[i + 4];
 
         v.push_back(vertex);
     }
-        Face face;
-        face.vi[0] = 1;
-        face.vi[1] = 2;
-        face.vi[2] = 3;
-        f.push_back(face);
-        face.vi[0] = 4;
-        face.vi[1] = 5;
-        face.vi[2] = 6;
-        f.push_back(face);
+    Face face;
+    face.vi[0] = 1;
+    face.vi[1] = 2;
+    face.vi[2] = 3;
+    f.push_back(face);
+    face.vi[0] = 4;
+    face.vi[1] = 5;
+    face.vi[2] = 6;
+    f.push_back(face);
 }
 
 void Mesh::updateBB()
 {
-    glm::vec3 minExtents = { std::numeric_limits<float>::max(), std::numeric_limits<float>::max(), std::numeric_limits<float>::max() };
-    glm::vec3 maxExtents = { -std::numeric_limits<float>::max(), -std::numeric_limits<float>::max(), -std::numeric_limits<float>::max() };
+    glm::vec3 minExtents = {std::numeric_limits<float>::max(), std::numeric_limits<float>::max(), std::numeric_limits<float>::max()};
+    glm::vec3 maxExtents = {-std::numeric_limits<float>::max(), -std::numeric_limits<float>::max(), -std::numeric_limits<float>::max()};
 
     for (int i = 0; i < f.size(); i++)
     {
@@ -190,8 +191,7 @@ void Mesh::updateBB()
     boundingSphere.center = {
         (minExtents.x + maxExtents.x) / 2,
         (minExtents.y + maxExtents.y) / 2,
-        (minExtents.z + maxExtents.z) / 2
-    };
+        (minExtents.z + maxExtents.z) / 2};
 
     float maxRadiusSquared = 0.0f;
     for (int i = 0; i < f.size(); i++)
@@ -208,3 +208,41 @@ void Mesh::updateBB()
     boundingSphere.radius = sqrt(maxRadiusSquared);
 }
 
+static float ComputeArea(glm::vec3 p1, glm::vec3 p2, glm::vec3 p3)
+{
+    float l1 = glm::length(p1 - p2);
+    float l2 = glm::length(p2 - p3);
+    float l3 = glm::length(p3 - p1);
+    float s = (l1 + l2 + l3) / 2.0f;
+    return sqrt(s * (s - l1) * (s - l2) * (s - l3));
+}
+
+void Mesh::updateUVScaling()
+{
+    float scalingSum = 0.0;
+    for (unsigned int i = 0; i < v.size(); i += 3)
+    {
+        // scaling UV
+        glm::vec3 v1 = v[i].pos;
+        glm::vec3 v2 = v[i+1].pos;
+        glm::vec3 v3 = v[i+2].pos;
+
+        float areaMesh = ComputeArea(v1, v2, v3);
+
+        v1 = glm::vec3(v[i].uv, 0.0f);
+        v2 = glm::vec3(v[i+1].uv, 0.0f);
+        v3 = glm::vec3(v[i+2].uv, 0.0f);
+
+        float areaUV = ComputeArea(v1, v2, v3);
+        if (areaUV > 0)
+        {
+            float ratio = sqrt(areaMesh / areaUV);
+            scalingSum += ratio;
+        }
+    }
+
+    if (scalingSum != 0)
+        averageScaling = scalingSum / (v.size() / 3);
+    else
+        averageScaling = 1.0;
+}

@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.0)
+cmake_minimum_required(VERSION 3.5)
 
 # Set project name
 project(MyProject)
@@ -9,38 +9,19 @@ set(CMAKE_CXX_STANDARD 11)
 # Set source files
 set(SOURCES
     hello.cpp
+    mesh.cpp
 )
 
-# Set output directory
-set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/output")
+set(CMAKE_TOOLCHAIN_FILE "D:\\dev\\emsdk\\upstream\\emscripten\\cmake\\Modules\\Platform\\Emscripten.cmake")
 
-# Set compiler for Emscripten
-#set(CMAKE_CXX_COMPILER em++)
-
-set(CMAKE_TOOLCHAIN_FILE "D:\\dev\\emsdk\\upstream\\emscripten\\cmake\\Modules\\Platform")
-
-# Set compiler flags
-set(EMSCRIPTEN_FLAGS "${CMAKE_CXX_FLAGS} \
-    -s EXPORTED_FUNCTIONS='_interpolate,_plusOne,_free,_malloc' \
-    -s EXPORTED_RUNTIME_METHODS=ccall,cwrap \
-    -g"
+set_target_properties(${PROJECT_NAME} PROPERTIES 
+    COMPILE_FLAGS "-sEXPORTED_FUNCTIONS=_interpolate,_plusOne,_free,_malloc -sEXPORTED_RUNTIME_METHODS=ccall,cwrap -g --bind"
 )
 
-# Add include directories
-include_directories(
-    "D:\\dev\\emsdk\\upstream\\emscripten\\system\\include"
-    "D:\dev\my_libs\glm-1.0.0-light"
-    # Add additional include paths here as needed
+target_include_directories(${PROJECT_NAME} PRIVATE 
+    /D:/dev/my_libs/glm-1.0.0-light 
+    /D:/dev/emsdk/upstream/emscripten/system/include
 )
 
 # Add executable
 add_executable(${PROJECT_NAME} ${SOURCES})
-
-
-# command line
-em++ hello.cpp mesh.cpp --bind -o hello.js ^
-    -sEXPORTED_FUNCTIONS=_interpolate,_plusOne,_free,_malloc ^
-    -s EXPORTED_RUNTIME_METHODS=ccall,cwrap ^
-    -g ^
-    -I/D:/dev/my_libs/glm-1.0.0-light ^
-    -I/D:/dev/emsdk/upstream/emscripten/system/include

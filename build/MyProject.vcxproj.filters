@@ -4,6 +4,9 @@
     <ClCompile Include="D:\dev\webUVMapVisualizer\hello.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="D:\dev\webUVMapVisualizer\mesh.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <CustomBuild Include="D:\dev\webUVMapVisualizer\CMakeLists.txt" />

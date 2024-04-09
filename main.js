@@ -17,6 +17,9 @@ let meshInstance;
 init();
 
 var slider = document.getElementById("myRange");
+slider.oninput = function() {
+    render();
+}
 
 function init() {
 

@@ -52,6 +52,7 @@ struct Mesh
 	void buildPlane();
 	void updateBB();
 	void updateToFlipBool();
+	void updateUVScaling();
 	int getDebugInt() const {return debugInt;}
 };
 
