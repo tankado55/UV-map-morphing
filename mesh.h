@@ -1,11 +1,11 @@
 #pragma once
 
-#include <glm/vec3.hpp>
-#include <glm/vec2.hpp>
-#include <glm/mat3x3.hpp>
-#include <glm/gtc/matrix_transform.hpp>
-#include <glm/glm.hpp>
-#include <glm/gtc/type_ptr.hpp>
+#include "cpp_src/glm-1.0.0-light/glm/vec3.hpp"
+#include "cpp_src/glm-1.0.0-light/glm/vec2.hpp"
+#include "cpp_src/glm-1.0.0-light/glm/mat3x3.hpp"
+#include "cpp_src/glm-1.0.0-light/glm/gtc/matrix_transform.hpp"
+#include "cpp_src/glm-1.0.0-light/glm/glm.hpp"
+#include "cpp_src/glm-1.0.0-light/glm/gtc/type_ptr.hpp"
 #include <vector>
 #include <string>
 #include <emscripten/bind.h>
@@ -41,20 +41,25 @@ struct Mesh
 	glm::mat3 bestRotation;
 	BoundingSphere boundingSphere;
 	bool toFlip = false;
+	int debugInt;
+	float* heapPosPtr;
+	float* heapUvPtr;
 
 	Mesh();
-	Mesh(float positions[], float uvs[], float posSize, float uvSize);
-	Mesh interpolate(float t) const;
+	Mesh(int positions, int uvs, int posSize, int uvSize);
+	void interpolate(int t) const;
 	void buildCylinder();
 	void buildPlane();
 	void updateBB();
 	void updateToFlipBool();
+	int getDebugInt() const {return debugInt;}
 };
 
 // Binding code
 EMSCRIPTEN_BINDINGS(my_class_example) {
-  class_<Mesh>("Mesh")
-    .constructor<float[], float[], float, float>()
+  emscripten::class_<Mesh>("Mesh")
+    .constructor<int, int, int, int>()
+	.property("debugInt", &Mesh::getDebugInt)
     .function("interpolate", &Mesh::interpolate)
     ;
 }

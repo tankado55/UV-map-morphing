@@ -12,6 +12,7 @@ let object;
 let heapGeometryPointer;
 let heapUVPointer;
 let heapGeometryPointInterpolated;
+let meshInstance;
 
 init();
 
@@ -73,9 +74,14 @@ function init() {
 						arrUV,
 						hasFloatValue ? TYPES.f32 : TYPES.i32
 					);
+					meshInstance = new Module.Mesh(heapGeometryPointer, heapUVPointer, arr.length, arrUV.length);
+					console.log(meshInstance);
+					console.log(meshInstance.debugInt);
+					console.log(Module["HEAPF32"][heapGeometryPointer >> 2])
 				}
-				catch {
+				catch (error) {
 					console.log("error in transfer to heap")
+					console.log(error)
 				}
 			}
 		});
@@ -219,14 +225,18 @@ function interpolate()
 {
 	object.traverse(function (child) {
 		if (child.isMesh) {
+			
 			let arr = child.geometry.attributes.position.array;
+			/*
 			Module.ccall(
 				"interpolate", // The name of C++ function
 				null, // The return type
 				["number", "number", "number", "number", "number"], // The argument types
 				[heapGeometryPointer, heapUVPointer, slider.value, arr.length, heapGeometryPointInterpolated] // The arguments
 			);
-			child.geometry.setAttribute('position', new THREE.BufferAttribute(Module["HEAPF32"].slice(heapGeometryPointInterpolated >> 2, (heapGeometryPointInterpolated >> 2) + arr.length), 3));
+			*/
+			meshInstance.interpolate(parseInt(slider.value))
+			child.geometry.setAttribute('position', new THREE.BufferAttribute(Module["HEAPF32"].slice(heapGeometryPointer >> 2, (heapGeometryPointer >> 2) + arr.length), 3));
 		}
 
 	});

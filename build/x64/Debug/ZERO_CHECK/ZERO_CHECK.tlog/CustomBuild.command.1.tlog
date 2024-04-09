@@ -1,0 +1,10 @@
+^D:\DEV\WEBUVMAPVISUALIZER\BUILD\CMAKEFILES\A271464312BD0F21A85AFD8924F375B0\GENERATE.STAMP.RULE
+setlocal
+"C:\Program Files\CMake\bin\cmake.exe" -SD:/dev/webUVMapVisualizer -BD:/dev/webUVMapVisualizer/build --check-stamp-list CMakeFiles/generate.stamp.list --vs-solution-file D:/dev/webUVMapVisualizer/build/MyProject.sln
+if %errorlevel% neq 0 goto :cmEnd
+:cmEnd
+endlocal & call :cmErrorLevel %errorlevel% & goto :cmDone
+:cmErrorLevel
+exit /b %1
+:cmDone
+if %errorlevel% neq 0 goto :VCEnd

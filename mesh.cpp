@@ -1,48 +1,53 @@
 #include "mesh.h"
-#include <glm/glm.hpp>
 #include <iostream>
 
-Mesh::Mesh(float positions[], float uvs[], float posSize, float uvSize)
+Mesh::Mesh(int positions, int uvs, int posSize, int uvSize):
+    debugInt(5)
 {
+    float* posPtr = reinterpret_cast<float*>(positions);
+    float* uvPtr = reinterpret_cast<float*>(uvs);
+    heapPosPtr = posPtr;
+    heapUvPtr = uvPtr;
+
     for (int i = 0; i < posSize; i+=3)
     {
         Vertex vertex;
-        vertex.pos = glm::vec3(positions[i], positions[i+1], positions[i+2]);
+        vertex.pos = glm::vec3(posPtr[i], posPtr[i+1], posPtr[i+2]);
         int j = i/3*2;
-        vertex.uv = glm::vec2(uvs[j], uvs[j+1]);
+        vertex.uv = glm::vec2(uvPtr[j], uvPtr[j+1]);
         v.push_back(vertex);
     }
-    std::cout << "debug mesh class: " << v.size(); 
+    debugInt = posSize;
+    std::cout << "debug mesh class: " << posSize << std::endl; 
 }
 
-Mesh Mesh::interpolate(float t) const
+void Mesh::interpolate(int t) const
 {
-    Mesh result;
-
-    result.f = f;
-    
-    result.v.resize(v.size());
+    float interpolationValue = (float)t / 100.0;
     
     for (int i = 0; i < v.size(); i++)
     {
+        Vertex vertex;
         glm::vec3 targetUV(this->v[i].uv, 0.0);
+        /*
         if (toFlip)
         {
             targetUV.x = -targetUV.x + 1.0f;
-        }
+        }*/
 
-        int faceIndex = i / 3;
         //float uvScaling = f[faceIndex].uvScaling;
-        result.v[i].pos = glm::mix(
-            this->v[i].pos * bestRotation, 
-            targetUV * averageScaling,
-            t
+        vertex.pos = glm::mix(
+            this->v[i].pos /** bestRotation*/, 
+            targetUV /** averageScaling*/,
+            interpolationValue
         );
-        result.v[i].uv = this->v[i].uv;
-        result.v[i].normal = this->v[i].normal;
+        int arrayIndex = i * 3;
+        heapPosPtr[arrayIndex] = vertex.pos.x;
+        heapPosPtr[arrayIndex+1] = vertex.pos.y;
+        heapPosPtr[arrayIndex+2] = vertex.pos.z;
     }
 
-    return result;
+    
 }
 
 #define PI 3.14159265358979323846
