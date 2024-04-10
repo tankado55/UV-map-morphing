@@ -14,6 +14,11 @@ let heapUVPointer;
 let heapGeometryPointInterpolated;
 let meshInstance;
 
+//let objPath = "res/models/_Wheel_195_50R13x10_OBJ/wheel.obj"
+let objPath = "res/models/cylinder/cylinder.obj"
+//let objPath = "res/models/Die-OBJ/Die-OBJ.obj"
+let texturePath = "res/models/_Wheel_195_50R13x10_OBJ/diffuse.png"
+
 init();
 
 var slider = document.getElementById("myRange");
@@ -24,7 +29,7 @@ slider.oninput = function() {
 function init() {
 
 	camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 20);
-	camera.position.z = 2.5;
+	camera.position.z = 15.0;
 
 	// scene
 
@@ -45,15 +50,17 @@ function init() {
 
 			if (child.isMesh) {
 				child.material.map = texture;
+				child.material.side = THREE.DoubleSide;
 				console.log(texture)
 				console.log( child.geometry);
+				console.log( child.material);
 				//console.log( child.geometry.attributes.position.array);
 			}
 
 		});
 
 		object.position.y = 0.0;
-		object.scale.setScalar(0.01);
+		object.scale.setScalar(1.00);
 		scene.add(object);
 
 		// heap pointer
@@ -90,7 +97,6 @@ function init() {
 		});
 
 		render();
-
 	}
 
 
@@ -99,8 +105,8 @@ function init() {
 
 	// texture
 
-	const textureLoader = new THREE.TextureLoader(manager);
-	const texture = textureLoader.load('textures/uv_grid_opengl.jpg', render);
+	const textureLoader = new THREE.TextureLoader();
+	const texture = textureLoader.load(texturePath);
 	texture.colorSpace = THREE.SRGBColorSpace;
 
 	// model
@@ -119,7 +125,7 @@ function init() {
 	function onError() { }
 
 	const loader = new OBJLoader(manager);
-	loader.load('models/wheel.obj', function (obj) {
+	loader.load(objPath, function (obj) {
 
 		object = obj;
 		//console.log(object)
@@ -144,6 +150,7 @@ function init() {
 	//
 
 	window.addEventListener('resize', onWindowResize);
+	console.log(scene)
 }
 
 const TYPES = {
@@ -258,5 +265,4 @@ function render() {
 	//plusOne();
 	interpolate();
 	renderer.render(scene, camera);
-	console.log(slider.value)
 }

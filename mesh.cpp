@@ -246,3 +246,42 @@ void Mesh::updateUVScaling()
     else
         averageScaling = 1.0;
 }
+
+/*static glm::mat3 updateInitRotation()
+{
+    glm::mat3 result = glm::mat3();
+    for (int i = 0; i < mesh.f.size(); i++)
+    {
+        Face face = mesh.f[i];
+        glm::vec3 vi = glm::vec3(0.0);
+        glm::vec3 wi = glm::vec3(0.0);
+
+        vi = mesh.v[face.vi[0]].pos - mesh.centroid3D;
+        wi = glm::vec3(mesh.v[face.vi[0]].uv, 0.0) - mesh.centroid2D;
+        glm::mat3 outer = glm::outerProduct(vi, wi);
+        result += outer;
+        vi = mesh.v[face.vi[1]].pos - mesh.centroid3D;
+        wi = glm::vec3(mesh.v[face.vi[1]].uv, 0.0) - mesh.centroid2D;
+        outer = glm::outerProduct(vi, wi);
+        result += outer;
+        vi = mesh.v[face.vi[2]].pos - mesh.centroid3D;
+        wi = glm::vec3(mesh.v[face.vi[2]].uv, 0.0) - mesh.centroid2D;
+        outer = glm::outerProduct(vi, wi);
+        result += outer;
+    }
+    result = result / static_cast<float>(mesh.f.size() * 3);
+
+    // SVD
+    Eigen::MatrixXd A = glmToEigen(result);
+    Eigen::JacobiSVD<Eigen::MatrixXd> svd(A, Eigen::ComputeFullU | Eigen::ComputeFullV);
+
+    Eigen::Matrix3d R = svd.matrixU() * svd.matrixV().transpose();
+
+    if (R.determinant() < 0) {
+        R *= -1;
+    }
+    result = eigenToGlm(R);
+
+    return result;
+}*/
+
