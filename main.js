@@ -6,6 +6,8 @@ import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 //var int_sqrt = Module.cwrap('int_sqrt', 'number', ['number'])
 //console.log(int_sqrt(300))
 
+//rtt
+
 let camera, scene, renderer;
 
 let object;
@@ -26,10 +28,50 @@ slider.oninput = function() {
     render();
 }
 
+function initRTT()
+{
+	const texture = textureLoader.load(texturePath);
+	let sceneRTT = new THREE.Scene();
+	let rtTexture = new THREE.WebGLRenderTarget( window.innerWidth, window.innerHeight );
+	let material = new THREE.ShaderMaterial( {
+
+		uniforms: { time: { value: 0.0 } },
+		vertexShader: document.getElementById( 'vertexShader' ).textContent,
+		fragmentShader: document.getElementById( 'fragment_shader_pass_1' ).textContent
+
+	} );
+	const plane = new THREE.PlaneGeometry( window.innerWidth, window.innerHeight );
+
+	let quad = new THREE.Mesh( plane, material );
+	sceneRTT.add( quad );
+
+	renderer.setRenderTarget( rtTexture );
+	renderer.clear();
+	renderer.render( sceneRTT, cameraRTT );
+	renderer.setRenderTarget( null );
+	renderer.clear();
+	renderer.render( sceneScreen, cameraRTT );
+}
+
 function init() {
 
+	const shaderMaterial = new THREE.ShaderMaterial( {
+
+		vertexShader: document.getElementById( 'vertexshader' ).textContent,
+		fragmentShader: document.getElementById( 'fragmentshader' ).textContent,
+		blending: THREE.AdditiveBlending,
+		depthTest: false,
+		transparent: true,
+		vertexColors: true,
+		lights: true,
+		uniforms: {
+			...THREE.UniformsLib.lights,
+		  },
+
+	} );
+
 	camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 20);
-	camera.position.z = 15.0;
+	camera.position.z = 20.0;
 
 	// scene
 
@@ -50,6 +92,7 @@ function init() {
 
 			if (child.isMesh) {
 				child.material.map = texture;
+				//child.material = shaderMaterial;
 				child.material.side = THREE.DoubleSide;
 				console.log(texture)
 				console.log( child.geometry);
@@ -144,7 +187,7 @@ function init() {
 
 	const controls = new OrbitControls(camera, renderer.domElement);
 	controls.minDistance = 2;
-	controls.maxDistance = 5;
+	controls.maxDistance = 15;
 	controls.addEventListener('change', render);
 
 	//

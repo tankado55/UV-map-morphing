@@ -12,6 +12,30 @@
 		</style>
 	</head>
 	<body>
+		<script type="x-shader/x-vertex" id="vertexshader">
+
+			varying vec3 vNormal;
+
+			void main() {
+
+				gl_Position = projectionMatrix * modelViewMatrix * vec4( position, 1.0 );
+
+			}
+
+		</script>
+
+		<script type="x-shader/x-fragment" id="fragmentshader">
+
+
+			void main() {
+
+
+				gl_FragColor = vec4( 0.0,1.0,1.0, 1.0 );
+
+			}
+
+		</script>
+
 		<div class="slidecontainer"></div>
 			<input type="range" min="0" max="100" value="50" id="myRange">
 		</div>
