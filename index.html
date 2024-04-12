@@ -14,10 +14,11 @@
 	<body>
 		<script type="x-shader/x-vertex" id="vertexshader">
 
-			varying vec3 vNormal;
+			varying vec2 vUv;
 
 			void main() {
 
+				vUv = uv;
 				gl_Position = projectionMatrix * modelViewMatrix * vec4( position, 1.0 );
 
 			}
@@ -26,11 +27,14 @@
 
 		<script type="x-shader/x-fragment" id="fragmentshader">
 
+			varying vec2 vUv;
+			uniform sampler2D tDiffuse;
 
 			void main() {
 
 
-				gl_FragColor = vec4( 0.0,1.0,1.0, 1.0 );
+				gl_FragColor = texture2D(tDiffuse, vUv);
+				//gl_FragColor = vec4(1.0,0.0,0.0,1.0);
 
 			}
 

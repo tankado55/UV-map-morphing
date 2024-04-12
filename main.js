@@ -9,6 +9,9 @@ import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 //rtt
 
 let camera, scene, renderer;
+let cameraRTT
+let sceneRTT
+let sceneScreen
 
 let object;
 let heapGeometryPointer;
@@ -20,8 +23,12 @@ let meshInstance;
 let objPath = "res/models/cylinder/cylinder.obj"
 //let objPath = "res/models/Die-OBJ/Die-OBJ.obj"
 let texturePath = "res/models/_Wheel_195_50R13x10_OBJ/diffuse.png"
+let texture;
+let rtTextureTarget;
 
+initRTT()
 init();
+
 
 var slider = document.getElementById("myRange");
 slider.oninput = function() {
@@ -30,43 +37,52 @@ slider.oninput = function() {
 
 function initRTT()
 {
-	const texture = textureLoader.load(texturePath);
-	let sceneRTT = new THREE.Scene();
-	let rtTexture = new THREE.WebGLRenderTarget( window.innerWidth, window.innerHeight );
+	renderer = new THREE.WebGLRenderer({ antialias: true });
+	renderer.setPixelRatio(window.devicePixelRatio);
+	renderer.setSize(window.innerWidth, window.innerHeight);
+	renderer.setClearColor( 0xffffff, 0);
+	renderer.autoClear = false;
+	document.body.appendChild(renderer.domElement);
+	
+	const textureLoader = new THREE.TextureLoader();
+	texture = textureLoader.load(texturePath);
+	texture.colorSpace = THREE.SRGBColorSpace;
+	sceneRTT = new THREE.Scene();
+	sceneScreen = new THREE.Scene();
+	cameraRTT = new THREE.OrthographicCamera( window.innerWidth / - 2, window.innerWidth / 2, window.innerHeight / 2, window.innerHeight / - 2, - 10000, 10000 );
+	cameraRTT.position.z = 100;
+	rtTextureTarget = new THREE.WebGLRenderTarget( window.innerWidth, window.innerHeight );
 	let material = new THREE.ShaderMaterial( {
 
-		uniforms: { time: { value: 0.0 } },
-		vertexShader: document.getElementById( 'vertexShader' ).textContent,
-		fragmentShader: document.getElementById( 'fragment_shader_pass_1' ).textContent
+		uniforms: { tDiffuse: { value: texture } },
+		vertexShader: document.getElementById( 'vertexshader' ).textContent,
+		fragmentShader: document.getElementById( 'fragmentshader' ).textContent
 
 	} );
 	const plane = new THREE.PlaneGeometry( window.innerWidth, window.innerHeight );
 
 	let quad = new THREE.Mesh( plane, material );
+	console.log("quad")
+	console.log(quad)
+	quad.position.z = - 100;
 	sceneRTT.add( quad );
 
-	renderer.setRenderTarget( rtTexture );
+	renderer.setRenderTarget( rtTextureTarget );
 	renderer.clear();
 	renderer.render( sceneRTT, cameraRTT );
+
+	console.log(rtTextureTarget.texture.image);
 	renderer.setRenderTarget( null );
-	renderer.clear();
-	renderer.render( sceneScreen, cameraRTT );
+	console.log("end of RTT")
 }
 
 function init() {
 
-	const shaderMaterial = new THREE.ShaderMaterial( {
+	let material = new THREE.ShaderMaterial( {
 
+		uniforms: { tDiffuse: { value: rtTextureTarget.texture } },
 		vertexShader: document.getElementById( 'vertexshader' ).textContent,
-		fragmentShader: document.getElementById( 'fragmentshader' ).textContent,
-		blending: THREE.AdditiveBlending,
-		depthTest: false,
-		transparent: true,
-		vertexColors: true,
-		lights: true,
-		uniforms: {
-			...THREE.UniformsLib.lights,
-		  },
+		fragmentShader: document.getElementById( 'fragmentshader' ).textContent
 
 	} );
 
@@ -91,8 +107,10 @@ function init() {
 		object.traverse(function (child) {
 
 			if (child.isMesh) {
-				child.material.map = texture;
-				//child.material = shaderMaterial;
+				console.log(rtTextureTarget.texture)
+				child.material.map = rtTextureTarget.texture;
+				console.log("assigned material.map")
+				//child.material = material;
 				child.material.side = THREE.DoubleSide;
 				console.log(texture)
 				console.log( child.geometry);
@@ -177,11 +195,7 @@ function init() {
 
 	//
 
-	renderer = new THREE.WebGLRenderer({ antialias: true });
-	renderer.setPixelRatio(window.devicePixelRatio);
-	renderer.setSize(window.innerWidth, window.innerHeight);
-	renderer.setClearColor( 0xffffff, 0);
-	document.body.appendChild(renderer.domElement);
+	
 
 	//
 
@@ -304,8 +318,8 @@ function onWindowResize() {
 }
 
 function render() {
-
 	//plusOne();
 	interpolate();
+	//renderer.render(sceneRTT, cameraRTT);
 	renderer.render(scene, camera);
 }
