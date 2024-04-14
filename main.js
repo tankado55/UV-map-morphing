@@ -25,15 +25,18 @@ let objPath = "res/models/cylinder/cylinder.obj"
 let texturePath = "res/models/_Wheel_195_50R13x10_OBJ/diffuse.png"
 let texture;
 let rtTextureTarget;
-
-initRTT()
-init();
-
+let basicMaterial;
+let material;
 
 var slider = document.getElementById("myRange");
 slider.oninput = function() {
     render();
 }
+
+
+initRTT()
+init();
+
 
 function initRTT()
 {
@@ -44,15 +47,12 @@ function initRTT()
 	renderer.autoClear = false;
 	document.body.appendChild(renderer.domElement);
 	
-	const textureLoader = new THREE.TextureLoader();
-	texture = textureLoader.load(texturePath);
-	texture.colorSpace = THREE.SRGBColorSpace;
 	sceneRTT = new THREE.Scene();
 	sceneScreen = new THREE.Scene();
 	cameraRTT = new THREE.OrthographicCamera( window.innerWidth / - 2, window.innerWidth / 2, window.innerHeight / 2, window.innerHeight / - 2, - 10000, 10000 );
 	cameraRTT.position.z = 100;
 	rtTextureTarget = new THREE.WebGLRenderTarget( window.innerWidth, window.innerHeight );
-	let material = new THREE.ShaderMaterial( {
+	material = new THREE.ShaderMaterial( {
 
 		uniforms: { tDiffuse: { value: texture } },
 		vertexShader: document.getElementById( 'vertexshader' ).textContent,
@@ -62,8 +62,6 @@ function initRTT()
 	const plane = new THREE.PlaneGeometry( window.innerWidth, window.innerHeight );
 
 	let quad = new THREE.Mesh( plane, material );
-	console.log("quad")
-	console.log(quad)
 	quad.position.z = - 100;
 	sceneRTT.add( quad );
 
@@ -71,23 +69,16 @@ function initRTT()
 	renderer.clear();
 	renderer.render( sceneRTT, cameraRTT );
 
-	console.log(rtTextureTarget.texture.image);
 	renderer.setRenderTarget( null );
 	console.log("end of RTT")
 }
 
 function init() {
 
-	let material = new THREE.ShaderMaterial( {
-
-		uniforms: { tDiffuse: { value: rtTextureTarget.texture } },
-		vertexShader: document.getElementById( 'vertexshader' ).textContent,
-		fragmentShader: document.getElementById( 'fragmentshader' ).textContent
-
-	} );
-
 	camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 20);
 	camera.position.z = 20.0;
+
+
 
 	// scene
 
@@ -103,26 +94,6 @@ function init() {
 	// manager
 
 	function loadModel() {
-
-		object.traverse(function (child) {
-
-			if (child.isMesh) {
-				console.log(rtTextureTarget.texture)
-				child.material.map = rtTextureTarget.texture;
-				console.log("assigned material.map")
-				//child.material = material;
-				child.material.side = THREE.DoubleSide;
-				console.log(texture)
-				console.log( child.geometry);
-				console.log( child.material);
-				//console.log( child.geometry.attributes.position.array);
-			}
-
-		});
-
-		object.position.y = 0.0;
-		object.scale.setScalar(1.00);
-		scene.add(object);
 
 		// heap pointer
 		object.traverse(function (child) {
@@ -157,7 +128,6 @@ function init() {
 			}
 		});
 
-		render();
 	}
 
 
@@ -167,8 +137,26 @@ function init() {
 	// texture
 
 	const textureLoader = new THREE.TextureLoader();
-	const texture = textureLoader.load(texturePath);
-	texture.colorSpace = THREE.SRGBColorSpace;
+	textureLoader.load(
+        // resource URL
+        texturePath,
+    
+        // onLoad callback
+        function ( texture ) {
+            // in this example we create the material when the texture is loaded
+            material.uniforms.tDiffuse.value = texture;
+            
+        },
+    
+        // onProgress callback currently not supported
+        undefined,
+    
+        // onError callback
+        function ( err ) {
+            console.error( 'An error happened.' );
+        }
+    );
+
 
 	// model
 
@@ -183,15 +171,28 @@ function init() {
 
 	}
 
-	function onError() { }
 
 	const loader = new OBJLoader(manager);
 	loader.load(objPath, function (obj) {
+		renderer.setRenderTarget( rtTextureTarget );
+		renderer.clear();
+		renderer.render( sceneRTT, cameraRTT );
+
+		renderer.setRenderTarget( null );
 
 		object = obj;
-		//console.log(object)
+		obj.traverse(function (child) {
 
-	}, onProgress, onError);
+			if (child.isMesh) {
+				child.material = new THREE.MeshStandardMaterial( {map: rtTextureTarget.texture} )
+				child.material.side = THREE.DoubleSide;
+			}
+
+		});
+        obj.position.y = 0.0;
+        scene.add(obj);
+
+	}, onProgress, function () {console.log("Error")});
 
 	//
 
@@ -321,5 +322,6 @@ function render() {
 	//plusOne();
 	interpolate();
 	//renderer.render(sceneRTT, cameraRTT);
+	renderer.clear();
 	renderer.render(scene, camera);
 }
