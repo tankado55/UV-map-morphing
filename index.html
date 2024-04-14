@@ -1,18 +1,22 @@
 <!DOCTYPE html>
 <html lang="en">
-	<head>
-		<meta charset="utf-8">
-		<title>My first three.js app</title>
-		<style>
-			body { margin: 0; }
-			
-			.slidecontainer {
-  				width: 100%;
-			}
-		</style>
-	</head>
-	<body>
-		<script type="x-shader/x-vertex" id="vertexshader">
+
+<head>
+	<meta charset="utf-8">
+	<title>My first three.js app</title>
+	<style>
+		body {
+			margin: 0;
+		}
+
+		.slidecontainer {
+			width: 100%;
+		}
+	</style>
+</head>
+
+<body>
+	<script type="x-shader/x-vertex" id="vertexshader">
 
 			varying vec2 vUv;
 
@@ -25,28 +29,55 @@
 
 		</script>
 
-		<script type="x-shader/x-fragment" id="fragmentshader">
+	<script type="x-shader/x-fragment" id="fragmentshader">
 
 			varying vec2 vUv;
 			uniform sampler2D tDiffuse;
+			uniform float u_TextureGridMode;
+			uniform float u_TextureColorMode;
+
+			const vec4 plainColor = vec4(1.0);
+
+			// function prototypes
+			vec4 calcGridColor(vec2 p, vec4 defaultColor);
 
 			void main() {
+				vec4 colTexture =  texture2D(tDiffuse, vUv);
+				colTexture = mix(plainColor, colTexture, u_TextureColorMode);
+				vec4 gridTexture = calcGridColor(vUv, colTexture);
 
+				vec4 diffuse = mix(
+					colTexture,
+					gridTexture,
+					u_TextureGridMode
+				);
 
 				gl_FragColor = texture2D(tDiffuse, vUv);
 				//gl_FragColor = vec4(1.0,0.0,0.0,1.0);
 
 			}
 
+			vec4 calcGridColor(vec2 p, vec4 defaultColor)
+			{
+				const float nCells = 30.0;
+				vec2 q = fract(p * nCells);
+				if (q.x < 0.1) return vec4(0.8, 0.0, 0.0, 1.0);
+				if (q.y < 0.1) return vec4(0.0, 0.5, 0.0, 1.0);
+				return defaultColor;
+			}
+
 		</script>
 
-		<div class="slidecontainer"></div>
-			<input type="range" min="0" max="100" value="50" id="myRange">
-		</div>
-		<script type='text/javascript'>
-			var Module = {}
-		</script>
-		<script async type="text/javascript" src="/hello.js"></script>
-		<script type="module" src="/main.js"></script>
-	</body>
+	<div class="slidecontainer"></div>
+	<input type="range" min="0" max="100" value="50" id="interpolationSlider">
+	<input type="range" min="0" max="100" value="50" id="gridSlider">
+	<input type="range" min="0" max="100" value="50" id="whiteSlider">
+	</div>
+	<script type='text/javascript'>
+		var Module = {}
+	</script>
+	<script async type="text/javascript" src="/hello.js"></script>
+	<script type="module" src="/main.js"></script>
+</body>
+
 </html>

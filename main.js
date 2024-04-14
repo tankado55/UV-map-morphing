@@ -28,8 +28,16 @@ let rtTextureTarget;
 let basicMaterial;
 let material;
 
-var slider = document.getElementById("myRange");
-slider.oninput = function() {
+var interpolationSlider = document.getElementById("interpolationSlider");
+var gridSlider = document.getElementById("gridSlider");
+var whiteSlider = document.getElementById("whiteSlider");
+interpolationSlider.oninput = function() {
+	render();
+}
+gridSlider.oninput = function() {
+    render();
+}
+whiteSlider.oninput = function() {
     render();
 }
 
@@ -54,7 +62,8 @@ function initRTT()
 	rtTextureTarget = new THREE.WebGLRenderTarget( window.innerWidth, window.innerHeight );
 	material = new THREE.ShaderMaterial( {
 
-		uniforms: { tDiffuse: { value: texture } },
+		uniforms: { tDiffuse: { value: texture }, u_TextureGridMode:{ value: parseFloat(gridSlider.value)/100.0}, u_TextureColorMode:{ value: parseFloat(whiteSlider.value)/100.0} },
+		//uniforms: { tDiffuse: { value: texture } },
 		vertexShader: document.getElementById( 'vertexshader' ).textContent,
 		fragmentShader: document.getElementById( 'fragmentshader' ).textContent
 
@@ -194,9 +203,6 @@ function init() {
 
 	}, onProgress, function () {console.log("Error")});
 
-	//
-
-	
 
 	//
 
@@ -303,7 +309,7 @@ function interpolate()
 				[heapGeometryPointer, heapUVPointer, slider.value, arr.length, heapGeometryPointInterpolated] // The arguments
 			);
 			*/
-			meshInstance.interpolate(parseInt(slider.value))
+			meshInstance.interpolate(parseInt(interpolationSlider.value))
 			child.geometry.setAttribute('position', new THREE.BufferAttribute(Module["HEAPF32"].slice(heapGeometryPointer >> 2, (heapGeometryPointer >> 2) + arr.length), 3));
 		}
 
