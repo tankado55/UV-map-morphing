@@ -27,6 +27,8 @@ let texture;
 let rtTextureTarget;
 let basicMaterial;
 let material;
+let plane;
+let quad;
 
 var interpolationSlider = document.getElementById("interpolationSlider");
 var gridSlider = document.getElementById("gridSlider");
@@ -35,15 +37,28 @@ interpolationSlider.oninput = function() {
 	render();
 }
 gridSlider.oninput = function() {
+	material.uniforms.u_TextureGridMode.value = parseFloat(gridSlider.value) / 100.0;
+	renderQuadTexture()
     render();
 }
 whiteSlider.oninput = function() {
+	material.uniforms.u_TextureColorMode.value = parseFloat(whiteSlider.value) / 100.0;
+	renderQuadTexture()
     render();
 }
 
 
 initRTT()
 init();
+
+function renderQuadTexture()
+{
+	renderer.setRenderTarget( rtTextureTarget );
+	renderer.clear();
+	renderer.render( sceneRTT, cameraRTT );
+
+	renderer.setRenderTarget( null );
+}
 
 
 function initRTT()
@@ -68,9 +83,9 @@ function initRTT()
 		fragmentShader: document.getElementById( 'fragmentshader' ).textContent
 
 	} );
-	const plane = new THREE.PlaneGeometry( window.innerWidth, window.innerHeight );
+	plane = new THREE.PlaneGeometry( window.innerWidth, window.innerHeight );
 
-	let quad = new THREE.Mesh( plane, material );
+	quad = new THREE.Mesh( plane, material );
 	quad.position.z = - 100;
 	sceneRTT.add( quad );
 
