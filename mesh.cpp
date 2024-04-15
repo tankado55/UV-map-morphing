@@ -45,9 +45,13 @@ void Mesh::interpolate(int t) const
         }*/
 
         // float uvScaling = f[faceIndex].uvScaling;
+        glm::mat4 toCenterMat = glm::translate(glm::mat4(1.0f), glm::vec3(-0.5, -0.5, 0.0));
+        targetUV = glm::vec3(toCenterMat * glm::vec4(targetUV, 1.0));
+        targetUV = targetUV * averageScaling;
+
         vertex.pos = glm::mix(
             this->v[i].pos /** bestRotation*/,
-            targetUV * averageScaling,
+            targetUV,
             interpolationValue);
         int arrayIndex = i * 3;
         heapPosPtr[arrayIndex] = vertex.pos.x;

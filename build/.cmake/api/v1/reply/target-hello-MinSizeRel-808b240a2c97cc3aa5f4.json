@@ -2,10 +2,10 @@
 	"artifacts" : 
 	[
 		{
-			"path" : "output/Release/MyProject.exe"
+			"path" : "MinSizeRel/hello.exe"
 		},
 		{
-			"path" : "output/Release/MyProject.pdb"
+			"path" : "MinSizeRel/hello.pdb"
 		}
 	],
 	"backtrace" : 1,
@@ -14,8 +14,7 @@
 		"commands" : 
 		[
 			"add_executable",
-			"target_compile_options",
-			"include_directories"
+			"target_include_directories"
 		],
 		"files" : 
 		[
@@ -29,19 +28,13 @@
 			{
 				"command" : 0,
 				"file" : 0,
-				"line" : 39,
+				"line" : 9,
 				"parent" : 0
 			},
 			{
 				"command" : 1,
 				"file" : 0,
-				"line" : 41,
-				"parent" : 0
-			},
-			{
-				"command" : 2,
-				"file" : 0,
-				"line" : 32,
+				"line" : 18,
 				"parent" : 0
 			}
 		]
@@ -52,22 +45,21 @@
 			"compileCommandFragments" : 
 			[
 				{
-					"fragment" : "/DWIN32 /D_WINDOWS /W3 /GR /EHsc /MD /O2 /Ob2 /DNDEBUG"
+					"fragment" : "/DWIN32 /D_WINDOWS /W3 /GR /EHsc /MD /O1 /Ob1 /DNDEBUG -std:c++17   -std=c++17"
 				},
 				{
-					"backtrace" : 2,
-					"fragment" : "-std=c++11"
+					"fragment" : "-sEXPORTED_FUNCTIONS=_interpolate,_plusOne,_free,_malloc -sEXPORTED_RUNTIME_METHODS=ccall,cwrap -g --bind"
 				}
 			],
 			"includes" : 
 			[
 				{
-					"backtrace" : 3,
-					"path" : "D:/dev/emsdk/upstream/emscripten/system/include"
+					"backtrace" : 2,
+					"path" : "/D:/dev/my_libs/glm-1.0.0-light"
 				},
 				{
-					"backtrace" : 3,
-					"path" : "D:/dev/my_libs/glm-1.0.0-light"
+					"backtrace" : 2,
+					"path" : "/D:/dev/emsdk/upstream/emscripten/system/include"
 				}
 			],
 			"language" : "CXX",
@@ -77,7 +69,7 @@
 				[
 					1
 				],
-				"standard" : "11"
+				"standard" : "17"
 			},
 			"sourceIndexes" : 
 			[
@@ -92,13 +84,13 @@
 			"id" : "ZERO_CHECK::@6890427a1f51a3e7e1df"
 		}
 	],
-	"id" : "MyProject::@6890427a1f51a3e7e1df",
+	"id" : "hello::@6890427a1f51a3e7e1df",
 	"link" : 
 	{
 		"commandFragments" : 
 		[
 			{
-				"fragment" : "/DWIN32 /D_WINDOWS /W3 /GR /EHsc /MD /O2 /Ob2 /DNDEBUG",
+				"fragment" : "/DWIN32 /D_WINDOWS /W3 /GR /EHsc /MD /O1 /Ob1 /DNDEBUG",
 				"role" : "flags"
 			},
 			{
@@ -112,8 +104,8 @@
 		],
 		"language" : "CXX"
 	},
-	"name" : "MyProject",
-	"nameOnDisk" : "MyProject.exe",
+	"name" : "hello",
+	"nameOnDisk" : "hello.exe",
 	"paths" : 
 	{
 		"build" : ".",

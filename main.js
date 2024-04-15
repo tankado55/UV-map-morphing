@@ -3,6 +3,8 @@ import * as THREE from 'three';
 import { OBJLoader } from 'three/addons/loaders/OBJLoader.js';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 
+const PI = 3.141592653589793;
+
 //var int_sqrt = Module.cwrap('int_sqrt', 'number', ['number'])
 //console.log(int_sqrt(300))
 
@@ -29,73 +31,86 @@ let basicMaterial;
 let material;
 let plane;
 let quad;
+let dirLight;
 
 var interpolationSlider = document.getElementById("interpolationSlider");
 var gridSlider = document.getElementById("gridSlider");
 var whiteSlider = document.getElementById("whiteSlider");
-interpolationSlider.oninput = function() {
+
+interpolationSlider.oninput = function () {
 	render();
 }
-gridSlider.oninput = function() {
+gridSlider.oninput = function () {
 	material.uniforms.u_TextureGridMode.value = parseFloat(gridSlider.value) / 100.0;
 	renderQuadTexture()
-    render();
+	render();
 }
-whiteSlider.oninput = function() {
+whiteSlider.oninput = function () {
 	material.uniforms.u_TextureColorMode.value = parseFloat(whiteSlider.value) / 100.0;
 	renderQuadTexture()
-    render();
+	render();
 }
 
 
 initRTT()
 init();
+initHorPlane();
 
 console.log(meshInstance)
 
-function renderQuadTexture()
-{
-	renderer.setRenderTarget( rtTextureTarget );
-	renderer.clear();
-	renderer.render( sceneRTT, cameraRTT );
+function initHorPlane() {
+	const geometry = new THREE.PlaneGeometry(10, 10);
+	const material = new THREE.MeshStandardMaterial({ color: 0xfdfdfd, side: THREE.DoubleSide });
+	const plane = new THREE.Mesh(geometry, material);
+	plane.translateY(-3.0);
+	plane.rotateX(- PI/2);
+	plane.receiveShadow = true;
+	scene.add(plane);
+}
 
-	renderer.setRenderTarget( null );
+function renderQuadTexture() {
+	renderer.setRenderTarget(rtTextureTarget);
+	renderer.clear();
+	renderer.render(sceneRTT, cameraRTT);
+
+	renderer.setRenderTarget(null);
 }
 
 
-function initRTT()
-{
+function initRTT() {
 	renderer = new THREE.WebGLRenderer({ antialias: true });
 	renderer.setPixelRatio(window.devicePixelRatio);
 	renderer.setSize(window.innerWidth, window.innerHeight);
-	renderer.setClearColor( 0xffffff, 0);
+	renderer.setClearColor(0xffffff, 0);
 	renderer.autoClear = false;
+	renderer.shadowMap.enabled = true;
+	renderer.shadowMap.type = THREE.PCFSoftShadowMap;
 	document.body.appendChild(renderer.domElement);
-	
+
 	sceneRTT = new THREE.Scene();
 	sceneScreen = new THREE.Scene();
-	cameraRTT = new THREE.OrthographicCamera( window.innerWidth / - 2, window.innerWidth / 2, window.innerHeight / 2, window.innerHeight / - 2, - 10000, 10000 );
+	cameraRTT = new THREE.OrthographicCamera(window.innerWidth / - 2, window.innerWidth / 2, window.innerHeight / 2, window.innerHeight / - 2, - 10000, 10000);
 	cameraRTT.position.z = 100;
-	rtTextureTarget = new THREE.WebGLRenderTarget( window.innerWidth, window.innerHeight );
-	material = new THREE.ShaderMaterial( {
+	rtTextureTarget = new THREE.WebGLRenderTarget(window.innerWidth, window.innerHeight);
+	material = new THREE.ShaderMaterial({
 
-		uniforms: { tDiffuse: { value: texture }, u_TextureGridMode:{ value: parseFloat(gridSlider.value)/100.0}, u_TextureColorMode:{ value: parseFloat(whiteSlider.value)/100.0} },
+		uniforms: { tDiffuse: { value: texture }, u_TextureGridMode: { value: parseFloat(gridSlider.value) / 100.0 }, u_TextureColorMode: { value: parseFloat(whiteSlider.value) / 100.0 } },
 		//uniforms: { tDiffuse: { value: texture } },
-		vertexShader: document.getElementById( 'vertexshader' ).textContent,
-		fragmentShader: document.getElementById( 'fragmentshader' ).textContent
+		vertexShader: document.getElementById('vertexshader').textContent,
+		fragmentShader: document.getElementById('fragmentshader').textContent
 
-	} );
-	plane = new THREE.PlaneGeometry( window.innerWidth, window.innerHeight );
+	});
+	plane = new THREE.PlaneGeometry(window.innerWidth, window.innerHeight);
 
-	quad = new THREE.Mesh( plane, material );
+	quad = new THREE.Mesh(plane, material);
 	quad.position.z = - 100;
-	sceneRTT.add( quad );
+	sceneRTT.add(quad);
 
-	renderer.setRenderTarget( rtTextureTarget );
+	renderer.setRenderTarget(rtTextureTarget);
 	renderer.clear();
-	renderer.render( sceneRTT, cameraRTT );
+	renderer.render(sceneRTT, cameraRTT);
 
-	renderer.setRenderTarget( null );
+	renderer.setRenderTarget(null);
 	console.log("end of RTT")
 }
 
@@ -103,8 +118,6 @@ function init() {
 
 	camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 200);
 	camera.position.z = 20.0;
-
-
 
 	// scene
 
@@ -116,6 +129,14 @@ function init() {
 	const pointLight = new THREE.PointLight(0xffffff, 15);
 	camera.add(pointLight);
 	scene.add(camera);
+
+	const dirLight = new THREE.DirectionalLight( 0xffffff, 1 );
+	dirLight.position.set( 2, 5, 1 ); //default; light shining from top
+	dirLight.castShadow = true; // default false
+	scene.add( dirLight );
+
+
+
 
 	// manager
 
@@ -156,7 +177,7 @@ function init() {
 
 				child.geometry.computeBoundingSphere();
 				let radius = child.geometry.boundingSphere.radius
-				child.geometry.scale(1/radius, 1/radius, 1/radius);
+				object.scale.set(1.0 / radius, 1.0 / radius, 1.0 / radius);
 				console.log(radius)
 
 			}
@@ -171,24 +192,24 @@ function init() {
 
 	const textureLoader = new THREE.TextureLoader();
 	textureLoader.load(
-        // resource URL
-        texturePath,
-    
-        // onLoad callback
-        function ( texture ) {
-            // in this example we create the material when the texture is loaded
-            material.uniforms.tDiffuse.value = texture;
-            
-        },
-    
-        // onProgress callback currently not supported
-        undefined,
-    
-        // onError callback
-        function ( err ) {
-            console.error( 'An error happened.' );
-        }
-    );
+		// resource URL
+		texturePath,
+
+		// onLoad callback
+		function (texture) {
+			// in this example we create the material when the texture is loaded
+			material.uniforms.tDiffuse.value = texture;
+
+		},
+
+		// onProgress callback currently not supported
+		undefined,
+
+		// onError callback
+		function (err) {
+			console.error('An error happened.');
+		}
+	);
 
 
 	// model
@@ -207,24 +228,25 @@ function init() {
 
 	const loader = new OBJLoader(manager);
 	loader.load(objPath, function (obj) {
-		renderer.setRenderTarget( rtTextureTarget );
+		renderer.setRenderTarget(rtTextureTarget);
 		renderer.clear();
-		renderer.render( sceneRTT, cameraRTT );
+		renderer.render(sceneRTT, cameraRTT);
 
-		renderer.setRenderTarget( null );
+		renderer.setRenderTarget(null);
 
 		object = obj;
 		obj.traverse(function (child) {
 
 			if (child.isMesh) {
-				child.material = new THREE.MeshStandardMaterial( {map: rtTextureTarget.texture} )
+				child.material = new THREE.MeshStandardMaterial({ map: rtTextureTarget.texture })
 				child.material.side = THREE.DoubleSide;
+				child.castShadow = true;
 			}
 
 		});
-        obj.position.y = 0.0;
-        scene.add(obj);
-	}, onProgress, function () {console.log("Error")});
+		obj.position.y = 0.0;
+		scene.add(obj);
+	}, onProgress, function () { console.log("Error") });
 
 
 	//
@@ -318,11 +340,10 @@ function plusOne() {
 	});
 }
 
-function interpolate()
-{
+function interpolate() {
 	object.traverse(function (child) {
 		if (child.isMesh) {
-			
+
 			let arr = child.geometry.attributes.position.array;
 			/*
 			Module.ccall(
