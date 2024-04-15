@@ -54,6 +54,7 @@ struct Mesh
 	void updateToFlipBool();
 	void updateUVScaling();
 	int getDebugInt() const {return debugInt;}
+	std::vector<float> getBBCenter() const {return {boundingSphere.center.x, boundingSphere.center.y, boundingSphere.center.z};}
 };
 
 // Binding code
@@ -62,5 +63,6 @@ EMSCRIPTEN_BINDINGS(my_class_example) {
     .constructor<int, int, int, int>()
 	.property("debugInt", &Mesh::getDebugInt)
     .function("interpolate", &Mesh::interpolate)
+	.property("boundingSphere", &Mesh::getBBCenter)
     ;
 }

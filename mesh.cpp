@@ -24,6 +24,10 @@ Mesh::Mesh(int positions, int uvs, int posSize, int uvSize) : debugInt(5)
     debugInt = posSize;
     std::cout << "debug mesh class: " << posSize << std::endl;
     updateUVScaling();
+    updateBB();
+    std::cout << "debug mesh class: " << boundingSphere.center.x << std::endl;
+    std::cout << "debug mesh class: " << boundingSphere.center.y << std::endl;
+    std::cout << "debug mesh class: " << boundingSphere.center.z << std::endl;
 }
 
 void Mesh::interpolate(int t) const

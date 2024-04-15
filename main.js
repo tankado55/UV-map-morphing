@@ -19,8 +19,8 @@ let heapUVPointer;
 let heapGeometryPointInterpolated;
 let meshInstance;
 
-//let objPath = "res/models/_Wheel_195_50R13x10_OBJ/wheel.obj"
-let objPath = "res/models/cylinder/cylinder.obj"
+let objPath = "res/models/_Wheel_195_50R13x10_OBJ/wheel.obj"
+//let objPath = "res/models/cylinder/cylinder.obj"
 //let objPath = "res/models/Die-OBJ/Die-OBJ.obj"
 let texturePath = "res/models/_Wheel_195_50R13x10_OBJ/diffuse.png"
 let texture;
@@ -50,6 +50,8 @@ whiteSlider.oninput = function() {
 
 initRTT()
 init();
+
+console.log(meshInstance)
 
 function renderQuadTexture()
 {
@@ -99,7 +101,7 @@ function initRTT()
 
 function init() {
 
-	camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 20);
+	camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 200);
 	camera.position.z = 20.0;
 
 
@@ -143,15 +145,22 @@ function init() {
 					meshInstance = new Module.Mesh(heapGeometryPointer, heapUVPointer, arr.length, arrUV.length);
 					console.log(meshInstance);
 					console.log(meshInstance.debugInt);
+					console.log("boundingsphere")
+					//console.log(meshInstance.boundingSphere);
 					console.log(Module["HEAPF32"][heapGeometryPointer >> 2])
 				}
 				catch (error) {
 					console.log("error in transfer to heap")
 					console.log(error)
 				}
+
+				child.geometry.computeBoundingSphere();
+				let radius = child.geometry.boundingSphere.radius
+				child.geometry.scale(1/radius, 1/radius, 1/radius);
+				console.log(radius)
+
 			}
 		});
-
 	}
 
 
@@ -215,7 +224,6 @@ function init() {
 		});
         obj.position.y = 0.0;
         scene.add(obj);
-
 	}, onProgress, function () {console.log("Error")});
 
 
@@ -223,7 +231,7 @@ function init() {
 
 	const controls = new OrbitControls(camera, renderer.domElement);
 	controls.minDistance = 2;
-	controls.maxDistance = 15;
+	controls.maxDistance = 160;
 	controls.addEventListener('change', render);
 
 	//
