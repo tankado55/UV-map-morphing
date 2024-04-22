@@ -62,7 +62,7 @@
 				const float nCells = 30.0;
 				vec2 q = fract(p * nCells);
 				if (q.x < 0.1) return vec4(0.8, 0.0, 0.0, 1.0);
-				if (q.y < 0.1) return vec4(0.0, 0.5, 0.0, 1.0);
+				if (q.y < 0.1) return vec4(0.0, 0.0, 0.5, 1.0);
 				return defaultColor;
 			}
 
