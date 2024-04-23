@@ -28,16 +28,21 @@ Mesh::Mesh(int positions, int uvs, int posSize, int uvSize) : debugInt(5)
     std::cout << "debug mesh class: " << boundingSphere.center.x << std::endl;
     std::cout << "debug mesh class: " << boundingSphere.center.y << std::endl;
     std::cout << "debug mesh class: " << boundingSphere.center.z << std::endl;
+    setTimingWithV(0.25);
 }
 
-void Mesh::interpolate(int t) const
+glm::vec3 uv2xyz(glm::vec2 v){
+    return glm::vec3(v.x, 0.0, v.y);
+}
+
+void Mesh::interpolate(int tPercent) const
 {
-    float interpolationValue = (float)t / 100.0;
+    float t = tPercent / 100.0;
 
     for (int i = 0; i < v.size(); i++)
     {
         Vertex vertex;
-        glm::vec3 targetUV(this->v[i].uv, 0.0);
+        glm::vec3 targetUV = uv2xyz(this->v[i].uv);
         /*
         if (toFlip)
         {
@@ -45,10 +50,12 @@ void Mesh::interpolate(int t) const
         }*/
 
         // float uvScaling = f[faceIndex].uvScaling;
-        glm::mat4 toCenterMat = glm::translate(glm::mat4(1.0f), glm::vec3(-0.5, -0.5, 0.0));
+        glm::mat4 toCenterMat = glm::translate(glm::mat4(1.0f), glm::vec3(-0.5, -0.5, -0.5));
         targetUV = glm::vec3(toCenterMat * glm::vec4(targetUV, 1.0));
         targetUV = targetUV * averageScaling;
 
+        float interpolationValue = (t - v[i].tStart) /  (v[i].tEnd - v[i].tStart);
+        interpolationValue = glm::clamp(interpolationValue, 0.0f, 1.0f);
         vertex.pos = glm::mix(
             this->v[i].pos /** bestRotation*/,
             targetUV,
@@ -254,6 +261,47 @@ void Mesh::updateUVScaling()
     else
         averageScaling = 1.0;
 }
+
+void Mesh::setTimingWithVertexIndex(float k)
+{
+    int n = v.size();
+    for (int i = 0; i < n; i++)
+    {
+        v[i].tStart = (1-k) * i/(n - 1);
+        v[i].tEnd = v[i].tStart + k;
+    }
+}
+void Mesh::setTimingInsideOut(float k){
+    for (Vertex& vi : v)
+    {
+        float d = glm::length(vi.pos - boundingSphere.center);
+        d = d / boundingSphere.radius;
+        vi.tStart = (1-k) * (1 -  d * d * d );
+        vi.tEnd = vi.tStart + k;
+    }
+}
+	
+void Mesh::setTimingWithUVdir(float flightTime, glm::vec2 dirUV)
+{
+    dirUV = glm::normalize(dirUV);
+    float mind = 99999;
+    float maxd = -99999;
+    for (Vertex& vi : v)
+    {
+        float d = glm::dot(vi.uv, dirUV);
+        mind = std::min(mind, d);
+        maxd = std::max(maxd, d);
+    }
+
+    for (Vertex& vi : v)
+    {
+        float d = glm::dot(vi.uv, dirUV);
+        d = (d - mind) / (maxd - mind); 
+        vi.tStart = (1-flightTime) * d;
+        vi.tEnd = vi.tStart + flightTime;
+    }
+}
+
 
 /*static glm::mat3 updateInitRotation()
 {

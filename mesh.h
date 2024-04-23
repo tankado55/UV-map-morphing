@@ -15,6 +15,8 @@ struct Vertex
 	glm::vec3 pos;
 	glm::vec2 uv;
 	glm::vec3 normal;
+	float tStart;
+	float tEnd;
 };
 
 struct Face
@@ -55,6 +57,11 @@ struct Mesh
 	void updateUVScaling();
 	int getDebugInt() const {return debugInt;}
 	std::vector<float> getBBCenter() const {return {boundingSphere.center.x, boundingSphere.center.y, boundingSphere.center.z};}
+	void setTimingWithVertexIndex(float flightTime);
+	void setTimingInsideOut(float flightTime);
+	void setTimingWithUVdir(float flightTime, glm::vec2 dirUV);
+	void setTimingWithU(float flightTime) {setTimingWithUVdir(flightTime, glm::vec2(1.0, 0.0));}
+	void setTimingWithV(float flightTime) {setTimingWithUVdir(flightTime, glm::vec2(0.0, 1.0));}
 };
 
 // Binding code

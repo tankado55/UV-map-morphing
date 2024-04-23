@@ -1,6 +1,7 @@
 import * as THREE from 'three';
 
 import { OBJLoader } from 'three/addons/loaders/OBJLoader.js';
+import { FBXLoader } from 'three/addons/loaders/FBXLoader.js';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 
 const PI = 3.141592653589793;
@@ -21,7 +22,8 @@ let heapUVPointer;
 let heapGeometryPointInterpolated;
 let meshInstance;
 
-let objPath = "res/models/_Wheel_195_50R13x10_OBJ/wheel.obj"
+//let objPath = "res/models/_Wheel_195_50R13x10_OBJ/wheel.obj"
+let objPath = "res/models/SciFiWarriorPBRHPPolyart/Mesh/PBR_HP_Mesh.fbx"
 //let objPath = "res/models/cylinder/cylinder.obj"
 //let objPath = "res/models/Die-OBJ/Die-OBJ.obj"
 let texturePath = "res/models/_Wheel_195_50R13x10_OBJ/diffuse.png"
@@ -131,7 +133,7 @@ function init() {
 	scene.add(camera);
 
 	const dirLight = new THREE.DirectionalLight( 0xffffff, 1 );
-	dirLight.position.set( 2, 5, 1 ); //default; light shining from top
+	dirLight.position.set( 0, 5, 0 ); //default; light shining from top
 	dirLight.castShadow = true; // default false
 	scene.add( dirLight );
 
@@ -225,8 +227,15 @@ function init() {
 
 	}
 
-
-	const loader = new OBJLoader(manager);
+	let extension = objPath.split('.')[1];
+	let loader;
+	if (extension == "obj")
+	{
+		loader = new OBJLoader(manager);
+	}
+	else{
+		loader = new FBXLoader(manager);
+	}
 	loader.load(objPath, function (obj) {
 		renderer.setRenderTarget(rtTextureTarget);
 		renderer.clear();
@@ -241,6 +250,7 @@ function init() {
 				child.material = new THREE.MeshStandardMaterial({ map: rtTextureTarget.texture })
 				child.material.side = THREE.DoubleSide;
 				child.castShadow = true;
+				child.receiveShadow = true;
 			}
 
 		});
