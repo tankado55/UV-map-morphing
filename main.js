@@ -24,11 +24,15 @@ let meshInstance;
 
 //let objPath = "res/models/_Wheel_195_50R13x10_OBJ/wheel.obj"
 //let objPath = "res/models/SciFiWarriorPBRHPPolyart/Mesh/PBR_HP_Mesh.fbx"
-let objPath = "res/models/BakerHouse/Models/Baker_house.fbx"
+//let objPath = "res/models/BakerHouse/Models/Baker_house.fbx"
 //let objPath = "res/models/BakerHouse/Models/Barrel.FBX"
 //let objPath = "res/models/Barrel.obj"
 //let objPath = "res/models/cylinder/cylinder.obj"
 //let objPath = "res/models/Die-OBJ/Die-OBJ.obj"
+let objPath = "res/models/"
+let objSelect = document.getElementById("meshSelect");
+objPath = objPath + objSelect.value;
+objSelect.onchange = function () {console.log("change")}; 
 let texturePath = "res/models/_Wheel_195_50R13x10_OBJ/diffuse.png"
 let texture;
 let rtTextureTarget;
