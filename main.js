@@ -23,7 +23,10 @@ let heapGeometryPointInterpolated;
 let meshInstance;
 
 //let objPath = "res/models/_Wheel_195_50R13x10_OBJ/wheel.obj"
-let objPath = "res/models/SciFiWarriorPBRHPPolyart/Mesh/PBR_HP_Mesh.fbx"
+//let objPath = "res/models/SciFiWarriorPBRHPPolyart/Mesh/PBR_HP_Mesh.fbx"
+let objPath = "res/models/BakerHouse/Models/Baker_house.fbx"
+//let objPath = "res/models/BakerHouse/Models/Barrel.FBX"
+//let objPath = "res/models/Barrel.obj"
 //let objPath = "res/models/cylinder/cylinder.obj"
 //let objPath = "res/models/Die-OBJ/Die-OBJ.obj"
 let texturePath = "res/models/_Wheel_195_50R13x10_OBJ/diffuse.png"
@@ -118,19 +121,17 @@ function initRTT() {
 
 function init() {
 
+	scene = new THREE.Scene();
+
 	camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 200);
 	camera.position.z = 20.0;
-
-	// scene
-
-	scene = new THREE.Scene();
+	scene.add(camera);
 
 	const ambientLight = new THREE.AmbientLight(0xffffff);
 	scene.add(ambientLight);
 
-	const pointLight = new THREE.PointLight(0xffffff, 15);
-	camera.add(pointLight);
-	scene.add(camera);
+	//const pointLight = new THREE.PointLight(0xffffff, 15);
+	//camera.add(pointLight);
 
 	const dirLight = new THREE.DirectionalLight( 0xffffff, 1 );
 	dirLight.position.set( 0, 5, 0 ); //default; light shining from top
@@ -166,8 +167,6 @@ function init() {
 						hasFloatValue ? TYPES.f32 : TYPES.i32
 					);
 					meshInstance = new Module.Mesh(heapGeometryPointer, heapUVPointer, arr.length, arrUV.length);
-					console.log(meshInstance);
-					console.log(meshInstance.debugInt);
 					console.log("boundingsphere")
 					//console.log(meshInstance.boundingSphere);
 					console.log(Module["HEAPF32"][heapGeometryPointer >> 2])
@@ -180,7 +179,22 @@ function init() {
 				child.geometry.computeBoundingSphere();
 				let radius = child.geometry.boundingSphere.radius
 				object.scale.set(1.0 / radius, 1.0 / radius, 1.0 / radius);
+				child.scale.set(1.0,1.0,1.0);
+				child.rotation.x = 0;
+				child.rotation.y = 0;
+				child.rotation.z = 0;
+				child.position.set(0,0,0);
 				console.log(radius)
+				console.log(object.scale)
+				console.log(child.geometry)
+
+				let sphGeometry = new THREE.SphereGeometry( radius, 32, 16 );
+				sphGeometry = new THREE.WireframeGeometry( sphGeometry );
+				const sphMaterial = new THREE.MeshBasicMaterial( { color: 0xffff00 } ); 
+				const sphere = new THREE.Mesh( sphGeometry, sphMaterial );
+				//sphere.scale.set(1.0 / radius, 1.0 / radius, 1.0 / radius)
+				console.log(object)
+				//scene.add( sphere );
 
 			}
 		});
@@ -194,7 +208,6 @@ function init() {
 
 	const textureLoader = new THREE.TextureLoader();
 	textureLoader.load(
-		// resource URL
 		texturePath,
 
 		// onLoad callback
@@ -379,9 +392,7 @@ function onWindowResize() {
 }
 
 function render() {
-	//plusOne();
 	interpolate();
-	//renderer.render(sceneRTT, cameraRTT);
 	renderer.clear();
 	renderer.render(scene, camera);
 }

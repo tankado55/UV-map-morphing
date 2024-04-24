@@ -1,6 +1,8 @@
 #include "mesh.h"
 #include <iostream>
 
+#define PI 3.14159265358979323846
+
 Mesh::Mesh(int positions, int uvs, int posSize, int uvSize) : debugInt(5)
 {
     float *posPtr = reinterpret_cast<float *>(positions);
@@ -28,11 +30,17 @@ Mesh::Mesh(int positions, int uvs, int posSize, int uvSize) : debugInt(5)
     std::cout << "debug mesh class: " << boundingSphere.center.x << std::endl;
     std::cout << "debug mesh class: " << boundingSphere.center.y << std::endl;
     std::cout << "debug mesh class: " << boundingSphere.center.z << std::endl;
-    setTimingWithV(0.25);
+    std::cout << "debug mesh class, bounding sphere radius: " << boundingSphere.radius << std::endl;
+    setTimingWithV(0.4);
 }
 
 glm::vec3 uv2xyz(glm::vec2 v){
     return glm::vec3(v.x, 0.0, v.y);
+}
+
+static float sigmoid(float t) //ease in ease out
+{
+    return (glm::sin(t * PI - PI/2) + 1)/2;
 }
 
 void Mesh::interpolate(int tPercent) const
@@ -56,6 +64,8 @@ void Mesh::interpolate(int tPercent) const
 
         float interpolationValue = (t - v[i].tStart) /  (v[i].tEnd - v[i].tStart);
         interpolationValue = glm::clamp(interpolationValue, 0.0f, 1.0f);
+        interpolationValue = sigmoid(interpolationValue);
+
         vertex.pos = glm::mix(
             this->v[i].pos /** bestRotation*/,
             targetUV,
@@ -67,7 +77,7 @@ void Mesh::interpolate(int tPercent) const
     }
 }
 
-#define PI 3.14159265358979323846
+
 
 void Mesh::buildCylinder()
 {
