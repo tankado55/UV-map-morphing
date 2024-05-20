@@ -34,7 +34,10 @@ let objSelect = document.getElementById("meshSelect");
 objPath = objPath + objSelect.value;
 objSelect.onchange = function () {
 	console.log("select onChange");
+	let objSelect = document.getElementById("meshSelect");
+	objPath = "res/models/" + objSelect.value;
 	deallocateHeap();
+	initLoadModel();
 };
 let texturePath = "res/models/_Wheel_195_50R13x10_OBJ/diffuse.png"
 let texture;
@@ -66,6 +69,7 @@ whiteSlider.oninput = function () {
 
 initRTT()
 init();
+initLoadModel();
 initHorPlane();
 
 console.log(meshInstance)
@@ -128,6 +132,7 @@ function initRTT() {
 
 function deallocateHeap()
 	{
+		scene.remove(object);
 		Module._free(heapGeometryPointer);
 		Module._free(heapUVPointer);
 		Module._free(heapGeometryPointInterpolated);
@@ -153,8 +158,22 @@ function init() {
 	dirLight.castShadow = true; // default false
 	scene.add( dirLight );
 
-	// manager
+	//
 
+	const controls = new OrbitControls(camera, renderer.domElement);
+	controls.minDistance = 2;
+	controls.maxDistance = 160;
+	controls.addEventListener('change', render);
+
+	//
+
+	window.addEventListener('resize', onWindowResize);
+	console.log(scene)
+}
+
+function initLoadModel()
+{
+	// manager
 	function loadModel() {
 
 		// heap pointer
@@ -214,7 +233,6 @@ function init() {
 	}
 
 
-
 	const manager = new THREE.LoadingManager(loadModel);
 
 	// texture
@@ -230,7 +248,7 @@ function init() {
 
 		},
 
-		// onProgress callback currently not supported
+		// onProgress
 		undefined,
 
 		// onError callback
@@ -284,19 +302,6 @@ function init() {
 		obj.position.y = 0.0;
 		scene.add(obj);
 	}, onProgress, function () { console.log("Error") });
-
-
-	//
-
-	const controls = new OrbitControls(camera, renderer.domElement);
-	controls.minDistance = 2;
-	controls.maxDistance = 160;
-	controls.addEventListener('change', render);
-
-	//
-
-	window.addEventListener('resize', onWindowResize);
-	console.log(scene)
 }
 
 const TYPES = {
