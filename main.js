@@ -32,7 +32,10 @@ let meshInstance;
 let objPath = "res/models/"
 let objSelect = document.getElementById("meshSelect");
 objPath = objPath + objSelect.value;
-objSelect.onchange = function () {console.log("change")}; 
+objSelect.onchange = function () {
+	console.log("select onChange");
+	deallocateHeap();
+};
 let texturePath = "res/models/_Wheel_195_50R13x10_OBJ/diffuse.png"
 let texture;
 let rtTextureTarget;
@@ -123,6 +126,14 @@ function initRTT() {
 	console.log("end of RTT")
 }
 
+function deallocateHeap()
+	{
+		Module._free(heapGeometryPointer);
+		Module._free(heapUVPointer);
+		Module._free(heapGeometryPointInterpolated);
+		meshInstance.delete();
+	}
+
 function init() {
 
 	scene = new THREE.Scene();
@@ -141,9 +152,6 @@ function init() {
 	dirLight.position.set( 0, 5, 0 ); //default; light shining from top
 	dirLight.castShadow = true; // default false
 	scene.add( dirLight );
-
-
-
 
 	// manager
 
@@ -192,6 +200,7 @@ function init() {
 				console.log(object.scale)
 				console.log(child.geometry)
 
+				// debug
 				let sphGeometry = new THREE.SphereGeometry( radius, 32, 16 );
 				sphGeometry = new THREE.WireframeGeometry( sphGeometry );
 				const sphMaterial = new THREE.MeshBasicMaterial( { color: 0xffff00 } ); 
@@ -253,6 +262,7 @@ function init() {
 	else{
 		loader = new FBXLoader(manager);
 	}
+	
 	loader.load(objPath, function (obj) {
 		renderer.setRenderTarget(rtTextureTarget);
 		renderer.clear();
@@ -302,9 +312,7 @@ const TYPES = {
 
 function transferNumberArrayToHeap(array, type) {
 	const typedArray = type.array.from(array); // shallow
-	const heapPointer = Module._malloc(
-		typedArray.length * typedArray.BYTES_PER_ELEMENT
-	);
+	const heapPointer = Module._malloc(typedArray.length * typedArray.BYTES_PER_ELEMENT);
 
 	Module[type.heap].set(typedArray, heapPointer >> 2); // copy, This aligns the memory pointer to a 4-byte boundary, which is often necessary for proper memory access in low-level languages like C or C++.
 
