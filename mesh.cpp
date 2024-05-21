@@ -10,6 +10,11 @@ Mesh::Mesh(int positions, int uvs, int posSize, int uvSize) : debugInt(5)
     heapPosPtr = posPtr;
     heapUvPtr = uvPtr;
 
+    if (posSize != uvSize)
+    {
+        std::cout << "posSize and uvSize are NOT equal" <<std::endl;
+    }
+
     for (int i = 0; i < posSize; i += 3)
     {
         Vertex vertex;
@@ -24,12 +29,9 @@ Mesh::Mesh(int positions, int uvs, int posSize, int uvSize) : debugInt(5)
         f.push_back(face);
     }
     debugInt = posSize;
-    std::cout << "debug mesh class: " << posSize << std::endl;
+    std::cout << "debug mesh class: position size:" << posSize << std::endl;
     updateUVScaling();
     updateBB();
-    std::cout << "debug mesh class: " << boundingSphere.center.x << std::endl;
-    std::cout << "debug mesh class: " << boundingSphere.center.y << std::endl;
-    std::cout << "debug mesh class: " << boundingSphere.center.z << std::endl;
     std::cout << "debug mesh class, bounding sphere radius: " << boundingSphere.radius << std::endl;
     setTimingWithV(0.4);
 }
