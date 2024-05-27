@@ -25,6 +25,7 @@ struct Face
 	float uvScaling;
 	glm::vec3 centroid3D;
 	glm::vec3 centroid2D;
+	float area;
 };
 
 struct BoundingSphere
@@ -43,19 +44,21 @@ struct Mesh
 	glm::mat3 bestRotation;
 	BoundingSphere boundingSphere;
 	bool toFlip = false;
-	int debugInt;
+	int m_PosSize;
 	float* heapPosPtr;
 	float* heapUvPtr;
 
 	Mesh();
 	Mesh(int positions, int uvs, int posSize, int uvSize);
 	void interpolate(int t) const;
+	void enforceArea() const;
 	void buildCylinder();
 	void buildPlane();
 	void updateBB();
 	void updateToFlipBool();
 	void updateUVScaling();
-	int getDebugInt() const {return debugInt;}
+	void updateFacesArea();
+	int getPosSize() const {return m_PosSize;}
 	std::vector<float> getBBCenter() const {return {boundingSphere.center.x, boundingSphere.center.y, boundingSphere.center.z};}
 	void setTimingWithVertexIndex(float flightTime);
 	void setTimingInsideOut(float flightTime);
@@ -68,7 +71,7 @@ struct Mesh
 EMSCRIPTEN_BINDINGS(my_class_example) {
   emscripten::class_<Mesh>("Mesh")
     .constructor<int, int, int, int>()
-	.property("debugInt", &Mesh::getDebugInt)
+	.property("posSize", &Mesh::getPosSize)
     .function("interpolate", &Mesh::interpolate)
 	.property("boundingSphere", &Mesh::getBBCenter)
     ;

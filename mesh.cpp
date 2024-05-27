@@ -3,7 +3,7 @@
 
 #define PI 3.14159265358979323846
 
-Mesh::Mesh(int positions, int uvs, int posSize, int uvSize) : debugInt(5)
+Mesh::Mesh(int positions, int uvs, int posSize, int uvSize) : m_PosSize(posSize)
 {
     float *posPtr = reinterpret_cast<float *>(positions);
     float *uvPtr = reinterpret_cast<float *>(uvs);
@@ -22,18 +22,30 @@ Mesh::Mesh(int positions, int uvs, int posSize, int uvSize) : debugInt(5)
         int j = i / 3 * 2;
         vertex.uv = glm::vec2(uvPtr[j], uvPtr[j + 1]);
         v.push_back(vertex);
-        Face face;
-        face.vi[0] = int(i / 3);
-        face.vi[1] = int(i / 3) + 1;
-        face.vi[2] = int(i / 3) + 2;
+    }
+    for (int i = 0; i < posSize; i += 9)
+    {
+        Face face; // TODO: non ho una faccia ogni 3 float
+        face.vi[0] = int(i / 9);
+        face.vi[1] = int(i / 9) + 1;
+        face.vi[2] = int(i / 9) + 2;
         f.push_back(face);
     }
-    debugInt = posSize;
     std::cout << "debug mesh class: position size:" << posSize << std::endl;
     updateUVScaling();
     updateBB();
     std::cout << "debug mesh class, bounding sphere radius: " << boundingSphere.radius << std::endl;
+    updateFacesArea();
     setTimingWithV(0.4);
+}
+
+static float ComputeArea(glm::vec3 p1, glm::vec3 p2, glm::vec3 p3)
+{
+    float l1 = glm::length(p1 - p2);
+    float l2 = glm::length(p2 - p3);
+    float l3 = glm::length(p3 - p1);
+    float s = (l1 + l2 + l3) / 2.0f;
+    return sqrt(s * (s - l1) * (s - l2) * (s - l3));
 }
 
 glm::vec3 uv2xyz(glm::vec2 v){
@@ -76,6 +88,53 @@ void Mesh::interpolate(int tPercent) const
         heapPosPtr[arrayIndex] = vertex.pos.x;
         heapPosPtr[arrayIndex + 1] = vertex.pos.y;
         heapPosPtr[arrayIndex + 2] = vertex.pos.z;
+    }
+
+    enforceArea();
+}
+
+void Mesh::enforceArea() const
+{
+    std::cout << "posSize Debug: " << m_PosSize << " " << f.size() << std::endl;
+    for (int i = 0; i < f.size(); i++)
+    {
+        Face face = f[i];
+        float targetArea = face.area;
+        int posIndex = i * 3 * 3;
+        glm::vec3 p1 = glm::vec3(heapPosPtr[posIndex], heapPosPtr[posIndex + 1], heapPosPtr[posIndex + 2]);
+        glm::vec3 p2 = glm::vec3(heapPosPtr[posIndex + 3], heapPosPtr[posIndex + 4], heapPosPtr[posIndex + 5]);
+        glm::vec3 p3 = glm::vec3(heapPosPtr[posIndex + 6], heapPosPtr[posIndex + 7], heapPosPtr[posIndex + 8]);
+        float currentArea = ComputeArea(p1, p2, p3);
+        float scalingFactor = std::sqrt(targetArea / currentArea);
+
+        glm::vec3 centroid = (p1 + p2 + p3) / 3.0f;
+
+        p1 = centroid + (p1 - centroid) * scalingFactor;
+        p2 = centroid + (p2 - centroid) * scalingFactor;
+        p3 = centroid + (p3 - centroid) * scalingFactor;
+
+        heapPosPtr[posIndex]     = p1.x;
+        heapPosPtr[posIndex + 1] = p1.y;
+        heapPosPtr[posIndex + 2] = p1.z;
+        heapPosPtr[posIndex + 3] = p2.x;
+        heapPosPtr[posIndex + 4] = p2.y;
+        heapPosPtr[posIndex + 5] = p2.z;
+        heapPosPtr[posIndex + 6] = p3.x;
+        heapPosPtr[posIndex + 7] = p3.y;
+        heapPosPtr[posIndex + 8] = p3.z;
+    }
+}
+
+void Mesh::updateFacesArea()
+{
+    for (Face face : f)
+    {
+        glm::vec3 a = v[face.vi[0]].pos;
+        glm::vec3 b = v[face.vi[1]].pos;
+        glm::vec3 c = v[face.vi[2]].pos;
+
+        float area = 0.5 * length(cross(b - a, c - a));
+        face.area = area;
     }
 }
 
@@ -235,14 +294,7 @@ void Mesh::updateBB()
     boundingSphere.radius = sqrt(maxRadiusSquared);
 }
 
-static float ComputeArea(glm::vec3 p1, glm::vec3 p2, glm::vec3 p3)
-{
-    float l1 = glm::length(p1 - p2);
-    float l2 = glm::length(p2 - p3);
-    float l3 = glm::length(p3 - p1);
-    float s = (l1 + l2 + l3) / 2.0f;
-    return sqrt(s * (s - l1) * (s - l2) * (s - l3));
-}
+
 
 void Mesh::updateUVScaling()
 {
@@ -273,6 +325,8 @@ void Mesh::updateUVScaling()
     else
         averageScaling = 1.0;
 }
+
+
 
 void Mesh::setTimingWithVertexIndex(float k)
 {
