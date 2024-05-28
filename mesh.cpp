@@ -90,10 +90,31 @@ void Mesh::interpolate(int tPercent) const
         heapPosPtr[arrayIndex + 2] = vertex.pos.z;
     }
 
-    enforceArea();
 }
 
-void Mesh::enforceArea() const
+void Mesh::updateRotoTranslMat()
+{
+    // traslazione
+    // con baricentro
+    for (Face fi : f)
+    {
+        glm::vec3 a1 = v[fi.vi[0]].pos;
+        glm::vec3 b1 = v[fi.vi[1]].pos;
+        glm::vec3 c1 = v[fi.vi[2]].pos;
+        glm::vec3 bari1 = (a1 + b1 + c1) / 3.0;
+        glm::vec3 a2 = uv2xyz(v[fi.vi[0]].uv);
+        glm::vec3 b2 = uv2xyz(v[fi.vi[1]].uv);
+        glm::vec3 c2 = uv2xyz(v[fi.vi[2]].uv);
+        glm::vec3 bari2 = (a2 + b2 + c2) / 3.0;
+        glm::vec3 translVec = bari2 - bari1;
+        fi.translMat = glm::translate(glm::mat4(1.0), translVec);
+    }
+
+    // rotazione
+    // trovo normale partenza e arrivo
+}
+
+void Mesh::enforceArea() const // not work, probably useless
 {
     std::cout << "posSize Debug: " << m_PosSize << " " << f.size() << std::endl;
     for (int i = 0; i < f.size(); i++)

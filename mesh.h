@@ -26,6 +26,7 @@ struct Face
 	glm::vec3 centroid3D;
 	glm::vec3 centroid2D;
 	float area;
+	glm::mat4 translMat;
 };
 
 struct BoundingSphere
