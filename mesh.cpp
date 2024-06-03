@@ -12,7 +12,7 @@ Mesh::Mesh(int positions, int uvs, int posSize, int uvSize) : m_PosSize(posSize)
 
     if (posSize != uvSize)
     {
-        std::cout << "posSize and uvSize are NOT equal" <<std::endl;
+        std::cout << "posSize and uvSize are NOT equal" << std::endl;
     }
 
     for (int i = 0; i < posSize; i += 3)
@@ -23,20 +23,22 @@ Mesh::Mesh(int positions, int uvs, int posSize, int uvSize) : m_PosSize(posSize)
         vertex.uv = glm::vec2(uvPtr[j], uvPtr[j + 1]);
         v.push_back(vertex);
     }
-    for (int i = 0; i < posSize; i += 9)
+    for (int i = 0; i < v.size(); i += 3)
     {
-        Face face; // TODO: non ho una faccia ogni 3 float
-        face.vi[0] = int(i / 9);
-        face.vi[1] = int(i / 9) + 1;
-        face.vi[2] = int(i / 9) + 2;
+        Face face;
+        face.vi[0] = i ; // se i = 3 e' la faccia 2, che con indice 3
+        face.vi[1] = i + 1;
+        face.vi[2] = i + 2;
+        face.translMat = glm::mat4(1.0);
         f.push_back(face);
     }
     std::cout << "debug mesh class: position size:" << posSize << std::endl;
     updateUVScaling();
     updateBB();
     std::cout << "debug mesh class, bounding sphere radius: " << boundingSphere.radius << std::endl;
-    updateFacesArea();
+    //updateFacesArea();
     setTimingWithV(0.4);
+    updateRotoTranslMat();
 }
 
 static float ComputeArea(glm::vec3 p1, glm::vec3 p2, glm::vec3 p3)
@@ -89,6 +91,35 @@ void Mesh::interpolate(int tPercent) const
         heapPosPtr[arrayIndex + 1] = vertex.pos.y;
         heapPosPtr[arrayIndex + 2] = vertex.pos.z;
     }
+}
+
+void Mesh::interpolateUsingMat(int tPercent) const
+{
+    float t = tPercent / 100.0;
+
+    for (int i = 0; i < f.size(); i++)
+    {
+        Face face = f[i];
+        glm::mat4 transl = face.translMat;
+        float debub9 = transl[3][0];
+        float debub10 = transl[3][1];
+        float debub11 = transl[3][2];
+        float debub12 = transl[3][3];
+        for (int j = 0; j < 3; j++)
+        {
+            glm::vec3 originV = v[face.vi[j]].pos;
+            glm::vec3 targetV = glm::vec3(transl * glm::vec4(originV, 0.0));
+            //glm::vec3 targetV = uv2xyz(v[face.vi[j]].uv); Debug
+            glm::mat4 toCenterMat = glm::translate(glm::mat4(1.0f), glm::vec3(-0.5, -0.5, -0.5));
+            targetV = glm::vec3(toCenterMat * glm::vec4(targetV, 1.0));
+            targetV = targetV * averageScaling;
+            int heapIndex = (i * 9) + (j * 3);
+            heapPosPtr[heapIndex] = targetV.x;
+            heapPosPtr[heapIndex + 1] = targetV.y;
+            heapPosPtr[heapIndex + 2] = targetV.z;
+        }
+        
+    }
 
 }
 
@@ -96,22 +127,44 @@ void Mesh::updateRotoTranslMat()
 {
     // traslazione
     // con baricentro
-    for (Face fi : f)
+    for (Face &fi : f)
     {
         glm::vec3 a1 = v[fi.vi[0]].pos;
         glm::vec3 b1 = v[fi.vi[1]].pos;
         glm::vec3 c1 = v[fi.vi[2]].pos;
-        glm::vec3 bari1 = (a1 + b1 + c1) / 3.0;
+        glm::vec3 bari1 = (a1 + b1 + c1) / 3.0f;
         glm::vec3 a2 = uv2xyz(v[fi.vi[0]].uv);
         glm::vec3 b2 = uv2xyz(v[fi.vi[1]].uv);
         glm::vec3 c2 = uv2xyz(v[fi.vi[2]].uv);
-        glm::vec3 bari2 = (a2 + b2 + c2) / 3.0;
+        glm::vec3 bari2 = (a2 + b2 + c2) / 3.0f;
         glm::vec3 translVec = bari2 - bari1;
-        fi.translMat = glm::translate(glm::mat4(1.0), translVec);
+        glm::mat4 mat = glm::translate(glm::mat4(1.0), translVec);
+        float debub = mat[0][0];
+        float debub2 = mat[0][1];
+        float debub3 = mat[0][2];
+        float debub4 = mat[0][3];
+        float debub5 = mat[1][0];
+        float debub6 = mat[1][1];
+        float debub7 = mat[1][2];
+        float debub8 = mat[1][3];
+        float debub9 = mat[3][0];
+        float debub10 = mat[3][1];
+        float debub11 = mat[3][2];
+        float debub12 = mat[3][3];
+        fi.translMat = mat;
+
+        // Rotation
+        glm::vec3 v1 = b1 - a1;
+        glm::vec3 v2 = c1 - a1;
+        glm::vec3 n1 = glm::normalize(glm::cross(v1, v2));
+        glm::vec3 v3 = b2 - a2;
+        glm::vec3 v4 = c2 - a2;
+        glm::vec3 n2 = glm::normalize(glm::cross(v3, v4));
+
+        glm::vec3 axe = glm::cross(n1, n2);
+        float angle = glm::acos(glm::dot(n1, n2));
     }
 
-    // rotazione
-    // trovo normale partenza e arrivo
 }
 
 void Mesh::enforceArea() const // not work, probably useless

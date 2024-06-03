@@ -52,6 +52,7 @@ struct Mesh
 	Mesh();
 	Mesh(int positions, int uvs, int posSize, int uvSize);
 	void interpolate(int t) const;
+	void interpolateUsingMat(int t) const;
 	void enforceArea() const;
 	void buildCylinder();
 	void buildPlane();
@@ -59,6 +60,7 @@ struct Mesh
 	void updateToFlipBool();
 	void updateUVScaling();
 	void updateFacesArea();
+	void updateRotoTranslMat();
 	int getPosSize() const {return m_PosSize;}
 	std::vector<float> getBBCenter() const {return {boundingSphere.center.x, boundingSphere.center.y, boundingSphere.center.z};}
 	void setTimingWithVertexIndex(float flightTime);
@@ -74,6 +76,7 @@ EMSCRIPTEN_BINDINGS(my_class_example) {
     .constructor<int, int, int, int>()
 	.property("posSize", &Mesh::getPosSize)
     .function("interpolate", &Mesh::interpolate)
+    .function("interpolateUsingMat", &Mesh::interpolateUsingMat)
 	.property("boundingSphere", &Mesh::getBBCenter)
     ;
 }

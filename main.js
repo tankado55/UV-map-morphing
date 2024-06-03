@@ -9,8 +9,6 @@ const PI = 3.141592653589793;
 //var int_sqrt = Module.cwrap('int_sqrt', 'number', ['number'])
 //console.log(int_sqrt(300))
 
-//rtt
-
 let camera, scene, renderer;
 let cameraRTT
 let sceneRTT
@@ -22,13 +20,6 @@ let heapUVPointer;
 let heapGeometryPointInterpolated;
 let meshInstance;
 
-//let objPath = "res/models/_Wheel_195_50R13x10_OBJ/wheel.obj"
-//let objPath = "res/models/SciFiWarriorPBRHPPolyart/Mesh/PBR_HP_Mesh.fbx"
-//let objPath = "res/models/BakerHouse/Models/Baker_house.fbx"
-//let objPath = "res/models/BakerHouse/Models/Barrel.FBX"
-//let objPath = "res/models/Barrel.obj"
-//let objPath = "res/models/cylinder/cylinder.obj"
-//let objPath = "res/models/Die-OBJ/Die-OBJ.obj"
 let objPath = "res/models/"
 let objSelect = document.getElementById("meshSelect");
 objPath = objPath + objSelect.value;
@@ -127,7 +118,6 @@ function initRTT() {
 	renderer.render(sceneRTT, cameraRTT);
 
 	renderer.setRenderTarget(null);
-	console.log("end of RTT")
 }
 
 function deallocateHeap()
@@ -394,7 +384,8 @@ function interpolate() {
 				[heapGeometryPointer, heapUVPointer, slider.value, arr.length, heapGeometryPointInterpolated] // The arguments
 			);
 			*/
-			meshInstance.interpolate(parseInt(interpolationSlider.value))
+			//meshInstance.interpolate(parseInt(interpolationSlider.value))
+			meshInstance.interpolateUsingMat(parseInt(interpolationSlider.value))
 			child.geometry.setAttribute('position', new THREE.BufferAttribute(Module["HEAPF32"].slice(heapGeometryPointer >> 2, (heapGeometryPointer >> 2) + arr.length), 3));
 		}
 
