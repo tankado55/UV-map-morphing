@@ -19,6 +19,16 @@ struct Vertex
 	float tEnd;
 };
 
+struct LinearTransform
+{
+	glm::mat4 M;
+	LinearTransform() : M(glm::mat4(1.0)) {}
+	LinearTransform(glm::mat4 _M) : M(_M) {}
+	LinearTransform(glm::vec3 a3, glm::vec3 b3, glm::vec3 c3,
+					glm::vec3 a2, glm::vec3 b2, glm::vec3 c2);
+	glm::vec3 apply(glm::vec3 vec) const;
+};
+
 struct Face
 {
 	int vi[3];
@@ -26,7 +36,7 @@ struct Face
 	glm::vec3 centroid3D;
 	glm::vec3 centroid2D;
 	float area;
-	glm::mat4 translMat;
+	LinearTransform three2two;
 };
 
 struct BoundingSphere
@@ -34,6 +44,12 @@ struct BoundingSphere
 	glm::vec3 center;
 	float radius;
 };
+
+
+
+
+
+LinearTransform mix(LinearTransform a, LinearTransform b, float t);
 
 struct Mesh
 {
