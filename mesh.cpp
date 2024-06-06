@@ -50,7 +50,7 @@ static float ComputeArea(glm::vec3 p1, glm::vec3 p2, glm::vec3 p3)
     return sqrt(s * (s - l1) * (s - l2) * (s - l3));
 }
 
-glm::vec3 uv2xyz(glm::vec2 v)
+glm::vec3 uv2xzy(glm::vec2 v)
 {
     return glm::vec3(v.x, 0.0, v.y);
 }
@@ -67,7 +67,7 @@ void Mesh::interpolate(int tPercent) const
     for (int i = 0; i < v.size(); i++)
     {
         Vertex vertex;
-        glm::vec3 targetUV = uv2xyz(v[i].uv);
+        glm::vec3 targetUV = uv2xzy(v[i].uv);
         /*
         if (toFlip)
         {
@@ -133,22 +133,18 @@ void Mesh::updateRotoTranslMat()
         glm::vec3 b3 = v[fi.vi[1]].pos;
         glm::vec3 c3 = v[fi.vi[2]].pos;
 
-        glm::vec3 uv0 = uv2xyz(v[fi.vi[0]].uv);
-        uv0 = glm::vec3(toCenterMat * glm::vec4(uv0, 1.0));
-        uv0 = uv0 * averageScaling;
-        glm::vec3 a2 = uv0;
+        glm::vec2 a2 = v[fi.vi[0]].uv;
+        a2 = glm::vec2(toCenterMat * glm::vec4(a2, 0.0, 1.0));
+        a2 = a2 * averageScaling;
 
-        glm::vec3 uv1 = uv2xyz(v[fi.vi[1]].uv);
-        uv1 = glm::vec3(toCenterMat * glm::vec4(uv1, 1.0));
-        uv1 = uv1 * averageScaling;
-        glm::vec3 b2 = uv1;
+        glm::vec2 b2 = v[fi.vi[1]].uv;
+        b2 = glm::vec2(toCenterMat * glm::vec4(b2, 0.0, 1.0));
+        b2 = b2 * averageScaling;
 
-        glm::vec3 uv2 = uv2xyz(v[fi.vi[2]].uv);
-        uv2 = glm::vec3(toCenterMat * glm::vec4(uv2, 1.0));
-        uv2 = uv2 * averageScaling;
-        glm::vec3 c2 = uv2;
-
-       
+        glm::vec2 c2 = v[fi.vi[2]].uv;
+        c2 = glm::vec2(toCenterMat * glm::vec4(c2, 0.0, 1.0));
+        c2 = c2 * averageScaling;
+        
         fi.three2two = LinearTransform(a3, b3, c3, a2, b2, c2);
     }
 }
