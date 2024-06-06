@@ -6,7 +6,6 @@
                 "${workspaceFolder}/**",
                 "D:\\dev\\emsdk\\upstream\\emscripten\\system\\include",
                 "D:\\dev\\my_libs\\glm-1.0.0-light",
-                "D:\\dev\\my_libs\\eigen-3.4.0"
             ],
             "defines": [
                 "_DEBUG",
