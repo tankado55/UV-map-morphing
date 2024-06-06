@@ -153,37 +153,7 @@ void Mesh::updateRotoTranslMat()
     }
 }
 
-void Mesh::enforceArea() const // not work, probably useless
-{
-    std::cout << "posSize Debug: " << m_PosSize << " " << f.size() << std::endl;
-    for (int i = 0; i < f.size(); i++)
-    {
-        Face face = f[i];
-        float targetArea = face.area;
-        int posIndex = i * 3 * 3;
-        glm::vec3 p1 = glm::vec3(heapPosPtr[posIndex], heapPosPtr[posIndex + 1], heapPosPtr[posIndex + 2]);
-        glm::vec3 p2 = glm::vec3(heapPosPtr[posIndex + 3], heapPosPtr[posIndex + 4], heapPosPtr[posIndex + 5]);
-        glm::vec3 p3 = glm::vec3(heapPosPtr[posIndex + 6], heapPosPtr[posIndex + 7], heapPosPtr[posIndex + 8]);
-        float currentArea = ComputeArea(p1, p2, p3);
-        float scalingFactor = std::sqrt(targetArea / currentArea);
 
-        glm::vec3 centroid = (p1 + p2 + p3) / 3.0f;
-
-        p1 = centroid + (p1 - centroid) * scalingFactor;
-        p2 = centroid + (p2 - centroid) * scalingFactor;
-        p3 = centroid + (p3 - centroid) * scalingFactor;
-
-        heapPosPtr[posIndex] = p1.x;
-        heapPosPtr[posIndex + 1] = p1.y;
-        heapPosPtr[posIndex + 2] = p1.z;
-        heapPosPtr[posIndex + 3] = p2.x;
-        heapPosPtr[posIndex + 4] = p2.y;
-        heapPosPtr[posIndex + 5] = p2.z;
-        heapPosPtr[posIndex + 6] = p3.x;
-        heapPosPtr[posIndex + 7] = p3.y;
-        heapPosPtr[posIndex + 8] = p3.z;
-    }
-}
 
 void Mesh::updateFacesArea()
 {
@@ -460,43 +430,3 @@ void Mesh::setTimingWithUVdir(float flightTime, glm::vec2 dirUV)
 
     return result;
 }*/
-
-LinearTransform mix(LinearTransform a, LinearTransform b, float t)
-{
-    return LinearTransform(a.M * (1 - t) + b.M * t);
-}
-
-LinearTransform::LinearTransform(glm::vec3 a3, glm::vec3 b3, glm::vec3 c3, glm::vec2 a2, glm::vec2 b2, glm::vec2 c2) //TODO
-{
-    glm::vec2 bari2 = (a2 + b2 + c2) / 3.0f;
-    glm::vec3 bari3 = (a3 + b3 + c3) / 3.0f;
-
-    a2 -= bari2;
-    b2 -= bari2;
-    c2 -= bari2;
-    a3 -= bari3;
-    b3 -= bari3;
-    c3 -= bari3;
-
-    glm::vec3 n2 = glm::normalize(glm::cross(glm::vec3(a2, 0.0), glm::vec3(b2, 0.0)));
-    glm::vec3 n3 = glm::normalize(glm::cross(a3, b3));
-
-    glm::mat3 T2(glm::vec3(a2, 0.0), glm::vec3(b2, 0.0), n2);
-    glm::mat3 T3(a3, b3, n3);
-
-    glm::mat3 R = T2 * glm::inverse(T3);
-
-    glm::vec3 t = bari2 - R * bari3;
-
-    M = glm::mat4(
-        glm::vec4(R[0], 0.0),
-        glm::vec4(R[1], 0.0),
-        glm::vec4(R[2], 0.0),
-        glm::vec4(t, 1.0)
-    );
-}
-
-glm::vec3 LinearTransform::apply(glm::vec3 vec) const
-{
-    return glm::vec3(M * glm::vec4(vec, 1.0));
-}

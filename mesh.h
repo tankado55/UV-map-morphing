@@ -9,6 +9,7 @@
 #include <vector>
 #include <string>
 #include <emscripten/bind.h>
+#include "linearTransform.h"
 
 struct Vertex
 {
@@ -17,16 +18,6 @@ struct Vertex
 	glm::vec3 normal;
 	float tStart;
 	float tEnd;
-};
-
-struct LinearTransform
-{
-	glm::mat4 M;
-	LinearTransform() : M(glm::mat4(1.0)) {}
-	LinearTransform(glm::mat4 _M) : M(_M) {}
-	LinearTransform(glm::vec3 a3, glm::vec3 b3, glm::vec3 c3,
-					glm::vec3 a2, glm::vec3 b2, glm::vec3 c2);
-	glm::vec3 apply(glm::vec3 vec) const;
 };
 
 struct Face
@@ -44,12 +35,6 @@ struct BoundingSphere
 	glm::vec3 center;
 	float radius;
 };
-
-
-
-
-
-LinearTransform mix(LinearTransform a, LinearTransform b, float t);
 
 struct Mesh
 {
@@ -69,7 +54,6 @@ struct Mesh
 	Mesh(int positions, int uvs, int posSize, int uvSize);
 	void interpolate(int t) const;
 	void interpolateUsingMat(int t) const;
-	void enforceArea() const;
 	void buildCylinder();
 	void buildPlane();
 	void updateBB();
