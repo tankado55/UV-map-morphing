@@ -105,13 +105,12 @@ void Mesh::interpolateUsingMat(int tPercent) const
         for (int j = 0; j < 3; j++)
         {
             glm::vec3 originV = v[face.vi[j]].pos;
-            LinearTransform Mi = mix(I, face.three2two, t);
-            glm::vec3 targetV = Mi.apply(originV);            
+            //LinearTransform Mi = mix(I, face.three2two, t);
+            //glm::vec3 targetV = Mi.apply(originV);            
+            glm::vec3 targetV = face.three2two.apply(originV);            
             
             // glm::vec3 targetVRead = uv2xyz(v[face.vi[j]].uv); //Debug
             // glm::mat4 toCenterMat = glm::translate(glm::mat4(1.0f), glm::vec3(-0.5, -0.5, -0.5));
-            // targetV = glm::vec3(toCenterMat * glm::vec4(targetV, 1.0));
-            // targetV = targetV * averageScaling;
             int heapIndex = (i * 9) + (j * 3);
             heapPosPtr[heapIndex] = targetV.x;
             heapPosPtr[heapIndex + 1] = targetV.y;

@@ -27,8 +27,10 @@ static LinearTransform mix(LinearTransform a, LinearTransform b, float t)
 {
     //return LinearTransform(a.M * (1 - t) + b.M * t);
 
-	LinearTransform result; //refactoring: if I remove the M from the interla state is ok, otherwise it is inconsistent
-    glm::dualquat dq = glm::mix(a.dualQuaternion, b.dualQuaternion, t);
+	LinearTransform result; //refactoring: if I remove the M from the internal state is ok, otherwise it is inconsistent
+    //glm::dualquat dq = glm::mix(a.dualQuaternion, b.dualQuaternion, t);
+    // glm::dualquat dq = a.dualQuaternion * (1 - t) + b.dualQuaternion * t;
+    glm::dualquat dq = a.dualQuaternion +  t * b.dualQuaternion;
     dq = glm::normalize(dq);
 	result.dualQuaternion = dq;
 	return result;

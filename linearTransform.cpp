@@ -54,7 +54,7 @@ LinearTransform::LinearTransform(glm::vec3 a3, glm::vec3 b3, glm::vec3 c3,
 glm::vec3 LinearTransform::apply(glm::vec3 vec) const
 {
     //return glm::vec3(M * glm::vec4(vec, 1.0));
-    glm::dualquat pointDQ(glm::quat(0.0f, 0.0f, 0.0f, 0.0f), glm::quat(0.0f, originV.x, originV.y, originV.z));
-    glm::dualquat resultDQ = dq * pointDQ * glm::conjugate(dq);
+    glm::dualquat pointDQ(glm::quat(0.0f, 0.0f, 0.0f, 0.0f), glm::quat(0.0f, vec.x, vec.y, vec.z));
+    glm::dualquat resultDQ = dualQuaternion * pointDQ * glm::dualquat(glm::conjugate(dualQuaternion.real), glm::conjugate(dualQuaternion.dual));
     return glm::vec3(resultDQ.dual.x, resultDQ.dual.y, resultDQ.dual.z);
 }
