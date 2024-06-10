@@ -1,5 +1,15 @@
 #include "linearTransform.h"
 
+LinearTransform::LinearTransform(glm::mat4 _M):
+    M(_M)
+{
+    glm::mat3 rotationMatrix = glm::mat3(_M);
+    glm::vec3 translationVector = glm::vec3(_M[3]);
+
+    glm::quat rotationQuaternion = glm::quat_cast(rotationMatrix);
+    dualQuaternion = glm::dualquat(rotationQuaternion, translationVector);
+}
+
 LinearTransform::LinearTransform(glm::vec3 a3, glm::vec3 b3, glm::vec3 c3,
                                  glm::vec2 a2, glm::vec2 b2, glm::vec2 c2)
 {
@@ -36,9 +46,15 @@ LinearTransform::LinearTransform(glm::vec3 a3, glm::vec3 b3, glm::vec3 c3,
         glm::vec4(R[2], 0.0),
         glm::vec4(t, 1.0)
     );
+
+    glm::quat rotationQuaternion = glm::quat_cast(R);
+    dualQuaternion = glm::dualquat(rotationQuaternion, t);
 }
 
 glm::vec3 LinearTransform::apply(glm::vec3 vec) const
 {
-    return glm::vec3(M * glm::vec4(vec, 1.0));
+    //return glm::vec3(M * glm::vec4(vec, 1.0));
+    glm::dualquat pointDQ(glm::quat(0.0f, 0.0f, 0.0f, 0.0f), glm::quat(0.0f, originV.x, originV.y, originV.z));
+    glm::dualquat resultDQ = dq * pointDQ * glm::conjugate(dq);
+    return glm::vec3(resultDQ.dual.x, resultDQ.dual.y, resultDQ.dual.z);
 }

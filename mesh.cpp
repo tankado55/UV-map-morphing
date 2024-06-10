@@ -105,10 +105,8 @@ void Mesh::interpolateUsingMat(int tPercent) const
         for (int j = 0; j < 3; j++)
         {
             glm::vec3 originV = v[face.vi[j]].pos;
-            // glm::mat4 M = glm::mix(I, transl, t);
             LinearTransform Mi = mix(I, face.three2two, t);
-            glm::vec3 targetV = Mi.apply(originV);
-            
+            glm::vec3 targetV = Mi.apply(originV);            
             
             // glm::vec3 targetVRead = uv2xyz(v[face.vi[j]].uv); //Debug
             // glm::mat4 toCenterMat = glm::translate(glm::mat4(1.0f), glm::vec3(-0.5, -0.5, -0.5));
