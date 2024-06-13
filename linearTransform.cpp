@@ -48,19 +48,33 @@ LinearTransform::LinearTransform(glm::vec3 a3, glm::vec3 b3, glm::vec3 c3,
     );
 
     glm::quat rotationQuaternion = glm::quat_cast(R);
+    rotationQuaternion = glm::normalize(rotationQuaternion);
+    float norm = glm::length(rotationQuaternion);
     glm::quat translQuat(0.0, t.x, t.y, t.z);
     glm::quat dual = translQuat * rotationQuaternion * 0.5f;
     dualQuaternion = glm::dualquat(rotationQuaternion, dual);
 }
 
+glm::dualquat dualMult(glm::dualquat A, glm::dualquat C)
+{
+    return glm::dualquat(A.real * C.real, (A.real * C.dual) + (A.dual * C.real));
+}
+
 glm::vec3 LinearTransform::apply(glm::vec3 point) const
 {
     //return glm::vec3(M * glm::vec4(vec, 1.0));
-    //glm::dualquat pointDQ(glm::quat(0.0f, 0.0f, 0.0f, 0.0f), glm::quat(0.0f, vec.x, vec.y, vec.z));
-    //glm::dualquat resultDQ = dualQuaternion * pointDQ * glm::dualquat(glm::conjugate(dualQuaternion.real), glm::conjugate(dualQuaternion.dual));
-    //return glm::vec3(resultDQ.dual.x, resultDQ.dual.y, resultDQ.dual.z);
-    glm::quat point_dual(0.0, 0.5f * point);
-    glm::dualquat temp(dualQuaternion.real, dualQuaternion.real * point_dual + dualQuaternion.dual);
-    glm::quat result = 2.0f * temp.dual * glm::conjugate(temp.real);
-    return glm::vec3(result.x, result.y, result.z);
+    // glm::dualquat pointDQ(glm::quat(1.0f, 0.0f, 0.0f, 0.0f), glm::quat(0.0f, point.x, point.y, point.z));
+    // glm::dualquat pointDQ(glm::quat(1.0f, 0.0f, 0.0f, 0.0f), glm::quat(0.0f, point.x, point.y, point.z));
+    // glm::dualquat resultDQ = dualQuaternion * pointDQ * glm::dualquat(glm::conjugate(dualQuaternion.real), glm::conjugate(dualQuaternion.dual));
+    // return glm::vec3(resultDQ.dual.x, resultDQ.dual.y, resultDQ.dual.z);
+
+    // glm::quat point_dual(0.0, 0.5f * point);
+    // glm::dualquat temp(dualQuaternion.real, dualQuaternion.real * point_dual + dualQuaternion.dual);
+    // glm::quat result = 2.0f * temp.dual * glm::conjugate(temp.real);
+    // return glm::vec3(result.x, result.y, result.z);
+
+    glm::dualquat pointDQ(glm::quat(1.0f, 0.0f, 0.0f, 0.0f), glm::quat(0.0f, point.x, point.y, point.z));
+    glm::dualquat result = dualMult(pointDQ, glm::dualquat(glm::conjugate(dualQuaternion.real), -glm::conjugate(dualQuaternion.dual)));
+    result = dualMult(dualQuaternion, result);
+    return glm::vec3(result.dual.x, result.dual.y, result.dual.z);
 }
