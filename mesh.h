@@ -10,7 +10,7 @@
 #include <string>
 #include <emscripten/bind.h>
 #include "linearTransform.h"
-#include "quatTranform.h"
+#include "quatTransform.h"
 
 struct Vertex
 {
@@ -55,6 +55,7 @@ struct Mesh
 	Mesh(int positions, int uvs, int posSize, int uvSize);
 	void interpolate(int t) const;
 	void interpolateUsingMat(int t) const;
+	void interpolateUsingQuat(int t) const;
 	void buildCylinder();
 	void buildPlane();
 	void updateBB();
@@ -78,6 +79,7 @@ EMSCRIPTEN_BINDINGS(my_class_example) {
 	.property("posSize", &Mesh::getPosSize)
     .function("interpolate", &Mesh::interpolate)
     .function("interpolateUsingMat", &Mesh::interpolateUsingMat)
+    .function("interpolateUsingQuat", &Mesh::interpolateUsingQuat)
 	.property("boundingSphere", &Mesh::getBBCenter)
     ;
 }

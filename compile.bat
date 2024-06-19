@@ -1,5 +1,5 @@
 em++ -g -fdebug-compilation-dir='.' ^
-    hello.cpp mesh.cpp linearTransform.cpp --bind -o hello.js ^
+    hello.cpp mesh.cpp linearTransform.cpp quatTransform.cpp --bind -o hello.js ^
     -sEXPORTED_FUNCTIONS=_interpolate,_free,_malloc ^
     -s EXPORTED_RUNTIME_METHODS=ccall,cwrap ^
     -I/D:/dev/my_libs/glm-1.0.0-light ^

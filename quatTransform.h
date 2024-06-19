@@ -16,7 +16,7 @@ struct QuatTransform
 {
 	glm::dualquat dualQuaternion;
     private:
-        private glm::dualquat dualMult(glm::dualquat A, glm::dualquat C) const
+        glm::dualquat dualMult(glm::dualquat A, glm::dualquat B) const;
 
     public:
 	    QuatTransform() : dualQuaternion(glm::dualquat(glm::quat(1.0f, 0.0f, 0.0f, 0.0f), glm::vec3(0.0f))) {}
@@ -29,8 +29,9 @@ struct QuatTransform
 static QuatTransform mix(QuatTransform a, QuatTransform b, float t) //TODO
 {
 	QuatTransform result;
+    //glm::quat = glm::mix(a.dualQuaternion.real, b.dualQuaternion.real, t);
     glm::dualquat dq = a.dualQuaternion +  t * b.dualQuaternion;
     dq = glm::normalize(dq);
 	result.dualQuaternion = dq;
-	return result;
+	return b;
 }

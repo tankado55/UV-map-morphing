@@ -1,6 +1,6 @@
-#include "QuatTransform.h"
+#include "quatTransform.h"
 
-QuatTransform::QuatTransform(glm::mat4 M):
+QuatTransform::QuatTransform(glm::mat4 M)
 {
     glm::mat3 rotationMatrix = glm::mat3(M);
     glm::vec3 translationVector = glm::vec3(M[3]);
@@ -27,7 +27,7 @@ glm::vec3 QuatTransform::apply(glm::vec3 point) const
     return glm::vec3(result.dual.x, result.dual.y, result.dual.z);
 }
 
-private glm::dualquat dualMult(glm::dualquat A, glm::dualquat C) const
+glm::dualquat QuatTransform::dualMult(glm::dualquat A, glm::dualquat B) const
 {
-    return glm::dualquat(A.real * C.real, (A.real * C.dual) + (A.dual * C.real));
+    return glm::dualquat(A.real * B.real, (A.real * B.dual) + (A.dual * B.real));
 }

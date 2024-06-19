@@ -60,7 +60,7 @@ static float sigmoid(float t) // ease in ease out
     return (glm::sin(t * PI - PI / 2) + 1) / 2;
 }
 
-void Mesh::interpolate(int tPercent) const
+void Mesh::interpolate(int tPercent) const //TODO: refector
 {
     float t = tPercent / 100.0;
 
@@ -94,7 +94,7 @@ void Mesh::interpolate(int tPercent) const
     }
 }
 
-void Mesh::interpolateUsingMat(int tPercent) const
+void Mesh::interpolateUsingMat(int tPercent) const //TODO: refector
 {
     float t = tPercent / 100.0;
 
@@ -106,10 +106,31 @@ void Mesh::interpolateUsingMat(int tPercent) const
         {
             glm::vec3 originV = v[face.vi[j]].pos;
             LinearTransform Mi = mix(I, face.three2two, t);
-            glm::vec3 targetV = Mi.apply(originV);            
+            glm::vec3 targetV = Mi.apply(originV);      
+
+            int heapIndex = (i * 9) + (j * 3);
+            heapPosPtr[heapIndex] = targetV.x;
+            heapPosPtr[heapIndex + 1] = targetV.y;
+            heapPosPtr[heapIndex + 2] = targetV.z;
+        }
+    }
+}
+
+void Mesh::interpolateUsingQuat(int tPercent) const //TODO: refector
+{
+    float t = tPercent / 100.0;
+
+    QuatTransform I;
+    for (int i = 0; i < f.size(); i++)
+    {
+        Face face = f[i];
+        for (int j = 0; j < 3; j++)
+        {
+            glm::vec3 originV = v[face.vi[j]].pos;
+            QuatTransform quat = mix(I, QuatTransform(face.three2two.M), t);
+            glm::vec3 targetV = quat.apply(originV);            
             //glm::vec3 targetV = face.three2two.apply(originV);            
             
-            // glm::vec3 targetVRead = uv2xyz(v[face.vi[j]].uv); //Debug
             int heapIndex = (i * 9) + (j * 3);
             heapPosPtr[heapIndex] = targetV.x;
             heapPosPtr[heapIndex + 1] = targetV.y;
