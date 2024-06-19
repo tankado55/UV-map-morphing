@@ -10,6 +10,7 @@
 #include <string>
 #include <emscripten/bind.h>
 #include "linearTransform.h"
+#include "quatTranform.h"
 
 struct Vertex
 {

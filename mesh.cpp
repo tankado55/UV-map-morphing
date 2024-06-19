@@ -105,9 +105,9 @@ void Mesh::interpolateUsingMat(int tPercent) const
         for (int j = 0; j < 3; j++)
         {
             glm::vec3 originV = v[face.vi[j]].pos;
-            // LinearTransform Mi = mix(I, face.three2two, t);
-            // glm::vec3 targetV = Mi.apply(originV);            
-            glm::vec3 targetV = face.three2two.apply(originV);            
+            LinearTransform Mi = mix(I, face.three2two, t);
+            glm::vec3 targetV = Mi.apply(originV);            
+            //glm::vec3 targetV = face.three2two.apply(originV);            
             
             // glm::vec3 targetVRead = uv2xyz(v[face.vi[j]].uv); //Debug
             int heapIndex = (i * 9) + (j * 3);
