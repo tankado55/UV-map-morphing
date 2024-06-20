@@ -3,7 +3,7 @@
 #include <math.h>
 #include <emscripten/bind.h>
 #include <iostream>
-#include "cpp_src/glm-1.0.0-light/glm/glm.hpp"
+#include "glm/glm.hpp"
 
 extern "C"
 {

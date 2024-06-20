@@ -1,11 +1,11 @@
 #pragma once
 
-#include "cpp_src/glm-1.0.0-light/glm/vec3.hpp"
-#include "cpp_src/glm-1.0.0-light/glm/vec2.hpp"
-#include "cpp_src/glm-1.0.0-light/glm/mat3x3.hpp"
-#include "cpp_src/glm-1.0.0-light/glm/gtc/matrix_transform.hpp"
-#include "cpp_src/glm-1.0.0-light/glm/glm.hpp"
-#include "cpp_src/glm-1.0.0-light/glm/gtc/type_ptr.hpp"
+#include "glm/vec3.hpp"
+#include "glm/vec2.hpp"
+#include "glm/mat3x3.hpp"
+#include "glm/gtc/matrix_transform.hpp"
+#include "glm/glm.hpp"
+#include "glm/gtc/type_ptr.hpp"
 #include <vector>
 #include <string>
 #include <emscripten/bind.h>

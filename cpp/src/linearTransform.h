@@ -2,14 +2,14 @@
 
 #define GLM_ENABLE_EXPERIMENTAL
 
-#include "cpp_src/glm-1.0.0-light/glm/vec3.hpp"
-#include "cpp_src/glm-1.0.0-light/glm/vec2.hpp"
-#include "cpp_src/glm-1.0.0-light/glm/mat3x3.hpp"
-#include "cpp_src/glm-1.0.0-light/glm/gtc/matrix_transform.hpp"
-#include "cpp_src/glm-1.0.0-light/glm/glm.hpp"
-#include "cpp_src/glm-1.0.0-light/glm/gtc/type_ptr.hpp"
-#include "cpp_src/glm-1.0.0-light/glm/gtc/quaternion.hpp"
-#include "cpp_src/glm-1.0.0-light/glm/gtx/dual_quaternion.hpp"
+#include "glm/vec3.hpp"
+#include "glm/vec2.hpp"
+#include "glm/mat3x3.hpp"
+#include "glm/gtc/matrix_transform.hpp"
+#include "glm/glm.hpp"
+#include "glm/gtc/type_ptr.hpp"
+#include "glm/gtc/quaternion.hpp"
+#include "glm/gtx/dual_quaternion.hpp"
 
 struct LinearTransform
 {
