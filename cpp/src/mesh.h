@@ -11,6 +11,7 @@
 #include <emscripten/bind.h>
 #include "linearTransform.h"
 #include "quatTransform.h"
+#include "smartTransform.h"
 
 struct Vertex
 {

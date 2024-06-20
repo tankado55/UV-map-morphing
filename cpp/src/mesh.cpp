@@ -139,6 +139,29 @@ void Mesh::interpolateUsingQuat(int tPercent) const //TODO: refector
     }
 }
 
+void Mesh::interpolateUsingSmart(int tPercent) const //TODO: refector
+{
+    float t = tPercent / 100.0;
+
+    SmartTransform I;
+    for (int i = 0; i < f.size(); i++)
+    {
+        Face face = f[i];
+        for (int j = 0; j < 3; j++)
+        {
+            glm::vec3 originV = v[face.vi[j]].pos;
+            SmartTransform smart = mix(I, SmartTransform(face.three2two), t);
+            glm::vec3 targetV = smart.apply(originV);            
+            //glm::vec3 targetV = face.three2two.apply(originV);            
+            
+            int heapIndex = (i * 9) + (j * 3);
+            heapPosPtr[heapIndex] = targetV.x;
+            heapPosPtr[heapIndex + 1] = targetV.y;
+            heapPosPtr[heapIndex + 2] = targetV.z;
+        }
+    }
+}
+
 void Mesh::updateRotoTranslMat()
 {
     // traslazione
