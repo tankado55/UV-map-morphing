@@ -57,6 +57,7 @@ struct Mesh
 	void interpolate(int t) const;
 	void interpolateUsingMat(int t) const;
 	void interpolateUsingQuat(int t) const;
+	void interpolateUsingSmart(int t) const;
 	void buildCylinder();
 	void buildPlane();
 	void updateBB();
@@ -81,6 +82,7 @@ EMSCRIPTEN_BINDINGS(my_class_example) {
     .function("interpolate", &Mesh::interpolate)
     .function("interpolateUsingMat", &Mesh::interpolateUsingMat)
     .function("interpolateUsingQuat", &Mesh::interpolateUsingQuat)
+    .function("interpolateUsingSmart", &Mesh::interpolateUsingSmart)
 	.property("boundingSphere", &Mesh::getBBCenter)
     ;
 }

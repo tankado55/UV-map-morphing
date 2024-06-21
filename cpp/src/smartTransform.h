@@ -19,8 +19,9 @@ struct SmartTransform
     QuatTransform qTransf;
     LinearTransform residualTranf;
 
-	SmartTransform() {}
+	SmartTransform() : lTransf(), qTransf(), residualTranf() {}
     SmartTransform(LinearTransform& transf);
+    SmartTransform(LinearTransform& lt, QuatTransform& qt, LinearTransform& rt): lTransf(lt.M), qTransf(qt.dualQuaternion), residualTranf(rt.M) {}
 	SmartTransform(glm::vec3 a3, glm::vec3 b3, glm::vec3 c3,
 					glm::vec2 a2, glm::vec2 b2, glm::vec2 c2);
 	glm::vec3 apply(glm::vec3 point) const;
@@ -28,5 +29,10 @@ struct SmartTransform
 
 static SmartTransform mix(SmartTransform a, SmartTransform b, float t)
 {
-    return this;
+	LinearTransform lt = mix(a.lTransf, b.lTransf, t);
+	SmartTransform st(lt);
+	LinearTransform residualMix = st.residualTranf;
+	LinearTransform I;
+	residualMix = mix (I, residualMix, t);
+    return SmartTransform(st.lTransf, st.qTransf, residualMix);
 }
