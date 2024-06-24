@@ -1,22 +1,10 @@
 #include "quatTransform.h"
 
-QuatTransform::QuatTransform(glm::mat4 M)
+void QuatTransform::fromTo(glm::vec3 a3, glm::vec3 b3, glm::vec3 c3, glm::vec2 a2, glm::vec2 b2, glm::vec2 c2)
 {
-    glm::mat3 rotationMatrix = glm::mat3(M);
-    glm::vec3 translationVector = glm::vec3(M[3]);
-
-    glm::quat rotationQuaternion = glm::quat_cast(rotationMatrix);
-    rotationQuaternion = glm::normalize(rotationQuaternion);
-    glm::quat translQuat(0.0, translationVector.x, translationVector.y, translationVector.z);
-    glm::quat dual = translQuat * rotationQuaternion * 0.5f;
-    dualQuaternion = glm::dualquat(rotationQuaternion, dual);
-}
-
-QuatTransform::QuatTransform(glm::vec3 a3, glm::vec3 b3, glm::vec3 c3,
-                                 glm::vec2 a2, glm::vec2 b2, glm::vec2 c2)
-{
-    LinearTransform ln(a3, b3, c3, a2, b2, c2);
-    QuatTransform(ln.M);
+    LinearTransform ln;
+    ln.fromTo(a3, b3, c3, a2, b2, c2);
+    fromMatrix(ln.M);
 }
 
 glm::vec3 QuatTransform::apply(glm::vec3 point) const
@@ -30,4 +18,38 @@ glm::vec3 QuatTransform::apply(glm::vec3 point) const
 glm::dualquat QuatTransform::dualMult(glm::dualquat A, glm::dualquat B) const
 {
     return glm::dualquat(A.real * B.real, (A.real * B.dual) + (A.dual * B.real));
+}
+
+void QuatTransform::fromMatrix(glm::mat4 M)
+{
+    glm::mat3 rotationMatrix = glm::mat3(M);
+    glm::vec3 translationVector = glm::vec3(M[3]);
+
+    glm::quat rotationQuaternion = glm::quat_cast(rotationMatrix);
+    rotationQuaternion = glm::normalize(rotationQuaternion);
+    glm::quat translQuat(0.0, translationVector.x, translationVector.y, translationVector.z);
+    glm::quat dual = translQuat * rotationQuaternion * 0.5f;
+    dualQuaternion = glm::dualquat(rotationQuaternion, dual);
+}
+
+QuatTransform mix(const QuatTransform& a, const QuatTransform& b, float t)
+{
+	glm::dualquat _a = a.dualQuaternion;
+	glm::dualquat _b = b.dualQuaternion;
+
+	// if (glm::dot(_a.real, _b.real) < 0.0f){
+	// 	_b = -_b;
+	// }
+
+    glm::quat primal = glm::mix(_a.real, _b.real, t);
+    glm::quat dual = glm::mix(_a.dual, _b.dual, t);
+	float length = glm::length(primal);
+	primal /= length;
+	dual /= length;
+
+	float dotted = glm::dot(primal, dual);
+	dual -= dotted * primal;
+
+
+	return QuatTransform(glm::dualquat(primal, dual));
 }

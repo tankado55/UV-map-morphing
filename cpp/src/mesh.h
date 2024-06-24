@@ -29,7 +29,7 @@ struct Face
 	glm::vec3 centroid3D;
 	glm::vec3 centroid2D;
 	float area;
-	LinearTransform three2two;
+	SmartTransform three2two;
 };
 
 struct BoundingSphere
@@ -55,9 +55,7 @@ struct Mesh
 	Mesh();
 	Mesh(int positions, int uvs, int posSize, int uvSize);
 	void interpolate(int t) const;
-	void interpolateUsingMat(int t) const;
-	void interpolateUsingQuat(int t) const;
-	void interpolateUsingSmart(int t) const;
+	void interpolatePerTriangle(int t) const;
 	void buildCylinder();
 	void buildPlane();
 	void updateBB();
@@ -80,9 +78,7 @@ EMSCRIPTEN_BINDINGS(my_class_example) {
     .constructor<int, int, int, int>()
 	.property("posSize", &Mesh::getPosSize)
     .function("interpolate", &Mesh::interpolate)
-    .function("interpolateUsingMat", &Mesh::interpolateUsingMat)
-    .function("interpolateUsingQuat", &Mesh::interpolateUsingQuat)
-    .function("interpolateUsingSmart", &Mesh::interpolateUsingSmart)
+    .function("interpolatePerTriangle", &Mesh::interpolatePerTriangle)
 	.property("boundingSphere", &Mesh::getBBCenter)
     ;
 }

@@ -385,7 +385,7 @@ function interpolate() {
 			);
 			*/
 			//meshInstance.interpolate(parseInt(interpolationSlider.value))
-			meshInstance.interpolateUsingSmart(parseInt(interpolationSlider.value))
+			meshInstance.interpolatePerTriangle(parseInt(interpolationSlider.value))
 			child.geometry.setAttribute('position', new THREE.BufferAttribute(Module["HEAPF32"].slice(heapGeometryPointer >> 2, (heapGeometryPointer >> 2) + arr.length), 3));
 		}
 

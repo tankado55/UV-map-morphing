@@ -5,8 +5,8 @@ LinearTransform::LinearTransform(glm::mat4 _M):
 {
 }
 
-LinearTransform::LinearTransform(glm::vec3 a3, glm::vec3 b3, glm::vec3 c3,
-                                 glm::vec2 a2, glm::vec2 b2, glm::vec2 c2)
+void LinearTransform::fromTo(glm::vec3 a3, glm::vec3 b3, glm::vec3 c3,
+                             glm::vec2 a2, glm::vec2 b2, glm::vec2 c2)
 {
     float d1 = a2.x;
     float d2 = a2.y;
@@ -46,4 +46,9 @@ LinearTransform::LinearTransform(glm::vec3 a3, glm::vec3 b3, glm::vec3 c3,
 glm::vec3 LinearTransform::apply(glm::vec3 point) const
 {
     return glm::vec3(M * glm::vec4(point, 1.0));
+}
+
+LinearTransform mix(LinearTransform a, LinearTransform b, float t)
+{
+    return LinearTransform(a.M * (1 - t) + b.M * t);
 }

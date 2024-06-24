@@ -94,64 +94,19 @@ void Mesh::interpolate(int tPercent) const //TODO: refector
     }
 }
 
-void Mesh::interpolateUsingMat(int tPercent) const //TODO: refector
+void Mesh::interpolatePerTriangle(int tPercent) const //TODO: refector
 {
     float t = tPercent / 100.0;
 
-    LinearTransform I;
+    decltype(f[0].three2two) I;
     for (int i = 0; i < f.size(); i++)
     {
         Face face = f[i];
         for (int j = 0; j < 3; j++)
         {
             glm::vec3 originV = v[face.vi[j]].pos;
-            LinearTransform Mi = mix(I, face.three2two, t);
-            glm::vec3 targetV = Mi.apply(originV);      
-
-            int heapIndex = (i * 9) + (j * 3);
-            heapPosPtr[heapIndex] = targetV.x;
-            heapPosPtr[heapIndex + 1] = targetV.y;
-            heapPosPtr[heapIndex + 2] = targetV.z;
-        }
-    }
-}
-
-void Mesh::interpolateUsingQuat(int tPercent) const //TODO: refector
-{
-    float t = tPercent / 100.0;
-
-    QuatTransform I;
-    for (int i = 0; i < f.size(); i++)
-    {
-        Face face = f[i];
-        for (int j = 0; j < 3; j++)
-        {
-            glm::vec3 originV = v[face.vi[j]].pos;
-            QuatTransform quat = mix(I, QuatTransform(face.three2two.M), t);
-            glm::vec3 targetV = quat.apply(originV);            
-            //glm::vec3 targetV = face.three2two.apply(originV);            
-            
-            int heapIndex = (i * 9) + (j * 3);
-            heapPosPtr[heapIndex] = targetV.x;
-            heapPosPtr[heapIndex + 1] = targetV.y;
-            heapPosPtr[heapIndex + 2] = targetV.z;
-        }
-    }
-}
-
-void Mesh::interpolateUsingSmart(int tPercent) const //TODO: refector
-{
-    float t = tPercent / 100.0;
-
-    SmartTransform I;
-    for (int i = 0; i < f.size(); i++)
-    {
-        Face face = f[i];
-        for (int j = 0; j < 3; j++)
-        {
-            glm::vec3 originV = v[face.vi[j]].pos;
-            SmartTransform smart = mix(I, SmartTransform(face.three2two), t);
-            glm::vec3 targetV = smart.apply(originV);            
+            auto T = mix(I, face.three2two, t);
+            glm::vec3 targetV = T.apply(originV);            
             //glm::vec3 targetV = face.three2two.apply(originV);            
             
             int heapIndex = (i * 9) + (j * 3);
@@ -185,7 +140,7 @@ void Mesh::updateRotoTranslMat()
         c2 = glm::vec2(toCenterMat * glm::vec4(c2, 0.0, 1.0));
         c2 = c2 * averageScaling;
         
-        fi.three2two = LinearTransform(a3, b3, c3, a2, b2, c2);
+        fi.three2two.fromTo(a3, b3, c3, a2, b2, c2);
     }
 }
 
