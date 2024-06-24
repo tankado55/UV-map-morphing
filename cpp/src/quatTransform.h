@@ -30,14 +30,20 @@ struct QuatTransform
 
 static QuatTransform mix(const QuatTransform& a, const QuatTransform& b, float t) //TODO shortest path
 {
-    glm::quat primal = glm::mix(a.dualQuaternion.real, b.dualQuaternion.real, t);
-    glm::quat dual = glm::mix(a.dualQuaternion.dual, b.dualQuaternion.dual, t);
+	glm::dualquat _a = a.dualQuaternion;
+	glm::dualquat _b = b.dualQuaternion;
+
+	if (glm::dot(_a.real, _b.real) < 0.0f){
+		_b = -_b;
+	}
+
+    glm::quat primal = glm::mix(_a.real, _b.real, t);
+    glm::quat dual = glm::mix(_a.dual, _b.dual, t);
 	float length = glm::length(primal);
 	primal /= length;
 	dual /= length;
 
 	glm::quat crossed = glm::cross(primal, dual);
-	//dual -= crossed * primal;
 
 	return QuatTransform(glm::dualquat(primal, dual));
 }
