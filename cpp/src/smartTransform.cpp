@@ -1,19 +1,33 @@
 #include "smartTransform.h"
 
-SmartTransform::SmartTransform(LinearTransform& transf):
+SmartTransform::SmartTransform(LinearTransform &transf) :
     lTransf(transf.M),
     qTransf(lTransf.M)
 {
-    
     glm::mat4 rotMatrix = glm::mat4_cast(qTransf.dualQuaternion.real);
     glm::quat t_quat = 2.0f * (qTransf.dualQuaternion.dual * glm::conjugate(qTransf.dualQuaternion.real));
-    glm::mat4 quatFake = glm::mat4(
+    glm::mat4 MFromQuat = glm::mat4(
         glm::vec4(rotMatrix[0]),
         glm::vec4(rotMatrix[1]),
         glm::vec4(rotMatrix[2]),
         glm::vec4(t_quat.x, t_quat.y, t_quat.z, 1.0)
     );
-    residualTranf = LinearTransform(glm::mat4(lTransf.M * glm::inverse(quatFake)));
+    residualTranf = LinearTransform(glm::mat4(lTransf.M * glm::inverse(MFromQuat)));
+}
+
+SmartTransform::SmartTransform(LinearTransform &transf, QuatTransform &quaternionTransform) : lTransf(transf.M),
+                                                                                              qTransf(quaternionTransform.dualQuaternion)
+{
+    
+    glm::mat4 rotMatrix = glm::mat4_cast(qTransf.dualQuaternion.real);
+    glm::quat t_quat = 2.0f * (qTransf.dualQuaternion.dual * glm::conjugate(qTransf.dualQuaternion.real));
+    glm::mat4 MFromQuat = glm::mat4(
+        glm::vec4(rotMatrix[0]),
+        glm::vec4(rotMatrix[1]),
+        glm::vec4(rotMatrix[2]),
+        glm::vec4(t_quat.x, t_quat.y, t_quat.z, 1.0)
+    );
+    residualTranf = LinearTransform(glm::mat4(lTransf.M * glm::inverse(MFromQuat)));
     //residualTranf = LinearTransform(quatFake);
 }
 
