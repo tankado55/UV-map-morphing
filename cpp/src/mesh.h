@@ -12,6 +12,8 @@
 #include "linearTransform.h"
 #include "dualQuatTransform.h"
 #include "smartTransform.h"
+#include "homothety.h"
+#include "dualQuatHomTransform.h"
 
 struct Vertex
 {
@@ -25,11 +27,7 @@ struct Vertex
 struct Face
 {
 	int vi[3];
-	float uvScaling;
-	glm::vec3 centroid3D;
-	glm::vec3 centroid2D;
-	float area;
-	SmartTransform three2two;
+	DualQuatHomTransform three2two;
 };
 
 struct BoundingSphere
@@ -61,7 +59,6 @@ struct Mesh
 	void updateBB();
 	void updateToFlipBool();
 	void updateUVScaling();
-	void updateFacesArea();
 	void updateRotoTransl();
 	int getPosSize() const {return m_PosSize;}
 	std::vector<float> getBBCenter() const {return {boundingSphere.center.x, boundingSphere.center.y, boundingSphere.center.z};}

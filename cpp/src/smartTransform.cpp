@@ -19,7 +19,12 @@ glm::vec3 SmartTransform::apply(glm::vec3 point) const
 SmartTransform mix(SmartTransform a, SmartTransform b, float t)
 {
 	SmartTransform st;
-    st.dqTransf = mix(a.dqTransf, b.dqTransf, t);
-    st.residualTranf = mix(a.residualTranf, b.residualTranf, t);
+// st.dqTransf = mix(a.dqTransf, b.dqTransf, t);
+//     st.residualTranf = mix(a.residualTranf, b.residualTranf, t);
+    float t0 = glm::clamp(t*2.0, 0.0,1.0);
+    float t1 = glm::clamp(t*2.0 - 1.0, 0.0,1.0);
+
+    st.dqTransf = mix(a.dqTransf, b.dqTransf, t0);
+    st.residualTranf = mix(a.residualTranf, b.residualTranf, t1);
     return st;
 }

@@ -36,7 +36,6 @@ Mesh::Mesh(int positions, int uvs, int posSize, int uvSize) : m_PosSize(posSize)
     updateUVScaling();
     updateBB();
     std::cout << "debug mesh class, bounding sphere radius: " << boundingSphere.radius << std::endl;
-    // updateFacesArea();
     setTimingWithV(0.4);
     updateRotoTransl();
 }
@@ -94,7 +93,7 @@ void Mesh::interpolate(int tPercent) const //TODO: refector
     }
 }
 
-void Mesh::interpolatePerTriangle(int tPercent) const //TODO: refector
+void Mesh::interpolatePerTriangle(int tPercent) const
 {
     float t = tPercent / 100.0;
 
@@ -141,21 +140,6 @@ void Mesh::updateRotoTransl()
         c2 = c2 * averageScaling;
         
         fi.three2two.fromTo(a3, b3, c3, a2, b2, c2);
-    }
-}
-
-
-
-void Mesh::updateFacesArea()
-{
-    for (Face face : f)
-    {
-        glm::vec3 a = v[face.vi[0]].pos;
-        glm::vec3 b = v[face.vi[1]].pos;
-        glm::vec3 c = v[face.vi[2]].pos;
-
-        float area = 0.5 * length(cross(b - a, c - a));
-        face.area = area;
     }
 }
 

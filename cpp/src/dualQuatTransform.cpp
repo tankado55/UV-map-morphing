@@ -25,11 +25,23 @@ void DualQuatTransform::fromMatrix(glm::mat4 M)
     glm::mat3 rotationMatrix = glm::mat3(M);
     glm::vec3 translationVector = glm::vec3(M[3]);
 
+    for (int i = 0; i < 20; i++)
+    {
+        rotationMatrix = 0.5f * rotationMatrix + 0.5f * glm::inverse(glm::transpose(rotationMatrix));
+
+    }
+
     glm::quat rotationQuaternion = glm::quat_cast(rotationMatrix);
     rotationQuaternion = glm::normalize(rotationQuaternion);
     glm::quat translQuat(0.0, translationVector.x, translationVector.y, translationVector.z);
     glm::quat dual = translQuat * rotationQuaternion * 0.5f;
     dualQuaternion = glm::dualquat(rotationQuaternion, dual);
+
+
+    // glm::vec3 a(7.0, 9.0, 16.0);
+    // glm::vec3 b1 = rotationMatrix * a + translationVector;
+    // glm::vec3 b2 = apply(a);
+    // std::cout << "DEBUG: " << glm::dot(b1 - b2, b1 - b2) << std::endl;
 }
 
 DualQuatTransform mix(const DualQuatTransform& a, const DualQuatTransform& b, float t)
