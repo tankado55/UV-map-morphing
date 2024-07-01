@@ -10,7 +10,7 @@
 #include <string>
 #include <emscripten/bind.h>
 #include "linearTransform.h"
-#include "quatTransform.h"
+#include "dualQuatTransform.h"
 #include "smartTransform.h"
 
 struct Vertex
@@ -62,7 +62,7 @@ struct Mesh
 	void updateToFlipBool();
 	void updateUVScaling();
 	void updateFacesArea();
-	void updateRotoTranslMat();
+	void updateRotoTransl();
 	int getPosSize() const {return m_PosSize;}
 	std::vector<float> getBBCenter() const {return {boundingSphere.center.x, boundingSphere.center.y, boundingSphere.center.z};}
 	void setTimingWithVertexIndex(float flightTime);

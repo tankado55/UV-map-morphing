@@ -14,7 +14,7 @@
 
 #include <iostream>
 
-struct QuatTransform
+struct DualQuatTransform
 {
 	glm::dualquat dualQuaternion;
 
@@ -22,12 +22,12 @@ struct QuatTransform
         glm::dualquat dualMult(glm::dualquat A, glm::dualquat B) const;
 
     public:
-	    QuatTransform() : dualQuaternion(glm::dualquat(glm::quat(1.0f, 0.0f, 0.0f, 0.0f), glm::vec3(0.0f))) {}
+	    DualQuatTransform() : dualQuaternion(glm::dualquat(glm::quat(1.0f, 0.0f, 0.0f, 0.0f), glm::vec3(0.0f))) {}
+		DualQuatTransform(glm::dualquat dq): dualQuaternion(dq) {}
 	    void fromMatrix(glm::mat4 M);
-		QuatTransform(glm::dualquat dq): dualQuaternion(dq) {} 
 	    void fromTo(glm::vec3 a3, glm::vec3 b3, glm::vec3 c3,
 	    				glm::vec2 a2, glm::vec2 b2, glm::vec2 c2);
 	    glm::vec3 apply(glm::vec3 point) const;
 };
 
-QuatTransform mix(const QuatTransform& a, const QuatTransform& b, float t);
+DualQuatTransform mix(const DualQuatTransform& a, const DualQuatTransform& b, float t);

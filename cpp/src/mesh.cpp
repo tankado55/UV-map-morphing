@@ -26,7 +26,7 @@ Mesh::Mesh(int positions, int uvs, int posSize, int uvSize) : m_PosSize(posSize)
     for (int i = 0; i < v.size(); i += 3)
     {
         Face face;
-        face.vi[0] = i; // se i = 3 e' la faccia 2, che con indice 3
+        face.vi[0] = i;
         face.vi[1] = i + 1;
         face.vi[2] = i + 2;
         //face.three2two = glm::mat4(1.0);
@@ -38,7 +38,7 @@ Mesh::Mesh(int positions, int uvs, int posSize, int uvSize) : m_PosSize(posSize)
     std::cout << "debug mesh class, bounding sphere radius: " << boundingSphere.radius << std::endl;
     // updateFacesArea();
     setTimingWithV(0.4);
-    updateRotoTranslMat();
+    updateRotoTransl();
 }
 
 static float ComputeArea(glm::vec3 p1, glm::vec3 p2, glm::vec3 p3)
@@ -117,7 +117,7 @@ void Mesh::interpolatePerTriangle(int tPercent) const //TODO: refector
     }
 }
 
-void Mesh::updateRotoTranslMat()
+void Mesh::updateRotoTransl()
 {
     // traslazione
     // con baricentro

@@ -2,16 +2,16 @@
 
 void SmartTransform::fromTo(glm::vec3 a3, glm::vec3 b3, glm::vec3 c3, glm::vec2 a2, glm::vec2 b2, glm::vec2 c2)
 {
-    qTransf.fromTo(a3, b3, c3, a2, b2, c2);
-    a3 = qTransf.apply(a3);
-    b3 = qTransf.apply(b3);
-    c3 = qTransf.apply(c3);
+    dqTransf.fromTo(a3, b3, c3, a2, b2, c2);
+    a3 = dqTransf.apply(a3);
+    b3 = dqTransf.apply(b3);
+    c3 = dqTransf.apply(c3);
     residualTranf.fromTo(a3, b3, c3, a2, b2, c2);
 }
 
 glm::vec3 SmartTransform::apply(glm::vec3 point) const
 {
-    glm::vec3 result = qTransf.apply(point);
+    glm::vec3 result = dqTransf.apply(point);
     result = residualTranf.apply(result);
     return result;
 }
@@ -19,7 +19,7 @@ glm::vec3 SmartTransform::apply(glm::vec3 point) const
 SmartTransform mix(SmartTransform a, SmartTransform b, float t)
 {
 	SmartTransform st;
-    st.qTransf = mix(a.qTransf, b.qTransf, t);
+    st.dqTransf = mix(a.dqTransf, b.dqTransf, t);
     st.residualTranf = mix(a.residualTranf, b.residualTranf, t);
     return st;
 }
