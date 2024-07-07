@@ -10,13 +10,10 @@ void Homothety::fromTo(glm::vec3 a3, glm::vec3 b3, glm::vec3 c3, glm::vec2 a2, g
 
 glm::vec3 Homothety::apply(glm::vec3 point) const
 {
-    float x = center.x + ratio * (point.x - center.x);
-    float y = center.y + ratio * (point.y - center.y);
-    float z = center.z + ratio * (point.z - center.z);
-    return glm::vec3(x, y, z);
+    return center + ratio * (point - center);
 }
 
-glm::vec3 Homothety::applyInverse() const
+glm::vec3 Homothety::applyInverse(glm::vec3 point) const
 {
-    return glm::vec3();
+    return center - (1.0f / ratio) * (point + center);
 }
