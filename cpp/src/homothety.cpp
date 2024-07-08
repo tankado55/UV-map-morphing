@@ -17,3 +17,8 @@ glm::vec3 Homothety::applyInverse(glm::vec3 point) const
 {
     return center - (1.0f / ratio) * (point + center);
 }
+
+Homothety mixWithIdentity(const Homothety &b, float t)
+{
+    return b; //TODO: make real interpolation
+}

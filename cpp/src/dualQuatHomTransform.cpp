@@ -12,7 +12,7 @@ void DualQuatHomTransform::fromTo(glm::vec3 a3, glm::vec3 b3, glm::vec3 c3, glm:
 glm::vec3 DualQuatHomTransform::apply(glm::vec3 point) const
 {
     glm::vec3 result = dqTransf.apply(point);
-    result = homothety.applyInverse(result); 
+    //result = homothety.applyInverse(result); 
     return result;
 }
 
@@ -20,5 +20,6 @@ DualQuatHomTransform mix(const DualQuatHomTransform &a, const DualQuatHomTransfo
 {
     DualQuatHomTransform transform;
     transform.dqTransf = mix(a.dqTransf, b.dqTransf, t);
+    transform.homothety = mixWithIdentity(b.homothety, t);
     return transform;
 }

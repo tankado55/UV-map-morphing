@@ -17,3 +17,5 @@ public:
     glm::vec3 apply(glm::vec3 point) const;
     glm::vec3 applyInverse(glm::vec3 point) const;
 };
+
+Homothety mixWithIdentity(const Homothety& b, float t);
