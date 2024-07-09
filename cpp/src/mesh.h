@@ -14,6 +14,7 @@
 #include "smartTransform.h"
 #include "homothety.h"
 #include "dualQuatHomTransform.h"
+#include "testTransform.h"
 
 struct Vertex
 {
@@ -27,7 +28,7 @@ struct Vertex
 struct Face
 {
 	int vi[3];
-	DualQuatHomTransform three2two;
+	TestTransform three2two;
 };
 
 struct BoundingSphere
