@@ -28,7 +28,7 @@ struct Vertex
 struct Face
 {
 	int vi[3];
-	TestTransform three2two;
+	SmartTransform three2two;
 };
 
 struct BoundingSphere
