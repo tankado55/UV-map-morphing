@@ -66,7 +66,7 @@ glm::vec3 SmartTransform::apply(glm::vec3 point) const
 SmartTransform mix(SmartTransform a, SmartTransform b, float t, bool splitResidual)
 {
 	SmartTransform st;
-    if (splitResidua == false)
+    if (splitResidual == false)
     {
         st.dqTransf = mix(a.dqTransf, b.dqTransf, t);
         st.residualTranf = mix(a.residualTranf, b.residualTranf, t);

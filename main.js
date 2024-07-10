@@ -39,9 +39,12 @@ let plane;
 let quad;
 let dirLight;
 
+//UI
 var interpolationSlider = document.getElementById("interpolationSlider");
 var gridSlider = document.getElementById("gridSlider");
 var whiteSlider = document.getElementById("whiteSlider");
+var splitResidualElement = document.getElementById("splitResidual");
+var splitResidual = splitResidualElement.value;
 
 interpolationSlider.oninput = function () {
 	render();
@@ -385,7 +388,7 @@ function interpolate() {
 			);
 			*/
 			//meshInstance.interpolate(parseInt(interpolationSlider.value))
-			meshInstance.interpolatePerTriangle(parseInt(interpolationSlider.value))
+			meshInstance.interpolatePerTriangle(parseInt(interpolationSlider.value), splitResidual);
 			child.geometry.setAttribute('position', new THREE.BufferAttribute(Module["HEAPF32"].slice(heapGeometryPointer >> 2, (heapGeometryPointer >> 2) + arr.length), 3));
 		}
 

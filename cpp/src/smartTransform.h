@@ -25,4 +25,4 @@ struct SmartTransform
 	glm::vec3 apply(glm::vec3 point) const;
 };
 
-SmartTransform mix(SmartTransform a, SmartTransform b, float t);
+SmartTransform mix(SmartTransform a, SmartTransform b, float t, bool splitResidual);
