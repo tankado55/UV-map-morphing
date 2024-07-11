@@ -54,7 +54,7 @@ struct Mesh
 	Mesh();
 	Mesh(int positions, int uvs, int posSize, int uvSize);
 	void interpolate(int t) const;
-	void interpolatePerTriangle(int t, bool spitResidual) const;
+	void interpolatePerTriangle(int tPercent, bool spitResidual, bool linear) const;
 	void buildCylinder();
 	void buildPlane();
 	void updateBB();

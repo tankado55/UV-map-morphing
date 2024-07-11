@@ -45,6 +45,8 @@ var gridSlider = document.getElementById("gridSlider");
 var whiteSlider = document.getElementById("whiteSlider");
 var splitResidualElement = document.getElementById("splitResidual");
 var splitResidual = splitResidualElement.value;
+var linearElement = document.getElementById("linear");
+var linear = linearElement.value;
 
 interpolationSlider.oninput = function () {
 	render();
@@ -57,6 +59,15 @@ gridSlider.oninput = function () {
 whiteSlider.oninput = function () {
 	material.uniforms.u_TextureColorMode.value = parseFloat(whiteSlider.value) / 100.0;
 	renderQuadTexture()
+	render();
+}
+
+splitResidualElement.onchange = function () {
+	splitResidual = splitResidualElement.checked;
+	render();
+}
+linearElement.onchange = function () {
+	linear = linearElement.checked;
 	render();
 }
 
@@ -388,7 +399,7 @@ function interpolate() {
 			);
 			*/
 			//meshInstance.interpolate(parseInt(interpolationSlider.value))
-			meshInstance.interpolatePerTriangle(parseInt(interpolationSlider.value), splitResidual);
+			meshInstance.interpolatePerTriangle(parseInt(interpolationSlider.value), splitResidual, linear);
 			child.geometry.setAttribute('position', new THREE.BufferAttribute(Module["HEAPF32"].slice(heapGeometryPointer >> 2, (heapGeometryPointer >> 2) + arr.length), 3));
 		}
 

@@ -7,25 +7,14 @@ inline glm::mat3 closestRotation(glm::mat3 M)
     for (int i = 0; i < 20; i++)
     {
         rotationMatrix = 0.5f * rotationMatrix + 0.5f * glm::inverse(glm::transpose(rotationMatrix));
-
     }
-
     return rotationMatrix;
 }
 
 void SmartTransform::fromTo(glm::vec3 a3, glm::vec3 b3, glm::vec3 c3, glm::vec2 a2, glm::vec2 b2, glm::vec2 c2)
 {
-    
-    float d1 = a2.x;
-    float d2 = a2.y;
-    float d4 = b2.x;
-    float d5 = b2.y;
-    float d7 = c2.x;
-    float d8 = c2.y;
-
     glm::vec2 bari2 = (a2 + b2 + c2) / 3.0f;
     glm::vec3 bari3 = (a3 + b3 + c3) / 3.0f;
-
     
     glm::vec2 a2v = a2 - bari2;
     glm::vec2 b2v = b2 - bari2;
@@ -40,8 +29,15 @@ void SmartTransform::fromTo(glm::vec3 a3, glm::vec3 b3, glm::vec3 c3, glm::vec2 
 
     glm::mat3 R = T2 * glm::inverse(T3);
 
-    glm::mat3 rotationMatrix = closestRotation(R);
+    linearTransf.M = glm::mat4(
+        glm::vec4(R[0], 0.0),
+        glm::vec4(R[1], 0.0),
+        glm::vec4(R[2], 0.0),
+        glm::vec4(glm::vec3(bari2.x, 0.0, bari2.y) - R * bari3, 1.0)
+    );
 
+// Dualquat
+    glm::mat3 rotationMatrix = closestRotation(R);
     glm::vec3 translationVector = glm::vec3(bari2.x, 0.0, bari2.y) - rotationMatrix * bari3;
 
     glm::quat rotationQuaternion = glm::quat_cast(rotationMatrix);
@@ -80,5 +76,12 @@ SmartTransform mix(SmartTransform a, SmartTransform b, float t, bool splitResidu
         st.residualTranf = mix(a.residualTranf, b.residualTranf, t1);
     }
     
+    return st;
+}
+
+SmartTransform mixLinear(SmartTransform a, SmartTransform b, float t)
+{
+	SmartTransform st;
+    st.residualTranf = mix(a.linearTransf, b.linearTransf, t);
     return st;
 }

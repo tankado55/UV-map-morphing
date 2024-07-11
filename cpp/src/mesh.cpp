@@ -93,7 +93,7 @@ void Mesh::interpolate(int tPercent) const //TODO: refector
     }
 }
 
-void Mesh::interpolatePerTriangle(int tPercent, bool spitResidual) const
+void Mesh::interpolatePerTriangle(int tPercent, bool spitResidual, bool linear) const
 {
     float t = tPercent / 100.0;
 
@@ -104,9 +104,15 @@ void Mesh::interpolatePerTriangle(int tPercent, bool spitResidual) const
         for (int j = 0; j < 3; j++)
         {
             glm::vec3 originV = v[face.vi[j]].pos;
-            auto T = mix(I, face.three2two, t, spitResidual);
+            decltype(f[0].three2two) T;
+            if (linear)
+            {
+                T = mixLinear(I, face.three2two, t);
+            } else
+            {
+                T = mix(I, face.three2two, t, spitResidual);
+            }
             glm::vec3 targetV = T.apply(originV);            
-            //glm::vec3 targetV = face.three2two.apply(originV);            
             
             int heapIndex = (i * 9) + (j * 3);
             heapPosPtr[heapIndex] = targetV.x;
