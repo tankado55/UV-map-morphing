@@ -44,14 +44,14 @@ void DualQuatTransform::fromMatrix(glm::mat4 M)
     // std::cout << "DEBUG: " << glm::dot(b1 - b2, b1 - b2) << std::endl;
 }
 
-DualQuatTransform mix(const DualQuatTransform& a, const DualQuatTransform& b, float t)
+DualQuatTransform mix(const DualQuatTransform& a, const DualQuatTransform& b, float t, bool shortestPath)
 {
 	glm::dualquat _a = a.dualQuaternion;
 	glm::dualquat _b = b.dualQuaternion;
 
-	// if (glm::dot(_a.real, _b.real) < 0.0f){
-	// 	_b = -_b;
-	// }
+	if (shortestPath and glm::dot(_a.real, _b.real) < 0.0f){
+		_b = -_b;
+	}
 
     glm::quat primal = glm::mix(_a.real, _b.real, t);
     glm::quat dual = glm::mix(_a.dual, _b.dual, t);

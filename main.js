@@ -47,6 +47,8 @@ var splitResidualElement = document.getElementById("splitResidual");
 var splitResidual = splitResidualElement.value;
 var linearElement = document.getElementById("linear");
 var linear = linearElement.value;
+var shortestElement = document.getElementById("shortestPath");
+var shortestPath = shortestElement.value;
 
 interpolationSlider.oninput = function () {
 	render();
@@ -68,6 +70,10 @@ splitResidualElement.onchange = function () {
 }
 linearElement.onchange = function () {
 	linear = linearElement.checked;
+	render();
+}
+shortestElement.onchange = function () {
+	shortestPath = shortestElement.checked;
 	render();
 }
 
@@ -399,7 +405,7 @@ function interpolate() {
 			);
 			*/
 			//meshInstance.interpolate(parseInt(interpolationSlider.value))
-			meshInstance.interpolatePerTriangle(parseInt(interpolationSlider.value), splitResidual, linear);
+			meshInstance.interpolatePerTriangle(parseInt(interpolationSlider.value), splitResidual, linear, shortestPath);
 			child.geometry.setAttribute('position', new THREE.BufferAttribute(Module["HEAPF32"].slice(heapGeometryPointer >> 2, (heapGeometryPointer >> 2) + arr.length), 3));
 		}
 

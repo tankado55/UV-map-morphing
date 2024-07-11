@@ -1,11 +1,13 @@
 #pragma once
 
-#include "glm/vec3.hpp"
-#include "glm/vec2.hpp"
-#include "glm/mat3x3.hpp"
-#include "glm/gtc/matrix_transform.hpp"
-#include "glm/glm.hpp"
-#include "glm/gtc/type_ptr.hpp"
+#include <map>
+#include <unordered_map>
+#include <glm/vec3.hpp>
+#include <glm/vec2.hpp>
+#include <glm/mat3x3.hpp>
+#include <glm/gtc/matrix_transform.hpp>
+#include <glm/glm.hpp>
+#include <glm/gtc/type_ptr.hpp>
 #include <vector>
 #include <string>
 #include <emscripten/bind.h>
@@ -23,6 +25,7 @@ struct Vertex
 	glm::vec3 normal;
 	float tStart;
 	float tEnd;
+	int copyOf;
 };
 
 struct Face
@@ -47,27 +50,28 @@ struct Mesh
 	glm::mat3 bestRotation;
 	BoundingSphere boundingSphere;
 	bool toFlip = false;
-	int m_PosSize;
+	int m_PosCount;
 	float* heapPosPtr;
 	float* heapUvPtr;
 
 	Mesh();
 	Mesh(int positions, int uvs, int posSize, int uvSize);
 	void interpolate(int t) const;
-	void interpolatePerTriangle(int tPercent, bool spitResidual, bool linear) const;
+	void interpolatePerTriangle(int tPercent, bool spitResidual, bool linear, bool shortestPath) const;
 	void buildCylinder();
 	void buildPlane();
 	void updateBB();
 	void updateToFlipBool();
 	void updateUVScaling();
 	void updateRotoTransl();
-	int getPosSize() const {return m_PosSize;}
+	int getPosSize() const {return m_PosCount;}
 	std::vector<float> getBBCenter() const {return {boundingSphere.center.x, boundingSphere.center.y, boundingSphere.center.z};}
 	void setTimingWithVertexIndex(float flightTime);
 	void setTimingInsideOut(float flightTime);
 	void setTimingWithUVdir(float flightTime, glm::vec2 dirUV);
 	void setTimingWithU(float flightTime) {setTimingWithUVdir(flightTime, glm::vec2(1.0, 0.0));}
 	void setTimingWithV(float flightTime) {setTimingWithUVdir(flightTime, glm::vec2(0.0, 1.0));}
+	void updateCopyOf();
 };
 
 // Binding code

@@ -30,4 +30,4 @@ struct DualQuatTransform
 	    glm::vec3 apply(glm::vec3 point) const;
 };
 
-DualQuatTransform mix(const DualQuatTransform& a, const DualQuatTransform& b, float t);
+DualQuatTransform mix(const DualQuatTransform& a, const DualQuatTransform& b, float t, bool shortestPath);

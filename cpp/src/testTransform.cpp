@@ -31,7 +31,7 @@ TestTransform mix(const TestTransform &a, const TestTransform &b, float t)
     float t1 = glm::clamp(t*2.0 - 1.0, 0.0,1.0);
 
     TestTransform transform;
-    transform.dqTransf = mix(a.dqTransf, b.dqTransf, t0);
+    transform.dqTransf = mix(a.dqTransf, b.dqTransf, t0, false);
     transform.homothety = mixWithIdentity(b.homothety, t1);
     transform.residualTranf = mix(a.residualTranf, b.residualTranf, t1);
     return transform;

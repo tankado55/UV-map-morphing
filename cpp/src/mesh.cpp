@@ -3,19 +3,19 @@
 
 #define PI 3.14159265358979323846
 
-Mesh::Mesh(int positions, int uvs, int posSize, int uvSize) : m_PosSize(posSize)
+Mesh::Mesh(int positions, int uvs, int posCount, int uvCount) : m_PosCount(posCount)
 {
     float *posPtr = reinterpret_cast<float *>(positions);
     float *uvPtr = reinterpret_cast<float *>(uvs);
     heapPosPtr = posPtr;
     heapUvPtr = uvPtr;
 
-    if (posSize != uvSize)
+    if (posCount != uvCount)
     {
-        std::cout << "posSize and uvSize are NOT equal" << std::endl;
+        std::cout << "posCount and uvCount are NOT equal" << std::endl;
     }
 
-    for (int i = 0; i < posSize; i += 3)
+    for (int i = 0; i < posCount; i += 3)
     {
         Vertex vertex;
         vertex.pos = glm::vec3(posPtr[i], posPtr[i + 1], posPtr[i + 2]);
@@ -32,12 +32,57 @@ Mesh::Mesh(int positions, int uvs, int posSize, int uvSize) : m_PosSize(posSize)
         //face.three2two = glm::mat4(1.0);
         f.push_back(face);
     }
-    std::cout << "debug mesh class: position size:" << posSize << std::endl;
+    std::cout << "debug mesh class: position count:" << posCount << std::endl;
+    std::cout << "debug mesh class: uv count:" << uvCount << std::endl;
     updateUVScaling();
     updateBB();
     std::cout << "debug mesh class, bounding sphere radius: " << boundingSphere.radius << std::endl;
     setTimingWithV(0.4);
     updateRotoTransl();
+}
+
+typedef std::pair<glm::vec<3, float>, glm::vec<2, float>> XYZUV;
+inline bool operator< (const glm::vec<3, float>& el,
+                        const glm::vec<3, float>& el2) {
+    if (el.x < el2.x) return true;
+    if (el2.x < el.x) return false;
+    if (el.y < el2.y) return true;
+    if (el2.y < el.y) return false;
+
+    return el.z < el2.z;
+}
+
+inline bool operator< (const glm::vec<2, float>& el,
+                        const glm::vec<2, float>& el2) {
+    if (el.x < el2.x) return true;
+    if (el2.x < el.x) return false;
+
+    return el.y < el2.y;
+}
+
+inline bool pippo (const XYZUV& el,
+                        const XYZUV& el2) {
+    if (el.first < el2.first) return true;
+    if (el2.first < el.first) return false;
+    return el.second < el2.second;
+}
+
+
+void Mesh::updateCopyOf()
+{
+    std::unordered_map<XYZUV, int> map;
+    for (int i = 0; i < v.size(); i++)
+    {
+        XYZUV pair = std::make_pair(v[i].pos, v[i].uv);
+        if (map.contains(pair))
+        {
+            v[i].copyOf = map[pair];
+        }
+        else
+        {
+            map.insert({pair, i});
+        }
+    }
 }
 
 static float ComputeArea(glm::vec3 p1, glm::vec3 p2, glm::vec3 p3)
@@ -93,7 +138,7 @@ void Mesh::interpolate(int tPercent) const //TODO: refector
     }
 }
 
-void Mesh::interpolatePerTriangle(int tPercent, bool spitResidual, bool linear) const
+void Mesh::interpolatePerTriangle(int tPercent, bool spitResidual, bool linear, bool shortestPath) const
 {
     float t = tPercent / 100.0;
 
@@ -110,17 +155,19 @@ void Mesh::interpolatePerTriangle(int tPercent, bool spitResidual, bool linear) 
                 T = mixLinear(I, face.three2two, t);
             } else
             {
-                T = mix(I, face.three2two, t, spitResidual);
+                T = mix(I, face.three2two, t, spitResidual, shortestPath);
             }
-            glm::vec3 targetV = T.apply(originV);            
+            glm::vec3 resultV = T.apply(originV);
             
             int heapIndex = (i * 9) + (j * 3);
-            heapPosPtr[heapIndex] = targetV.x;
-            heapPosPtr[heapIndex + 1] = targetV.y;
-            heapPosPtr[heapIndex + 2] = targetV.z;
+            heapPosPtr[heapIndex] = resultV.x;
+            heapPosPtr[heapIndex + 1] = resultV.y;
+            heapPosPtr[heapIndex + 2] = resultV.z;
         }
     }
 }
+
+
 
 void Mesh::updateRotoTransl()
 {
@@ -373,6 +420,8 @@ void Mesh::setTimingWithUVdir(float flightTime, glm::vec2 dirUV)
         vi.tEnd = vi.tStart + flightTime;
     }
 }
+
+
 
 /*static glm::mat3 updateInitRotation()
 {
