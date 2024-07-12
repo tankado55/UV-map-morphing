@@ -41,7 +41,6 @@ Mesh::Mesh(int positions, int uvs, int posCount, int uvCount) : m_PosCount(posCo
     updateRotoTransl();
 }
 
-typedef std::pair<glm::vec<3, float>, glm::vec<2, float>> XYZUV;
 inline bool operator< (const glm::vec<3, float>& el,
                         const glm::vec<3, float>& el2) {
     if (el.x < el2.x) return true;
@@ -60,20 +59,26 @@ inline bool operator< (const glm::vec<2, float>& el,
     return el.y < el2.y;
 }
 
-inline bool pippo (const XYZUV& el,
-                        const XYZUV& el2) {
-    if (el.first < el2.first) return true;
-    if (el2.first < el.first) return false;
-    return el.second < el2.second;
-}
+struct XYZUV{
+    glm::vec3 first;
+    glm::vec2 second;
 
+    XYZUV(glm::vec3 vec3, glm::vec2 vec2): first(vec3), second(vec2) {} ;
+
+    friend bool operator< (const XYZUV& el,
+                           const XYZUV& el2) {
+        if (el.first < el2.first) return true;
+        if (el2.first < el.first) return false;
+        return el.second < el2.second;
+    };
+};
 
 void Mesh::updateCopyOf()
 {
-    std::unordered_map<XYZUV, int> map;
+    std::map<XYZUV, int> map;
     for (int i = 0; i < v.size(); i++)
     {
-        XYZUV pair = std::make_pair(v[i].pos, v[i].uv);
+        XYZUV pair = XYZUV(v[i].pos, v[i].uv);
         if (map.contains(pair))
         {
             v[i].copyOf = map[pair];
