@@ -32,6 +32,7 @@ struct Face
 {
 	int vi[3];
 	SmartTransform three2two;
+	int pathVerse; // Individual choice for the shortest path for this triangle
 };
 
 struct BoundingSphere
@@ -43,6 +44,7 @@ struct BoundingSphere
 struct Mesh
 {
 	std::vector<Vertex> v;
+	int uniqueVerticesCount;
 	std::vector<Face> f;
 	glm::vec3 centroid3D;
 	glm::vec3 centroid2D;
@@ -51,8 +53,8 @@ struct Mesh
 	BoundingSphere boundingSphere;
 	bool toFlip = false;
 	int m_PosCount;
-	float* heapPosPtr;
-	float* heapUvPtr;
+	glm::vec3* heapPosPtr;
+	glm::vec2* heapUvPtr;
 
 	Mesh();
 	Mesh(int positions, int uvs, int posSize, int uvSize);
@@ -72,6 +74,7 @@ struct Mesh
 	void setTimingWithU(float flightTime) {setTimingWithUVdir(flightTime, glm::vec2(1.0, 0.0));}
 	void setTimingWithV(float flightTime) {setTimingWithUVdir(flightTime, glm::vec2(0.0, 1.0));}
 	void updateCopyOf();
+	void glueTriangles() const;
 };
 
 // Binding code
@@ -79,7 +82,6 @@ EMSCRIPTEN_BINDINGS(my_class_example) {
   emscripten::class_<Mesh>("Mesh")
     .constructor<int, int, int, int>()
 	.property("posSize", &Mesh::getPosSize)
-    .function("interpolate", &Mesh::interpolate)
     .function("interpolatePerTriangle", &Mesh::interpolatePerTriangle)
 	.property("boundingSphere", &Mesh::getBBCenter)
     ;

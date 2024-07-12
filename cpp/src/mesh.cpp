@@ -5,22 +5,21 @@
 
 Mesh::Mesh(int positions, int uvs, int posCount, int uvCount) : m_PosCount(posCount)
 {
-    float *posPtr = reinterpret_cast<float *>(positions);
-    float *uvPtr = reinterpret_cast<float *>(uvs);
-    heapPosPtr = posPtr;
-    heapUvPtr = uvPtr;
-
-    if (posCount != uvCount)
+    int nv = posCount / 3;
+    heapPosPtr = reinterpret_cast<glm::vec3 *>(positions);
+    heapUvPtr = reinterpret_cast<glm::vec2 *>(uvs);
+    
+    if (nv * 2 != uvCount || nv * 3 != posCount)
     {
-        std::cout << "posCount and uvCount are NOT equal" << std::endl;
+        std::cout << "posCount and uvCount are NOT compatible" << std::endl;
     }
 
-    for (int i = 0; i < posCount; i += 3)
+    v.clear();
+    for (int i = 0; i < nv; i++)
     {
         Vertex vertex;
-        vertex.pos = glm::vec3(posPtr[i], posPtr[i + 1], posPtr[i + 2]);
-        int j = i / 3 * 2;
-        vertex.uv = glm::vec2(uvPtr[j], uvPtr[j + 1]);
+        vertex.pos = heapPosPtr[i];
+        vertex.uv = heapUvPtr[i];
         v.push_back(vertex);
     }
     for (int i = 0; i < v.size(); i += 3)
@@ -39,6 +38,7 @@ Mesh::Mesh(int positions, int uvs, int posCount, int uvCount) : m_PosCount(posCo
     std::cout << "debug mesh class, bounding sphere radius: " << boundingSphere.radius << std::endl;
     setTimingWithV(0.4);
     updateRotoTransl();
+    updateCopyOf();
 }
 
 inline bool operator< (const glm::vec<3, float>& el,
@@ -85,8 +85,28 @@ void Mesh::updateCopyOf()
         }
         else
         {
-            map.insert({pair, i});
+            map[pair] = i;
+            v[i].copyOf = i;
         }
+    }
+    uniqueVerticesCount = map.size();
+}
+
+void Mesh::glueTriangles() const
+{
+    std::vector<glm::vec3> sum(v.size(), glm::vec3(0.0,0.0,0.0));
+    std::vector<int> count(v.size(), 0);
+
+    for (int i = 0; i < v.size(); ++i)
+    {
+        int j = v[i].copyOf;
+        sum[j] += heapPosPtr[i];
+        count[j]++;
+    }
+    for (int i = 0; i < v.size(); ++i)
+    {
+        int j = v[i].copyOf;
+        heapPosPtr[i] = sum[j] / float(count[j]);
     }
 }
 
@@ -109,43 +129,10 @@ static float sigmoid(float t) // ease in ease out
     return (glm::sin(t * PI - PI / 2) + 1) / 2;
 }
 
-void Mesh::interpolate(int tPercent) const //TODO: refector
-{
-    float t = tPercent / 100.0;
-
-    for (int i = 0; i < v.size(); i++)
-    {
-        Vertex vertex;
-        glm::vec3 targetUV = uv2xzy(v[i].uv);
-        /*
-        if (toFlip)
-        {
-            targetUV.x = -targetUV.x + 1.0f;
-        }*/
-
-        // float uvScaling = f[faceIndex].uvScaling;
-        glm::mat4 toCenterMat = glm::translate(glm::mat4(1.0f), glm::vec3(-0.5, -0.5, -0.5));
-        targetUV = glm::vec3(toCenterMat * glm::vec4(targetUV, 1.0));
-        targetUV = targetUV * averageScaling;
-
-        float interpolationValue = (t - v[i].tStart) / (v[i].tEnd - v[i].tStart);
-        interpolationValue = glm::clamp(interpolationValue, 0.0f, 1.0f);
-        interpolationValue = sigmoid(interpolationValue);
-
-        vertex.pos = glm::mix(
-            this->v[i].pos /** bestRotation*/,
-            targetUV,
-            interpolationValue);
-        int arrayIndex = i * 3;
-        heapPosPtr[arrayIndex] = vertex.pos.x;
-        heapPosPtr[arrayIndex + 1] = vertex.pos.y;
-        heapPosPtr[arrayIndex + 2] = vertex.pos.z;
-    }
-}
-
 void Mesh::interpolatePerTriangle(int tPercent, bool spitResidual, bool linear, bool shortestPath) const
 {
     float t = tPercent / 100.0;
+    
 
     decltype(f[0].three2two) I;
     for (int i = 0; i < f.size(); i++)
@@ -163,14 +150,16 @@ void Mesh::interpolatePerTriangle(int tPercent, bool spitResidual, bool linear, 
                 T = mix(I, face.three2two, t, spitResidual, shortestPath);
             }
             glm::vec3 resultV = T.apply(originV);
-            
-            int heapIndex = (i * 9) + (j * 3);
-            heapPosPtr[heapIndex] = resultV.x;
-            heapPosPtr[heapIndex + 1] = resultV.y;
-            heapPosPtr[heapIndex + 2] = resultV.z;
+
+            // Write in the Heap 
+            int heapIndex = i * 3 + j;
+            heapPosPtr[heapIndex] = resultV;
         }
     }
+    glueTriangles();
 }
+
+
 
 
 
