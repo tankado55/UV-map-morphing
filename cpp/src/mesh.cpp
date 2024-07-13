@@ -3,7 +3,7 @@
 
 #define PI 3.14159265358979323846
 
-Mesh::Mesh(int positions, int uvs, int posCount, int uvCount) : m_PosCount(posCount)
+Mesh::Mesh(int positions, int uvs, int posCount, int uvCount) : m_PosCount(posCount), glued(true)
 {
     int nv = posCount / 3;
     heapPosPtr = reinterpret_cast<glm::vec3 *>(positions);
@@ -172,7 +172,8 @@ void Mesh::interpolatePerTriangle(int tPercent, bool spitResidual, bool linear, 
             heapPosPtr[heapIndex] = resultV;
         }
     }
-    glueTriangles();
+    if (glued)
+        glueTriangles();
 }
 
 

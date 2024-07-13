@@ -83,6 +83,7 @@ shortestElement.onchange = function () {
 }
 gluedElement.onchange = function () {
 	glued = gluedElement.checked;
+	meshInstance.glued = glued;
 	if (!glued) {
 		gluedModElement.disabled = true;
 	}
@@ -93,7 +94,7 @@ gluedElement.onchange = function () {
 }
 gluedModElement.onchange = function () {
 	gluedMod = gluedModElement.value;
-	meshInstance.updateCopyOf(gluedMod);
+	//meshInstance.updateCopyOf(gluedMod);
 	render();
 }
 

@@ -55,6 +55,7 @@ struct Mesh
 	int m_PosCount;
 	glm::vec3* heapPosPtr;
 	glm::vec2* heapUvPtr;
+	bool glued;
 
 	Mesh();
 	Mesh(int positions, int uvs, int posSize, int uvSize);
@@ -84,5 +85,6 @@ EMSCRIPTEN_BINDINGS(my_class_example) {
     .function("interpolatePerTriangle", &Mesh::interpolatePerTriangle)
     .function("updateCopyOf", &Mesh::updateCopyOf)
 	.property("boundingSphere", &Mesh::getBBCenter)
+	.property("glued", &Mesh::glued)
     ;
 }
