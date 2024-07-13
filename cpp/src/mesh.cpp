@@ -38,7 +38,7 @@ Mesh::Mesh(int positions, int uvs, int posCount, int uvCount) : m_PosCount(posCo
     std::cout << "debug mesh class, bounding sphere radius: " << boundingSphere.radius << std::endl;
     setTimingWithV(0.4);
     updateRotoTransl();
-    updateCopyOf();
+    updateCopyOf(true);
 }
 
 inline bool operator< (const glm::vec<3, float>& el,
@@ -62,34 +62,50 @@ inline bool operator< (const glm::vec<2, float>& el,
 struct XYZUV{
     glm::vec3 first;
     glm::vec2 second;
-
-    XYZUV(glm::vec3 vec3, glm::vec2 vec2): first(vec3), second(vec2) {} ;
+    int path;
+    XYZUV() { };
+    XYZUV(glm::vec3 vec3, glm::vec2 vec2, int p): first(vec3), second(vec2), path(p) {} ;
 
     friend bool operator< (const XYZUV& el,
                            const XYZUV& el2) {
         if (el.first < el2.first) return true;
         if (el2.first < el.first) return false;
-        return el.second < el2.second;
+        if (el.second < el2.second) return true;
+        if (el2.second < el.second) return false;
+        return el.path < el2.path;
     };
 };
 
-void Mesh::updateCopyOf()
+void Mesh::updateCopyOf(bool pathDependent)
 {
     std::map<XYZUV, int> map;
     for (int i = 0; i < v.size(); i++)
     {
-        XYZUV pair = XYZUV(v[i].pos, v[i].uv);
-        if (map.contains(pair))
+        XYZUV key;
+        if (pathDependent)
         {
-            v[i].copyOf = map[pair];
+            int faceIndex = i / 3;
+            key = XYZUV(v[i].pos, v[i].uv, f[faceIndex].pathVerse);
         }
         else
         {
-            map[pair] = i;
+            key = XYZUV(v[i].pos, v[i].uv, 1);
+        }
+        if (map.contains(key))
+        {
+            v[i].copyOf = map[key];
+        }
+        else
+        {
+            map[key] = i;
             v[i].copyOf = i;
         }
     }
-    uniqueVerticesCount = map.size();
+    for (Face fi : f)
+    {
+        int i = fi.vi[0];
+    }
+
 }
 
 void Mesh::glueTriangles() const
@@ -187,6 +203,7 @@ void Mesh::updateRotoTransl()
         c2 = c2 * averageScaling;
         
         fi.three2two.fromTo(a3, b3, c3, a2, b2, c2);
+        fi.pathVerse = glm::dot(fi.three2two.dqTransf.dualQuaternion.real, glm::quat(1.0f, 0.0f, 0.0f, 0.0f)) < 0.0f;
     }
 }
 
@@ -264,45 +281,6 @@ void Mesh::buildCylinder()
     }
     averageScaling = 1.0;
     bestRotation = glm::mat3();
-}
-
-void Mesh::buildPlane()
-{
-    float vertices[] = {
-        -10.0, -0.5, -10.0, 0.0, 1.0,
-        -10.0, -0.5, 10.0, 0.0, 0.0,
-        10.0, -0.5, 10.0, 1.0, 0.0,
-        10.0, -0.5, 10.0, 1.0, 0.0,
-        10.0, -0.5, -10.0, 1.0, 1.0,
-        -10.0, -0.5, -10.0, 0.0, 1.0};
-    float uvs[] = {
-        0.0, 1.0,
-        0.0, 0.0,
-        1.0, 0.0,
-        1.0, 0.0,
-        1.0, 1.0,
-        0.0, 1.0};
-    v.clear();
-    Vertex vertex;
-    for (int i = 0; i < sizeof(vertices) / sizeof(float); i += 5)
-    {
-        vertex.pos.x = vertices[i];
-        vertex.pos.y = vertices[i + 1];
-        vertex.pos.z = vertices[i + 2];
-        vertex.uv.x = vertices[i + 3];
-        vertex.uv.y = vertices[i + 4];
-
-        v.push_back(vertex);
-    }
-    Face face;
-    face.vi[0] = 1;
-    face.vi[1] = 2;
-    face.vi[2] = 3;
-    f.push_back(face);
-    face.vi[0] = 4;
-    face.vi[1] = 5;
-    face.vi[2] = 6;
-    f.push_back(face);
 }
 
 void Mesh::updateBB()

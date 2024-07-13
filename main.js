@@ -49,6 +49,11 @@ var linearElement = document.getElementById("linear");
 var linear = linearElement.value;
 var shortestElement = document.getElementById("shortestPath");
 var shortestPath = shortestElement.value;
+//glued
+var gluedElement = document.getElementById("glued");
+var glued = gluedElement.value;
+var gluedModElement = document.getElementById("gluedMod");
+var gluedMod = gluedModElement.value;
 
 interpolationSlider.oninput = function () {
 	render();
@@ -74,6 +79,21 @@ linearElement.onchange = function () {
 }
 shortestElement.onchange = function () {
 	shortestPath = shortestElement.checked;
+	render();
+}
+gluedElement.onchange = function () {
+	glued = gluedElement.checked;
+	if (!glued) {
+		gluedModElement.disabled = true;
+	}
+	else {
+		gluedModElement.disabled = false;
+	}
+	render();
+}
+gluedModElement.onchange = function () {
+	gluedMod = gluedModElement.value;
+	meshInstance.updateCopyOf(gluedMod);
 	render();
 }
 

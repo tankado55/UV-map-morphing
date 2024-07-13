@@ -61,7 +61,6 @@ struct Mesh
 	void interpolate(int t) const;
 	void interpolatePerTriangle(int tPercent, bool spitResidual, bool linear, bool shortestPath) const;
 	void buildCylinder();
-	void buildPlane();
 	void updateBB();
 	void updateToFlipBool();
 	void updateUVScaling();
@@ -73,7 +72,7 @@ struct Mesh
 	void setTimingWithUVdir(float flightTime, glm::vec2 dirUV);
 	void setTimingWithU(float flightTime) {setTimingWithUVdir(flightTime, glm::vec2(1.0, 0.0));}
 	void setTimingWithV(float flightTime) {setTimingWithUVdir(flightTime, glm::vec2(0.0, 1.0));}
-	void updateCopyOf();
+	void updateCopyOf(bool pathDependent);
 	void glueTriangles() const;
 };
 
@@ -83,6 +82,7 @@ EMSCRIPTEN_BINDINGS(my_class_example) {
     .constructor<int, int, int, int>()
 	.property("posSize", &Mesh::getPosSize)
     .function("interpolatePerTriangle", &Mesh::interpolatePerTriangle)
+    .function("updateCopyOf", &Mesh::updateCopyOf)
 	.property("boundingSphere", &Mesh::getBBCenter)
     ;
 }

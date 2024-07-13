@@ -91,8 +91,18 @@
 	</div>
 	<div>
 		<input type="checkbox" id="shortestPath" name="shortestPath" checked />
-		<label for="linear">Shortest Path</label>
+		<label for="Shortest Path">Shortest Path</label>
 	</div>
+	<div>
+		<input type="checkbox" id="glued" name="glued" checked />
+		<label for="glued">Glued</label>
+	</div>
+	<select name="gluedMod" id="gluedMod">
+		<option value=0>Full</option>
+		<option value=1>Based on dual quaternion shortest path</option>
+		<label for="gluedMod">Glued Mod</label>
+	</select>
+
 
 	<script type='text/javascript'>
 		var Module = {}
