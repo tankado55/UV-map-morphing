@@ -12,7 +12,6 @@ const PI = 3.141592653589793;
 let camera, scene, renderer;
 let cameraRTT
 let sceneRTT
-let sceneScreen
 
 let object;
 let heapGeometryPointer;
@@ -37,7 +36,6 @@ let basicMaterial;
 let material;
 let plane;
 let quad;
-let dirLight;
 
 //UI
 var interpolationSlider = document.getElementById("interpolationSlider");
@@ -45,8 +43,6 @@ var gridSlider = document.getElementById("gridSlider");
 var whiteSlider = document.getElementById("whiteSlider");
 var splitResidualElement = document.getElementById("splitResidual");
 var splitResidual = splitResidualElement.value;
-var linearElement = document.getElementById("linear");
-var linear = linearElement.value;
 var shortestElement = document.getElementById("shortestPath");
 var shortestPath = shortestElement.value;
 //glued
@@ -54,6 +50,14 @@ var gluedElement = document.getElementById("glued");
 var glued = gluedElement.value;
 var gluedModElement = document.getElementById("gluedMod");
 var gluedMod = gluedModElement.value;
+// Linear
+var linearElement = document.getElementById("linear");
+var linear = linearElement.value;
+shortestElement.disabled = linear;
+splitResidualElement.disabled = linear;
+gluedElement.disabled = linear;
+gluedModElement.disabled = linear;
+
 
 interpolationSlider.oninput = function () {
 	render();
@@ -75,6 +79,10 @@ splitResidualElement.onchange = function () {
 }
 linearElement.onchange = function () {
 	linear = linearElement.checked;
+	shortestElement.disabled = linear;
+	splitResidualElement.disabled = linear;
+	gluedElement.disabled = linear;
+	gluedModElement.disabled = linear;
 	render();
 }
 shortestElement.onchange = function () {
@@ -94,14 +102,14 @@ gluedElement.onchange = function () {
 }
 gluedModElement.onchange = function () {
 	gluedMod = gluedModElement.value;
-	//meshInstance.updateCopyOf(gluedMod);
+	meshInstance.updateCopyOf(parseInt(gluedMod));
 	render();
 }
 
 
 initRTT()
 init();
-initLoadModel();
+Module.onRuntimeInitialized = () => {initLoadModel();}
 initHorPlane();
 
 console.log(meshInstance)
@@ -136,7 +144,6 @@ function initRTT() {
 	document.body.appendChild(renderer.domElement);
 
 	sceneRTT = new THREE.Scene();
-	sceneScreen = new THREE.Scene();
 	cameraRTT = new THREE.OrthographicCamera(window.innerWidth / - 2, window.innerWidth / 2, window.innerHeight / 2, window.innerHeight / - 2, - 10000, 10000);
 	cameraRTT.position.z = 100;
 	rtTextureTarget = new THREE.WebGLRenderTarget(window.innerWidth, window.innerHeight);
@@ -261,6 +268,8 @@ function initLoadModel()
 
 			}
 		});
+		render();
+
 	}
 
 

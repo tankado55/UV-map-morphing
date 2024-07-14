@@ -82,12 +82,12 @@
 	<input type="range" min="0" max="100" value="50" id="whiteSlider">
 	</div>
 	<div>
-		<input type="checkbox" id="splitResidual" name="splitResidual" checked />
-		<label for="splitResidual">Split Residual</label>
-	</div>
-	<div>
 		<input type="checkbox" id="linear" name="linear" checked />
 		<label for="linear">Linear</label>
+	</div>
+	<div>
+		<input type="checkbox" id="splitResidual" name="splitResidual" checked />
+		<label for="splitResidual">Split Residual</label>
 	</div>
 	<div>
 		<input type="checkbox" id="shortestPath" name="shortestPath" checked />
@@ -98,7 +98,7 @@
 		<label for="glued">Glued</label>
 	</div>
 	<select name="gluedMod" id="gluedMod">
-		<option value=0>Full</option>
+		<option value=0>Path independent</option>
 		<option value=1>Based on dual quaternion shortest path</option>
 		<label for="gluedMod">Glued Mod</label>
 	</select>
