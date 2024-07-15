@@ -56,6 +56,7 @@ struct Mesh
 	glm::vec3* heapPosPtr;
 	glm::vec2* heapUvPtr;
 	bool glued;
+	DualQuatTransform initialTranform;
 
 	Mesh();
 	Mesh(int positions, int uvs, int posSize, int uvSize);
@@ -75,6 +76,7 @@ struct Mesh
 	void setTimingWithV(float flightTime) {setTimingWithUVdir(flightTime, glm::vec2(0.0, 1.0));}
 	void updateCopyOf(bool pathDependent);
 	void glueTriangles() const;
+	void updateAverageQuaternionRotationAreaWeighted();
 };
 
 // Binding code

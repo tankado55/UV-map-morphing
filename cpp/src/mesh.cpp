@@ -37,6 +37,7 @@ Mesh::Mesh(int positions, int uvs, int posCount, int uvCount) : m_PosCount(posCo
     updateBB();
     std::cout << "debug mesh class, bounding sphere radius: " << boundingSphere.radius << std::endl;
     setTimingWithV(0.4);
+    updateAverageQuaternionRotationAreaWeighted();
     updateRotoTransl();
     updateCopyOf(true);
 }
@@ -391,6 +392,29 @@ void Mesh::setTimingWithUVdir(float flightTime, glm::vec2 dirUV)
         d = (d - mind) / (maxd - mind);
         vi.tStart = (1 - flightTime) * d;
         vi.tEnd = vi.tStart + flightTime;
+    }
+}
+
+void Mesh::updateAverageQuaternionRotationAreaWeighted()
+{
+    float areaSum = 0.0;
+    DualQuatTransform dqSum;
+    for (Face fi : f)
+    {
+        DualQuatTransform dq = fi.three2two.dqTransf.dualQuaternion;
+        float area = ComputeArea(v[fi.vi[0]].pos, v[fi.vi[1]].pos, v[fi.vi[2]].pos);
+
+        dq.dualQuaternion *= area;
+        dqSum = mix(dqSum, dq, 0.5, true);
+    }
+        dqSum = DualQuatTransform(dqSum.dualQuaternion / areaSum);
+        dqSum = DualQuatTransform(glm::normalize(dqSum.dualQuaternion));
+        initialTranform = dqSum;
+
+    // Apply
+    for (int i = 0; i < v.size(); ++i)
+    {
+        v[i].pos = initialTranform.apply(v[i].pos);
     }
 }
 
