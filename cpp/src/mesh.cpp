@@ -28,7 +28,6 @@ Mesh::Mesh(int positions, int uvs, int posCount, int uvCount) : m_PosCount(posCo
         face.vi[0] = i;
         face.vi[1] = i + 1;
         face.vi[2] = i + 2;
-        //face.three2two = glm::mat4(1.0);
         f.push_back(face);
     }
     std::cout << "debug mesh class: position count:" << posCount << std::endl;
@@ -37,6 +36,7 @@ Mesh::Mesh(int positions, int uvs, int posCount, int uvCount) : m_PosCount(posCo
     updateBB();
     std::cout << "debug mesh class, bounding sphere radius: " << boundingSphere.radius << std::endl;
     setTimingWithV(0.4);
+    updateRotoTransl();
     updateAverageQuaternionRotationAreaWeighted();
     updateRotoTransl();
     updateCopyOf(true);
@@ -133,6 +133,11 @@ static float ComputeArea(glm::vec3 p1, glm::vec3 p2, glm::vec3 p3)
     float l2 = glm::length(p2 - p3);
     float l3 = glm::length(p3 - p1);
     float s = (l1 + l2 + l3) / 2.0f;
+    float result = sqrt(s * (s - l1) * (s - l2) * (s - l3));
+    if (result == 0)
+    {
+        std::cout << "Area is 0\n";
+    }
     return sqrt(s * (s - l1) * (s - l2) * (s - l3));
 }
 
@@ -146,7 +151,7 @@ static float sigmoid(float t) // ease in ease out
     return (glm::sin(t * PI - PI / 2) + 1) / 2;
 }
 
-void Mesh::interpolatePerTriangle(int tPercent, bool spitResidual, bool linear, bool shortestPath) const
+void Mesh::interpolatePerTriangle(int tPercent, bool spitResidual, bool linear, bool shortestPath) const // TODO: remove shortestPath and create a method that update it
 {
     float t = tPercent / 100.0;
     
@@ -164,7 +169,7 @@ void Mesh::interpolatePerTriangle(int tPercent, bool spitResidual, bool linear, 
                 T = mixLinear(I, face.three2two, t);
             } else
             {
-                T = mix(I, face.three2two, t, spitResidual, shortestPath);
+                T = mix(I, face.three2two, t, spitResidual, face.pathVerse);
             }
             glm::vec3 resultV = T.apply(originV);
 
@@ -205,84 +210,12 @@ void Mesh::updateRotoTransl()
         c2 = c2 * averageScaling;
         
         fi.three2two.fromTo(a3, b3, c3, a2, b2, c2);
-        fi.pathVerse = glm::dot(fi.three2two.dqTransf.dualQuaternion.real, glm::quat(1.0f, 0.0f, 0.0f, 0.0f)) < 0.0f;
+        if (glm::dot(glm::quat(1.0f, 0.0f, 0.0f, 0.0f), fi.three2two.dqTransf.dualQuaternion.real) < 0.0f)
+        {
+            fi.pathVerse = -1;
+            std::cout << "minus 1 found\n";
+        }
     }
-}
-
-void Mesh::buildCylinder()
-{
-    v.clear();
-    int n = 10;
-    float radius = 1.0f;
-    float height = 2.0f;
-
-    float segmentAngle = 2.0f * PI / n;
-
-    for (int i = 0; i < n; i++)
-    {
-        float angle = i * segmentAngle;
-        float x = radius * cos(angle);
-        float z = radius * sin(angle);
-
-        Vertex vertex;
-
-        // Top vertices
-        vertex.pos[0] = x;
-        vertex.pos[1] = height / 2;
-        vertex.pos[2] = z;
-        vertex.uv[0] = ((float)i / n);
-        vertex.uv[1] = 1.0f;
-        v.push_back(vertex);
-
-        // Bottom vertices
-        vertex.pos[0] = x;
-        vertex.pos[1] = -height / 2;
-        vertex.pos[2] = z;
-        vertex.uv[0] = ((float)i / n);
-        vertex.uv[1] = 0.0f;
-        v.push_back(vertex);
-    }
-    // Duplicate first and last vertices for texture wrapping
-    for (int i = 0; i < 2; ++i)
-    {
-        float angle = i * segmentAngle;
-        float x = radius * cos(angle);
-        float z = radius * sin(angle);
-
-        Vertex vertex;
-
-        // Top vertices
-        vertex.pos[0] = x;
-        vertex.pos[1] = height / 2;
-        vertex.pos[2] = z;
-        vertex.uv[0] = ((float)i / n);
-        vertex.uv[1] = 1.0f;
-        v.push_back(vertex);
-
-        // Bottom vertices
-        vertex.pos[0] = x;
-        vertex.pos[1] = -height / 2;
-        vertex.pos[2] = z;
-        vertex.uv[0] = ((float)i / n);
-        vertex.uv[1] = 0.0f;
-        v.push_back(vertex);
-    }
-
-    for (int i = 0; i < n * 2; i += 2)
-    {
-        Face face;
-        face.vi[0] = (i + 4);
-        face.vi[1] = (i + 2);
-        face.vi[2] = (i + 1);
-        f.push_back(face);
-
-        face.vi[0] = (i + 1);
-        face.vi[1] = (i + 3);
-        face.vi[2] = (i + 4);
-        f.push_back(face);
-    }
-    averageScaling = 1.0;
-    bestRotation = glm::mat3();
 }
 
 void Mesh::updateBB()
@@ -398,27 +331,54 @@ void Mesh::setTimingWithUVdir(float flightTime, glm::vec2 dirUV)
 void Mesh::updateAverageQuaternionRotationAreaWeighted()
 {
     float areaSum = 0.0;
-    DualQuatTransform dqSum;
+    glm::dualquat dqSum;
     for (Face fi : f)
     {
-        DualQuatTransform dq = fi.three2two.dqTransf.dualQuaternion;
+        glm::dualquat dq = fi.three2two.dqTransf.dualQuaternion;
         float area = ComputeArea(v[fi.vi[0]].pos, v[fi.vi[1]].pos, v[fi.vi[2]].pos);
+        if (area <= 0.000001)
+             continue;
+        areaSum += area;
 
-        dq.dualQuaternion *= area;
-        dqSum = mix(dqSum, dq, 0.5, true);
+        dqSum = sum(dqSum, dq * area) ;
     }
-        dqSum = DualQuatTransform(dqSum.dualQuaternion / areaSum);
-        dqSum = DualQuatTransform(glm::normalize(dqSum.dualQuaternion));
-        initialTranform = dqSum;
+        initialTranform = dqSum / areaSum;
+        initialTranform = myNormalized(initialTranform);
 
     // Apply
+    DualQuatTransform t = DualQuatTransform(initialTranform);
     for (int i = 0; i < v.size(); ++i)
     {
-        v[i].pos = initialTranform.apply(v[i].pos);
+        //std::cout << v[i].pos.x << std::endl;
+        v[i].pos = t.apply(v[i].pos);
+        //std::cout << v[i].pos.x << std::endl;
     }
 }
 
-
+void Mesh::updatePathVerse(int mode)
+{
+    std::cout << mode << std::endl;
+    for (Face &fi : f)
+    {
+        
+        if (mode == -1 && glm::dot(glm::quat(1.0f, 0.0f, 0.0f, 0.0f), fi.three2two.dqTransf.dualQuaternion.real) <= 0.0f)
+        {
+            fi.pathVerse = -1;
+        }
+        else if (mode == 1 && glm::dot(glm::quat(1.0f, 0.0f, 0.0f, 0.0f), fi.three2two.dqTransf.dualQuaternion.real) >= 0.0f)
+        {
+            fi.pathVerse = -1;
+        }
+        else if (mode == 0)
+        {
+            fi.pathVerse = 1;
+        }
+        else
+        {
+            fi.pathVerse = 1;
+        }
+    }
+}
 
 /*static glm::mat3 updateInitRotation()
 {

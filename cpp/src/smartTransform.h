@@ -26,5 +26,5 @@ struct SmartTransform
 	glm::vec3 apply(glm::vec3 point) const;
 };
 
-SmartTransform mix(SmartTransform a, SmartTransform b, float t, bool splitResidual, bool shortestPath);
+SmartTransform mix(SmartTransform a, SmartTransform b, float t, bool splitResidual, int whichPath);
 SmartTransform mixLinear(SmartTransform a, SmartTransform b, float t);

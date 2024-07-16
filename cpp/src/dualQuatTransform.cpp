@@ -44,24 +44,41 @@ void DualQuatTransform::fromMatrix(glm::mat4 M)
     // std::cout << "DEBUG: " << glm::dot(b1 - b2, b1 - b2) << std::endl;
 }
 
-DualQuatTransform mix(const DualQuatTransform& a, const DualQuatTransform& b, float t, bool shortestPath)
+DualQuatTransform mix(const DualQuatTransform& a, const DualQuatTransform& b, float t)
 {
 	glm::dualquat _a = a.dualQuaternion;
 	glm::dualquat _b = b.dualQuaternion;
 
-	if (shortestPath and glm::dot(_a.real, _b.real) < 0.0f){
+	if (glm::dot(_a.real, _b.real) < 0.0f){
 		_b = -_b;
 	}
+    return mixNoShortestPath(_a, _b, t);
+}
 
-    glm::quat primal = glm::mix(_a.real, _b.real, t);
-    glm::quat dual = glm::mix(_a.dual, _b.dual, t);
-	float length = glm::length(primal);
-	primal /= length;
-	dual /= length;
+DualQuatTransform mixNoShortestPath(const DualQuatTransform& a, const DualQuatTransform& b, float t)
+{
+    glm::quat primal = glm::mix(a.dualQuaternion.real, b.dualQuaternion.real, t);
+    glm::quat dual = glm::mix(a.dualQuaternion.dual, b.dualQuaternion.dual, t);
+	return DualQuatTransform( myNormalized(glm::dualquat(primal, dual)));
+}
 
-	float dotted = glm::dot(primal, dual);
-	dual -= dotted * primal;
+glm::dualquat myNormalized(glm::dualquat dq)
+{
+    float length = glm::length(dq.real);
+	dq.real /= length;
+	dq.dual /= length;
 
+	float dotted = glm::dot(dq.real, dq.dual);
+	dq.dual -= dotted * dq.real;
 
-	return DualQuatTransform(glm::dualquat(primal, dual));
+    return dq;
+}
+
+glm::dualquat sum(glm::dualquat dq1, glm::dualquat dq2)
+{
+    glm::dualquat result;
+    if (glm::dot(dq1.real, dq2.real) < 0.0f){
+		dq2 = -dq2;
+	}
+    return dq1 + dq2;
 }

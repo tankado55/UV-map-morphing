@@ -86,7 +86,9 @@ linearElement.onchange = function () {
 	render();
 }
 shortestElement.onchange = function () {
-	shortestPath = shortestElement.checked;
+	shortestPath = shortestElement.value;
+	meshInstance.updatePathVerse(parseInt(shortestPath))
+	console.log("select triggered")
 	render();
 }
 gluedElement.onchange = function () {

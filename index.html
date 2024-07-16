@@ -93,10 +93,12 @@
 		<input type="checkbox" id="splitResidual" name="splitResidual" checked />
 		<label for="splitResidual">Split Residual</label>
 	</div>
-	<div>
-		<input type="checkbox" id="shortestPath" name="shortestPath" checked />
-		<label for="Shortest Path">Shortest Path</label>
-	</div>
+	<select name="shortestPath" id="shortestPath">
+		<option value=0>Neutral</option>
+		<option value=1>Long</option>
+		<option value=-1>Short</option>
+		<label for="shortestPath">Shortest Path</label>
+	</select>
 	<div>
 		<input type="checkbox" id="glued" name="glued" checked />
 		<label for="glued">Glued</label>

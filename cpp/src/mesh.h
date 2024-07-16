@@ -14,9 +14,6 @@
 #include "linearTransform.h"
 #include "dualQuatTransform.h"
 #include "smartTransform.h"
-#include "homothety.h"
-#include "dualQuatHomTransform.h"
-#include "testTransform.h"
 
 struct Vertex
 {
@@ -32,7 +29,7 @@ struct Face
 {
 	int vi[3];
 	SmartTransform three2two;
-	int pathVerse; // Individual choice for the shortest path for this triangle
+	int pathVerse = 1; // Individual choice for the shortest path for this triangle
 };
 
 struct BoundingSphere
@@ -56,7 +53,7 @@ struct Mesh
 	glm::vec3* heapPosPtr;
 	glm::vec2* heapUvPtr;
 	bool glued;
-	DualQuatTransform initialTranform;
+	glm::dualquat initialTranform;
 
 	Mesh();
 	Mesh(int positions, int uvs, int posSize, int uvSize);
@@ -77,6 +74,7 @@ struct Mesh
 	void updateCopyOf(bool pathDependent);
 	void glueTriangles() const;
 	void updateAverageQuaternionRotationAreaWeighted();
+	void updatePathVerse(int verse);
 };
 
 // Binding code
@@ -86,6 +84,7 @@ EMSCRIPTEN_BINDINGS(my_class_example) {
 	.property("posSize", &Mesh::getPosSize)
     .function("interpolatePerTriangle", &Mesh::interpolatePerTriangle)
     .function("updateCopyOf", &Mesh::updateCopyOf)
+    .function("updatePathVerse", &Mesh::updatePathVerse)
 	.property("boundingSphere", &Mesh::getBBCenter)
 	.property("glued", &Mesh::glued)
     ;

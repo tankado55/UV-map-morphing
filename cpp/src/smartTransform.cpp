@@ -59,22 +59,24 @@ glm::vec3 SmartTransform::apply(glm::vec3 point) const
     return result;
 }
 
-SmartTransform mix(SmartTransform a, SmartTransform b, float t, bool splitResidual, bool shortestPath)
+SmartTransform mix(SmartTransform a, SmartTransform b, float t, bool splitResidual, int whichPath)
 {
 	SmartTransform st;
+    float t0;
+    float t1;
     if (splitResidual == false)
     {
-        st.dqTransf = mix(a.dqTransf, b.dqTransf, t, shortestPath);
-        st.residualTranf = mix(a.residualTranf, b.residualTranf, t);
+        t0 = t1 = t;
     }
     else
     {
-        float t0 = glm::clamp(t*2.0, 0.0,1.0);
-        float t1 = glm::clamp(t*2.0 - 1.0, 0.0,1.0);
+        t0 = glm::clamp(t*2.0, 0.0,1.0);
+        t1 = glm::clamp(t*2.0 - 1.0, 0.0,1.0);
 
-        st.dqTransf = mix(a.dqTransf, b.dqTransf, t0, shortestPath);
-        st.residualTranf = mix(a.residualTranf, b.residualTranf, t1);
     }
+    st.dqTransf = mixNoShortestPath(a.dqTransf, DualQuatTransform(b.dqTransf.dualQuaternion * float(whichPath)), t0);
+
+    st.residualTranf = mix(a.residualTranf, b.residualTranf, t1);
     
     return st;
 }
