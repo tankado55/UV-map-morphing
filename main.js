@@ -22,12 +22,14 @@ let meshInstance;
 let objPath = "res/models/"
 let objSelect = document.getElementById("meshSelect");
 objPath = objPath + objSelect.value;
+var event = new Event('change', { 'bubbles': true });
 objSelect.onchange = function () {
 	console.log("select onChange");
 	let objSelect = document.getElementById("meshSelect");
 	objPath = "res/models/" + objSelect.value;
 	deallocateHeap();
 	initLoadModel();
+	
 };
 let texturePath = "res/models/_Wheel_195_50R13x10_OBJ/diffuse.png"
 let texture;
@@ -58,6 +60,14 @@ splitResidualElement.disabled = linear;
 gluedElement.disabled = linear;
 gluedModElement.disabled = linear;
 
+function updateUI()
+{
+	gluedElement.dispatchEvent(event);
+	linearElement.dispatchEvent(event);
+	splitResidualElement.dispatchEvent(event);
+	shortestElement.dispatchEvent(event);
+	gluedModElement.dispatchEvent(event);
+}
 
 interpolationSlider.oninput = function () {
 	render();
@@ -266,7 +276,7 @@ function initLoadModel()
 				const sphere = new THREE.Mesh( sphGeometry, sphMaterial );
 				//sphere.scale.set(1.0 / radius, 1.0 / radius, 1.0 / radius)
 				console.log(object)
-				//scene.add( sphere );
+				updateUI();
 
 			}
 		});
