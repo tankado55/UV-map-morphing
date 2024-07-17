@@ -23,6 +23,9 @@ struct Vertex
 	float tStart;
 	float tEnd;
 	int copyOf;
+	int islandId = 0;
+	int islandRank = 0;
+	int pathVerse = 0;
 };
 
 struct Face
@@ -52,11 +55,12 @@ struct Mesh
 	int m_PosCount;
 	glm::vec3* heapPosPtr;
 	glm::vec2* heapUvPtr;
+	float* pathVersePtr;
 	bool glued;
 	glm::dualquat initialTranform;
 
 	Mesh();
-	Mesh(int positions, int uvs, int posSize, int uvSize);
+	Mesh(int positions, int uvs, int pathVerse, int posSize, int uvSize);
 	void interpolate(int t) const;
 	void interpolatePerTriangle(int tPercent, bool spitResidual, bool linear, bool shortestPath) const;
 	void buildCylinder();
@@ -75,16 +79,23 @@ struct Mesh
 	void glueTriangles() const;
 	void updateAverageQuaternionRotationAreaWeighted();
 	void updatePathVerse(int verse);
+	void updatePathVersePerIsland();
+	int findIsland(int i) const;
+	void unionIsland(int x, int y);
+	void initIsland();
+	void updateIsland();
+	int countIslands();
 };
 
 // Binding code
 EMSCRIPTEN_BINDINGS(my_class_example) {
   emscripten::class_<Mesh>("Mesh")
-    .constructor<int, int, int, int>()
+    .constructor<int, int, int, int, int>()
 	.property("posSize", &Mesh::getPosSize)
     .function("interpolatePerTriangle", &Mesh::interpolatePerTriangle)
     .function("updateCopyOf", &Mesh::updateCopyOf)
     .function("updatePathVerse", &Mesh::updatePathVerse)
+    .function("updatePathVersePerIsland", &Mesh::updatePathVersePerIsland)
 	.property("boundingSphere", &Mesh::getBBCenter)
 	.property("glued", &Mesh::glued)
     ;

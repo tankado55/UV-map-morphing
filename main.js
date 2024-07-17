@@ -16,6 +16,7 @@ let sceneRTT
 let object;
 let heapGeometryPointer;
 let heapUVPointer;
+let heapPathVersesPointer;
 let heapGeometryPointInterpolated;
 let meshInstance;
 
@@ -97,8 +98,13 @@ linearElement.onchange = function () {
 }
 shortestElement.onchange = function () {
 	shortestPath = shortestElement.value;
-	meshInstance.updatePathVerse(parseInt(shortestPath))
-	console.log("select triggered")
+	if (shortestPath < 3)
+	{
+		meshInstance.updatePathVerse(parseInt(shortestPath));
+	}
+	else{
+		meshInstance.updatePathVersePerIsland();
+	}
 	render();
 }
 gluedElement.onchange = function () {
@@ -184,6 +190,7 @@ function deallocateHeap()
 	{
 		scene.remove(object);
 		Module._free(heapGeometryPointer);
+		Module._free(heapPathVersesPointer);
 		Module._free(heapUVPointer);
 		Module._free(heapGeometryPointInterpolated);
 		meshInstance.delete();
@@ -233,6 +240,11 @@ function initLoadModel()
 				let arr = child.geometry.attributes.position.array;
 				let arrUV = child.geometry.attributes.uv.array;
 
+				//pathVerse Color
+				let pathVerses = new Float32Array(child.geometry.attributes.position.count, 0)
+				child.geometry.setAttribute('pathVerse', new THREE.BufferAttribute( pathVerses, 1 ))
+				let arrPathVerses = child.geometry.attributes.pathVerse.array;
+
 				const hasFloatValue = containsFloatValue(arr);
 				try {
 					heapGeometryPointer = transferNumberArrayToHeap(
@@ -247,7 +259,11 @@ function initLoadModel()
 						arrUV,
 						hasFloatValue ? TYPES.f32 : TYPES.i32
 					);
-					meshInstance = new Module.Mesh(heapGeometryPointer, heapUVPointer, arr.length, arrUV.length);
+					heapPathVersesPointer = transferNumberArrayToHeap(
+						arrPathVerses,
+						hasFloatValue ? TYPES.f32 : TYPES.f32 // forcing f32
+					);
+					meshInstance = new Module.Mesh(heapGeometryPointer, heapUVPointer, heapPathVersesPointer, arr.length, arrUV.length);
 					console.log("boundingsphere")
 					//console.log(meshInstance.boundingSphere);
 					console.log(Module["HEAPF32"][heapGeometryPointer >> 2])
@@ -449,6 +465,7 @@ function interpolate() {
 			//meshInstance.interpolate(parseInt(interpolationSlider.value))
 			meshInstance.interpolatePerTriangle(parseInt(interpolationSlider.value), splitResidual, linear, shortestPath);
 			child.geometry.setAttribute('position', new THREE.BufferAttribute(Module["HEAPF32"].slice(heapGeometryPointer >> 2, (heapGeometryPointer >> 2) + arr.length), 3));
+			child.geometry.setAttribute('pathVerse', new THREE.BufferAttribute(Module["HEAPF32"].slice(heapPathVersesPointer >> 2, (heapPathVersesPointer >> 2) + child.geometry.attributes.pathVerse.array.length), 1));
 		}
 
 	});

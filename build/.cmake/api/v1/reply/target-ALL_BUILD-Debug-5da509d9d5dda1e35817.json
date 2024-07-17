@@ -20,9 +20,13 @@
 			"id" : "ZERO_CHECK::@6890427a1f51a3e7e1df"
 		},
 		{
-			"id" : "hello::@6890427a1f51a3e7e1df"
+			"id" : "webUV::@6890427a1f51a3e7e1df"
 		}
 	],
+	"folder" : 
+	{
+		"name" : "CMakePredefinedTargets"
+	},
 	"id" : "ALL_BUILD::@6890427a1f51a3e7e1df",
 	"isGeneratorProvided" : true,
 	"name" : "ALL_BUILD",

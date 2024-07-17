@@ -5,7 +5,7 @@
 		{
 			"multiConfig" : true,
 			"name" : "Visual Studio 17 2022",
-			"platform" : "x64"
+			"platform" : "win32"
 		},
 		"paths" : 
 		{
@@ -27,7 +27,7 @@
 	"objects" : 
 	[
 		{
-			"jsonFile" : "codemodel-v2-fd8a0582b3959f46b61b.json",
+			"jsonFile" : "codemodel-v2-a19aa8c98fd2d28da0fc.json",
 			"kind" : "codemodel",
 			"version" : 
 			{
@@ -36,7 +36,7 @@
 			}
 		},
 		{
-			"jsonFile" : "cache-v2-fd08be66bfc2091e831f.json",
+			"jsonFile" : "cache-v2-c5e9b6cd01dd68490dbd.json",
 			"kind" : "cache",
 			"version" : 
 			{
@@ -54,7 +54,7 @@
 			}
 		},
 		{
-			"jsonFile" : "toolchains-v1-af371c660c3c37830f5b.json",
+			"jsonFile" : "toolchains-v1-e67e32d3f21ad2bc6eb7.json",
 			"kind" : "toolchains",
 			"version" : 
 			{
@@ -91,7 +91,7 @@
 				"responses" : 
 				[
 					{
-						"jsonFile" : "cache-v2-fd08be66bfc2091e831f.json",
+						"jsonFile" : "cache-v2-c5e9b6cd01dd68490dbd.json",
 						"kind" : "cache",
 						"version" : 
 						{
@@ -100,7 +100,7 @@
 						}
 					},
 					{
-						"jsonFile" : "codemodel-v2-fd8a0582b3959f46b61b.json",
+						"jsonFile" : "codemodel-v2-a19aa8c98fd2d28da0fc.json",
 						"kind" : "codemodel",
 						"version" : 
 						{
@@ -109,7 +109,7 @@
 						}
 					},
 					{
-						"jsonFile" : "toolchains-v1-af371c660c3c37830f5b.json",
+						"jsonFile" : "toolchains-v1-e67e32d3f21ad2bc6eb7.json",
 						"kind" : "toolchains",
 						"version" : 
 						{

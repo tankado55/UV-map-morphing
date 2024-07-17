@@ -19,18 +19,20 @@
 	<script type="x-shader/x-vertex" id="vertexshader">
 
 			varying vec2 vUv;
+			out float pathColor;
 
 			void main() {
 
 				vUv = uv;
 				gl_Position = projectionMatrix * modelViewMatrix * vec4( position, 1.0 );
-
+				pathColor = pathVerse;
 			}
 
 		</script>
 
 	<script type="x-shader/x-fragment" id="fragmentshader">
 
+			in float pathColor;
 			varying vec2 vUv;
 			uniform sampler2D tDiffuse;
 			uniform float u_TextureGridMode;
@@ -53,6 +55,13 @@
 				);
 
 				gl_FragColor = diffuse;
+				if (pathColor <= 0.99)
+				{
+					gl_FragColor = vec4(1.0, 0.0, 0.0, 1.0);
+				} else
+				{
+					gl_FragColor = vec4(0.0, 1.0, 0.0, 1.0);
+				}
 				//gl_FragColor = vec4(1.0,0.0,0.0,1.0);
 
 			}
@@ -104,6 +113,7 @@
 		<option value=2>Neutral Inverse</option>
 		<option value=1>Long</option>
 		<option value=-1>Short</option>
+		<option value=4>Per Island</option>
 		<label for="shortestPath">Shortest Path</label>
 	</select>
 	<div>

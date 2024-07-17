@@ -3,11 +3,12 @@
 
 #define PI 3.14159265358979323846
 
-Mesh::Mesh(int positions, int uvs, int posCount, int uvCount) : m_PosCount(posCount), glued(true)
+Mesh::Mesh(int positions, int uvs, int pathVerse, int posCount, int uvCount) : m_PosCount(posCount), glued(true)
 {
     int nv = posCount / 3;
     heapPosPtr = reinterpret_cast<glm::vec3 *>(positions);
     heapUvPtr = reinterpret_cast<glm::vec2 *>(uvs);
+    pathVersePtr = reinterpret_cast<float *>(pathVerse);
     
     if (nv * 2 != uvCount || nv * 3 != posCount)
     {
@@ -39,7 +40,8 @@ Mesh::Mesh(int positions, int uvs, int posCount, int uvCount) : m_PosCount(posCo
     updateRotoTransl();
     updateAverageQuaternionRotationAreaWeighted();
     updateRotoTransl();
-    updateCopyOf(true);
+    updateCopyOf(false);
+    updateIsland();
 }
 
 inline bool operator< (const glm::vec<3, float>& el,
@@ -102,11 +104,6 @@ void Mesh::updateCopyOf(bool pathDependent)
             v[i].copyOf = i;
         }
     }
-    for (Face fi : f)
-    {
-        int i = fi.vi[0];
-    }
-
 }
 
 void Mesh::glueTriangles() const
@@ -346,7 +343,8 @@ void Mesh::updateAverageQuaternionRotationAreaWeighted()
         initialTranform = myNormalized(initialTranform);
 
     // Apply
-    DualQuatTransform t = DualQuatTransform(glm::dualquat(initialTranform.real, glm::quat()));
+    //DualQuatTransform t = DualQuatTransform(glm::dualquat(initialTranform.real, glm::quat()));
+    DualQuatTransform t = DualQuatTransform(initialTranform);
     for (int i = 0; i < v.size(); ++i)
     {
         //std::cout << v[i].pos.x << std::endl;
@@ -381,4 +379,121 @@ void Mesh::updatePathVerse(int mode)
             fi.pathVerse = 1;
         }
     }
+    // update pathVerse per vertex for using it in shaders TODO: refactoring
+    for (Face &fi : f)
+    {
+        for (int i : fi.vi)
+        {
+            v[i].pathVerse = fi.pathVerse;
+        }
+    }
+    for (int i = 0; i < v.size(); i++)
+    {
+        pathVersePtr[i] = v[i].pathVerse;
+    }
+}
+
+void Mesh::updatePathVersePerIsland()
+{
+    // il voto serve per isola
+    // tutti i vertici di una faccia stanno nella stessa isola
+    updatePathVerse(-1);
+
+    std::vector<int> votation(v.size(), 0);
+    
+    for (Face &fi : f)
+    {
+        int island = v[fi.vi[0]].islandId;
+        votation[island] += fi.pathVerse;
+    }
+
+    for (Face &fi : f)
+    {
+        int votationResult = votation[v[fi.vi[0]].islandId];
+        fi.pathVerse = std::max(-1, std::min(votationResult, 1));
+    }
+    // update pathVerse per vertex for using it in shaders TODO: refactoring
+    for (Face &fi : f)
+    {
+        for (int i : fi.vi)
+        {
+            v[i].pathVerse = fi.pathVerse;
+        }
+    }
+    for (int i = 0; i < v.size(); i++)
+    {
+        pathVersePtr[i] = v[i].pathVerse;
+    }
+
+    std::cout << "island:" << countIslands() << std::endl;
+}
+
+int Mesh::findIsland(int i) const
+{
+    if (v[i].islandId == i)
+        return i;
+    else
+    {
+        return findIsland(v[i].islandId);
+    }
+}
+
+void Mesh::unionIsland(int x, int y)
+{ 
+    int xset = findIsland(x);
+    int yset = findIsland(y);
+
+    if (xset == yset) 
+        return; 
+
+    // Put smaller ranked item under 
+    // bigger ranked item if ranks are 
+    // different 
+    if (v[xset].islandRank < v[yset].islandRank) { 
+        v[xset].islandId = yset; 
+    } 
+    else if (v[xset].islandRank > v[yset].islandRank) { 
+        v[yset].islandId = xset; 
+    } 
+    else { 
+        v[yset].islandId = xset; 
+        v[xset].islandRank = v[xset].islandRank + 1; 
+    } 
+} 
+
+void Mesh::updateIsland()
+{
+    initIsland();
+    for (int i = 0; i < f.size(); i++)
+    {
+        unionIsland(f[i].vi[0], f[i].vi[1]);
+        unionIsland(f[i].vi[0], f[i].vi[2]);
+    }
+    for (int i = 0; i < v.size(); i++)
+    {
+        unionIsland(i, v[i].copyOf);
+    }
+    for (int i = 0; i < v.size(); i++)
+    {
+        v[i].islandId = findIsland(v[i].islandId);
+    }
+    std::cout << "island:" << countIslands() << std::endl;
+}
+
+void Mesh::initIsland()
+{
+    for (int i = 0; i < v.size(); i++)
+    {
+        v[i].islandId = i;
+    }
+}
+
+int Mesh::countIslands()
+{
+    int count = 0;
+    for (int i = 0; i < v.size(); i++)
+    {
+        if(v[i].islandId == i) count++;
+    }
+    return count;
 }

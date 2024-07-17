@@ -9,7 +9,7 @@
 					"jsonFile" : "directory-.-Debug-d0094a50bb2071803777.json",
 					"minimumCMakeVersion" : 
 					{
-						"string" : "3.5"
+						"string" : "3.29.1"
 					},
 					"projectIndex" : 0,
 					"source" : ".",
@@ -29,7 +29,7 @@
 					[
 						0
 					],
-					"name" : "MyProject",
+					"name" : "webUV",
 					"targetIndexes" : 
 					[
 						0,
@@ -43,22 +43,22 @@
 				{
 					"directoryIndex" : 0,
 					"id" : "ALL_BUILD::@6890427a1f51a3e7e1df",
-					"jsonFile" : "target-ALL_BUILD-Debug-a4a1348077816cd71327.json",
+					"jsonFile" : "target-ALL_BUILD-Debug-5da509d9d5dda1e35817.json",
 					"name" : "ALL_BUILD",
 					"projectIndex" : 0
 				},
 				{
 					"directoryIndex" : 0,
 					"id" : "ZERO_CHECK::@6890427a1f51a3e7e1df",
-					"jsonFile" : "target-ZERO_CHECK-Debug-922063a39e9909ad9787.json",
+					"jsonFile" : "target-ZERO_CHECK-Debug-856f1dd4703236e4d9a4.json",
 					"name" : "ZERO_CHECK",
 					"projectIndex" : 0
 				},
 				{
 					"directoryIndex" : 0,
-					"id" : "hello::@6890427a1f51a3e7e1df",
-					"jsonFile" : "target-hello-Debug-838b10f9c1ffc6ae03d9.json",
-					"name" : "hello",
+					"id" : "webUV::@6890427a1f51a3e7e1df",
+					"jsonFile" : "target-webUV-Debug-cefe5723136a92fed8f0.json",
+					"name" : "webUV",
 					"projectIndex" : 0
 				}
 			]
@@ -71,7 +71,7 @@
 					"jsonFile" : "directory-.-Release-d0094a50bb2071803777.json",
 					"minimumCMakeVersion" : 
 					{
-						"string" : "3.5"
+						"string" : "3.29.1"
 					},
 					"projectIndex" : 0,
 					"source" : ".",
@@ -91,7 +91,7 @@
 					[
 						0
 					],
-					"name" : "MyProject",
+					"name" : "webUV",
 					"targetIndexes" : 
 					[
 						0,
@@ -105,22 +105,22 @@
 				{
 					"directoryIndex" : 0,
 					"id" : "ALL_BUILD::@6890427a1f51a3e7e1df",
-					"jsonFile" : "target-ALL_BUILD-Release-a4a1348077816cd71327.json",
+					"jsonFile" : "target-ALL_BUILD-Release-5da509d9d5dda1e35817.json",
 					"name" : "ALL_BUILD",
 					"projectIndex" : 0
 				},
 				{
 					"directoryIndex" : 0,
 					"id" : "ZERO_CHECK::@6890427a1f51a3e7e1df",
-					"jsonFile" : "target-ZERO_CHECK-Release-922063a39e9909ad9787.json",
+					"jsonFile" : "target-ZERO_CHECK-Release-856f1dd4703236e4d9a4.json",
 					"name" : "ZERO_CHECK",
 					"projectIndex" : 0
 				},
 				{
 					"directoryIndex" : 0,
-					"id" : "hello::@6890427a1f51a3e7e1df",
-					"jsonFile" : "target-hello-Release-a44a62a16240f23351aa.json",
-					"name" : "hello",
+					"id" : "webUV::@6890427a1f51a3e7e1df",
+					"jsonFile" : "target-webUV-Release-a751e3ff954e60ce548d.json",
+					"name" : "webUV",
 					"projectIndex" : 0
 				}
 			]
@@ -133,7 +133,7 @@
 					"jsonFile" : "directory-.-MinSizeRel-d0094a50bb2071803777.json",
 					"minimumCMakeVersion" : 
 					{
-						"string" : "3.5"
+						"string" : "3.29.1"
 					},
 					"projectIndex" : 0,
 					"source" : ".",
@@ -153,7 +153,7 @@
 					[
 						0
 					],
-					"name" : "MyProject",
+					"name" : "webUV",
 					"targetIndexes" : 
 					[
 						0,
@@ -167,22 +167,22 @@
 				{
 					"directoryIndex" : 0,
 					"id" : "ALL_BUILD::@6890427a1f51a3e7e1df",
-					"jsonFile" : "target-ALL_BUILD-MinSizeRel-a4a1348077816cd71327.json",
+					"jsonFile" : "target-ALL_BUILD-MinSizeRel-5da509d9d5dda1e35817.json",
 					"name" : "ALL_BUILD",
 					"projectIndex" : 0
 				},
 				{
 					"directoryIndex" : 0,
 					"id" : "ZERO_CHECK::@6890427a1f51a3e7e1df",
-					"jsonFile" : "target-ZERO_CHECK-MinSizeRel-922063a39e9909ad9787.json",
+					"jsonFile" : "target-ZERO_CHECK-MinSizeRel-856f1dd4703236e4d9a4.json",
 					"name" : "ZERO_CHECK",
 					"projectIndex" : 0
 				},
 				{
 					"directoryIndex" : 0,
-					"id" : "hello::@6890427a1f51a3e7e1df",
-					"jsonFile" : "target-hello-MinSizeRel-808b240a2c97cc3aa5f4.json",
-					"name" : "hello",
+					"id" : "webUV::@6890427a1f51a3e7e1df",
+					"jsonFile" : "target-webUV-MinSizeRel-9927b6230b3e0a17b577.json",
+					"name" : "webUV",
 					"projectIndex" : 0
 				}
 			]
@@ -195,7 +195,7 @@
 					"jsonFile" : "directory-.-RelWithDebInfo-d0094a50bb2071803777.json",
 					"minimumCMakeVersion" : 
 					{
-						"string" : "3.5"
+						"string" : "3.29.1"
 					},
 					"projectIndex" : 0,
 					"source" : ".",
@@ -215,7 +215,7 @@
 					[
 						0
 					],
-					"name" : "MyProject",
+					"name" : "webUV",
 					"targetIndexes" : 
 					[
 						0,
@@ -229,22 +229,22 @@
 				{
 					"directoryIndex" : 0,
 					"id" : "ALL_BUILD::@6890427a1f51a3e7e1df",
-					"jsonFile" : "target-ALL_BUILD-RelWithDebInfo-a4a1348077816cd71327.json",
+					"jsonFile" : "target-ALL_BUILD-RelWithDebInfo-5da509d9d5dda1e35817.json",
 					"name" : "ALL_BUILD",
 					"projectIndex" : 0
 				},
 				{
 					"directoryIndex" : 0,
 					"id" : "ZERO_CHECK::@6890427a1f51a3e7e1df",
-					"jsonFile" : "target-ZERO_CHECK-RelWithDebInfo-922063a39e9909ad9787.json",
+					"jsonFile" : "target-ZERO_CHECK-RelWithDebInfo-856f1dd4703236e4d9a4.json",
 					"name" : "ZERO_CHECK",
 					"projectIndex" : 0
 				},
 				{
 					"directoryIndex" : 0,
-					"id" : "hello::@6890427a1f51a3e7e1df",
-					"jsonFile" : "target-hello-RelWithDebInfo-e5be5007800e82585b91.json",
-					"name" : "hello",
+					"id" : "webUV::@6890427a1f51a3e7e1df",
+					"jsonFile" : "target-webUV-RelWithDebInfo-a2f94cb4dc37aad98159.json",
+					"name" : "webUV",
 					"projectIndex" : 0
 				}
 			]
