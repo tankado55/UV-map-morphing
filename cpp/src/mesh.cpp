@@ -389,8 +389,7 @@ void Mesh::updatePathVerse(int mode)
     }
     for (int i = 0; i < v.size(); i++)
     {
-        //pathVersePtr[i] = v[i].pathVerse;
-        //pathVersePtr[i] = 2.5;
+        pathVersePtr[i] = v[i].pathVerse;
     }
 }
 
@@ -423,8 +422,7 @@ void Mesh::updatePathVersePerIsland()
     }
     for (int i = 0; i < v.size(); i++)
     {
-        //pathVersePtr[i] = v[i].pathVerse;
-        //pathVersePtr[i] = 2.5;
+        pathVersePtr[i] = v[i].pathVerse;
     }
 
     std::cout << "island:" << countIslands() << std::endl;

@@ -45,3 +45,40 @@ function plusOne() {
 
 	});
 }
+
+/*
+function plusOne() {
+	object.traverse(function (child) {
+
+		if (child.isMesh) {
+			child.geometry.dynamic = true;
+			let arr = child.geometry.attributes.position.array;
+			//console.log(arr)
+
+			console.log("js, bef: " + arr[0])
+
+			const hasFloatValue = containsFloatValue(arr);
+			let pointerToArrayOnHeap;
+			try {
+				pointerToArrayOnHeap = transferNumberArrayToHeap(
+					arr,
+					hasFloatValue ? TYPES.f32 : TYPES.i32
+				);
+				Module.ccall(
+					"plusOne", // The name of C++ function
+					null, // The return type
+					["number", "number"], // The argument types
+					[pointerToArrayOnHeap, arr.length] // The arguments
+				);
+				//child.geometry.attributes.position.array = Module["HEAPF32"].slice(pointerToArrayOnHeap >> 2, (pointerToArrayOnHeap >> 2) + arr.length)
+				child.geometry.setAttribute('position', new THREE.BufferAttribute(Module["HEAPF32"].slice(pointerToArrayOnHeap >> 2, (pointerToArrayOnHeap >> 2) + arr.length), 3));
+				child.geometry.verticesNeedUpdate = true;
+			}
+			finally {
+				console.log(Module["HEAPF32"][pointerToArrayOnHeap >> 2])
+				Module._free(pointerToArrayOnHeap);
+			}
+		}
+
+	});
+}*/

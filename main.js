@@ -30,15 +30,32 @@ objSelect.onchange = function () {
 	objPath = "res/models/" + objSelect.value;
 	deallocateHeap();
 	initLoadModel();
-	
+
 };
 let texturePath = "res/models/_Wheel_195_50R13x10_OBJ/diffuse.png"
 let texture;
 let rtTextureTarget;
 let basicMaterial;
 let material;
+let customShaderMaterial;
 let plane;
 let quad;
+
+let customFragShader
+let customVertexShader
+
+async function loadShaders()
+{
+	customVertexShader = await (await fetch("res/shaders/customVert.glsl")).text();
+	customFragShader = await (await fetch("res/shaders/customFrag.glsl")).text();
+	customShaderMaterial = new THREE.ShaderMaterial({
+		vertexShader: customVertexShader,
+		fragmentShader: customFragShader
+	});
+	
+}
+
+loadShaders();
 
 //UI
 var interpolationSlider = document.getElementById("interpolationSlider");
@@ -61,8 +78,7 @@ splitResidualElement.disabled = linear;
 gluedElement.disabled = linear;
 gluedModElement.disabled = linear;
 
-function updateUI()
-{
+function updateUI() {
 	gluedElement.dispatchEvent(event);
 	linearElement.dispatchEvent(event);
 	splitResidualElement.dispatchEvent(event);
@@ -98,11 +114,10 @@ linearElement.onchange = function () {
 }
 shortestElement.onchange = function () {
 	shortestPath = shortestElement.value;
-	if (shortestPath < 3)
-	{
+	if (shortestPath < 3) {
 		meshInstance.updatePathVerse(parseInt(shortestPath));
 	}
-	else{
+	else {
 		meshInstance.updatePathVersePerIsland();
 	}
 	render();
@@ -123,21 +138,19 @@ gluedModElement.onchange = function () {
 	meshInstance.updateCopyOf(parseInt(gluedMod));
 	render();
 }
-
+/////////////////////////////////////////*** Init */
 
 initRTT()
 init();
-Module.onRuntimeInitialized = () => {initLoadModel();}
+Module.onRuntimeInitialized = () => { initLoadModel(); }
 initHorPlane();
-
-console.log(meshInstance)
 
 function initHorPlane() {
 	const geometry = new THREE.PlaneGeometry(10, 10);
 	const material = new THREE.MeshStandardMaterial({ color: 0xfdfdfd, side: THREE.DoubleSide });
 	const plane = new THREE.Mesh(geometry, material);
 	plane.translateY(-3.0);
-	plane.rotateX(- PI/2);
+	plane.rotateX(- PI / 2);
 	plane.receiveShadow = true;
 	scene.add(plane);
 }
@@ -186,15 +199,14 @@ function initRTT() {
 	renderer.setRenderTarget(null);
 }
 
-function deallocateHeap()
-	{
-		scene.remove(object);
-		Module._free(heapGeometryPointer);
-		Module._free(heapPathVersesPointer);
-		Module._free(heapUVPointer);
-		Module._free(heapGeometryPointInterpolated);
-		meshInstance.delete();
-	}
+function deallocateHeap() {
+	scene.remove(object);
+	Module._free(heapGeometryPointer);
+	Module._free(heapPathVersesPointer);
+	Module._free(heapUVPointer);
+	Module._free(heapGeometryPointInterpolated);
+	meshInstance.delete();
+}
 
 function init() {
 
@@ -210,10 +222,10 @@ function init() {
 	//const pointLight = new THREE.PointLight(0xffffff, 15);
 	//camera.add(pointLight);
 
-	const dirLight = new THREE.DirectionalLight( 0xffffff, 1 );
-	dirLight.position.set( 0, 5, 0 ); //default; light shining from top
+	const dirLight = new THREE.DirectionalLight(0xffffff, 1);
+	dirLight.position.set(0, 5, 0); //default; light shining from top
 	dirLight.castShadow = true; // default false
-	scene.add( dirLight );
+	scene.add(dirLight);
 
 	//
 
@@ -228,8 +240,7 @@ function init() {
 	console.log(scene)
 }
 
-function initLoadModel()
-{
+function initLoadModel() {
 	// manager
 	function loadModel() {
 
@@ -240,12 +251,11 @@ function initLoadModel()
 				let arr = child.geometry.attributes.position.array;
 				let arrUV = child.geometry.attributes.uv.array;
 				let pathVerse = new Float32Array(child.geometry.attributes.position.count)
-				for (let i = 0; i < child.geometry.attributes.position.count; i++)
-					{
-						pathVerse[i] = 5.5;
-					}
-				child.geometry.setAttribute('pathVerse', new THREE.BufferAttribute( pathVerse, 1 ))
-				
+				for (let i = 0; i < child.geometry.attributes.position.count; i++) {
+					pathVerse[i] = 5.5;
+				}
+				child.geometry.setAttribute('pathVerse', new THREE.BufferAttribute(pathVerse, 1))
+
 				let arrPathVerses = child.geometry.attributes.pathVerse.array;
 
 				const hasFloatValue = containsFloatValue(arr);
@@ -277,20 +287,20 @@ function initLoadModel()
 				child.geometry.computeBoundingSphere();
 				let radius = child.geometry.boundingSphere.radius
 				object.scale.set(1.0 / radius, 1.0 / radius, 1.0 / radius);
-				child.scale.set(1.0,1.0,1.0);
+				child.scale.set(1.0, 1.0, 1.0);
 				child.rotation.x = 0;
 				child.rotation.y = 0;
 				child.rotation.z = 0;
-				child.position.set(0,0,0);
+				child.position.set(0, 0, 0);
 				console.log(radius)
 				console.log(object.scale)
 				console.log(child.geometry)
 
 				// debug
-				let sphGeometry = new THREE.SphereGeometry( radius, 32, 16 );
-				sphGeometry = new THREE.WireframeGeometry( sphGeometry );
-				const sphMaterial = new THREE.MeshBasicMaterial( { color: 0xffff00 } ); 
-				const sphere = new THREE.Mesh( sphGeometry, sphMaterial );
+				let sphGeometry = new THREE.SphereGeometry(radius, 32, 16);
+				sphGeometry = new THREE.WireframeGeometry(sphGeometry);
+				const sphMaterial = new THREE.MeshBasicMaterial({ color: 0xffff00 });
+				const sphere = new THREE.Mesh(sphGeometry, sphMaterial);
 				//sphere.scale.set(1.0 / radius, 1.0 / radius, 1.0 / radius)
 				console.log(object)
 				updateUI();
@@ -342,14 +352,13 @@ function initLoadModel()
 
 	let extension = objPath.split('.')[1];
 	let loader;
-	if (extension == "obj")
-	{
+	if (extension == "obj") {
 		loader = new OBJLoader(manager);
 	}
-	else{
+	else {
 		loader = new FBXLoader(manager);
 	}
-	
+
 	loader.load(objPath, function (obj) {
 		renderer.setRenderTarget(rtTextureTarget);
 		renderer.clear();
@@ -361,7 +370,8 @@ function initLoadModel()
 		obj.traverse(function (child) {
 
 			if (child.isMesh) {
-				child.material = new THREE.MeshStandardMaterial({ map: rtTextureTarget.texture })
+				// child.material = new THREE.MeshStandardMaterial({ map: rtTextureTarget.texture })
+				child.material = customShaderMaterial;
 				child.material.side = THREE.DoubleSide;
 				child.castShadow = true;
 				child.receiveShadow = true;
@@ -397,42 +407,7 @@ function transferNumberArrayToHeap(array, type) {
 function containsFloatValue(array) {
 	return array.some((value) => !Number.isInteger(value));
 }
-/*
-function plusOne() {
-	object.traverse(function (child) {
 
-		if (child.isMesh) {
-			child.geometry.dynamic = true;
-			let arr = child.geometry.attributes.position.array;
-			//console.log(arr)
-
-			console.log("js, bef: " + arr[0])
-
-			const hasFloatValue = containsFloatValue(arr);
-			let pointerToArrayOnHeap;
-			try {
-				pointerToArrayOnHeap = transferNumberArrayToHeap(
-					arr,
-					hasFloatValue ? TYPES.f32 : TYPES.i32
-				);
-				Module.ccall(
-					"plusOne", // The name of C++ function
-					null, // The return type
-					["number", "number"], // The argument types
-					[pointerToArrayOnHeap, arr.length] // The arguments
-				);
-				//child.geometry.attributes.position.array = Module["HEAPF32"].slice(pointerToArrayOnHeap >> 2, (pointerToArrayOnHeap >> 2) + arr.length)
-				child.geometry.setAttribute('position', new THREE.BufferAttribute(Module["HEAPF32"].slice(pointerToArrayOnHeap >> 2, (pointerToArrayOnHeap >> 2) + arr.length), 3));
-				child.geometry.verticesNeedUpdate = true;
-			}
-			finally {
-				console.log(Module["HEAPF32"][pointerToArrayOnHeap >> 2])
-				Module._free(pointerToArrayOnHeap);
-			}
-		}
-
-	});
-}*/
 
 
 
@@ -441,7 +416,7 @@ function interpolate() {
 		if (child.isMesh) {
 
 			let arr = child.geometry.attributes.position.array;
-			
+
 			meshInstance.interpolatePerTriangle(parseInt(interpolationSlider.value), splitResidual, linear, shortestPath);
 			child.geometry.setAttribute('position', new THREE.BufferAttribute(Module["HEAPF32"].slice(heapGeometryPointer >> 2, (heapGeometryPointer >> 2) + arr.length), 3));
 			child.geometry.setAttribute('pathVerse', new THREE.BufferAttribute(Module["HEAPF32"].slice(heapPathVersesPointer >> 2, (heapPathVersesPointer >> 2) + child.geometry.attributes.pathVerse.array.length), 1));
@@ -464,6 +439,5 @@ function render() {
 
 	interpolate();
 	renderer.clear();
-	console.log(scene)
 	renderer.render(scene, camera);
 }
