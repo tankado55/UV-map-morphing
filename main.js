@@ -239,10 +239,13 @@ function initLoadModel()
 			if (child.isMesh) {
 				let arr = child.geometry.attributes.position.array;
 				let arrUV = child.geometry.attributes.uv.array;
-
-				//pathVerse Color
-				let pathVerses = new Float32Array(child.geometry.attributes.position.count, 0)
-				child.geometry.setAttribute('pathVerse', new THREE.BufferAttribute( pathVerses, 1 ))
+				let pathVerse = new Float32Array(child.geometry.attributes.position.count)
+				for (let i = 0; i < child.geometry.attributes.position.count; i++)
+					{
+						pathVerse[i] = 5.5;
+					}
+				child.geometry.setAttribute('pathVerse', new THREE.BufferAttribute( pathVerse, 1 ))
+				
 				let arrPathVerses = child.geometry.attributes.pathVerse.array;
 
 				const hasFloatValue = containsFloatValue(arr);
@@ -264,8 +267,6 @@ function initLoadModel()
 						hasFloatValue ? TYPES.f32 : TYPES.f32 // forcing f32
 					);
 					meshInstance = new Module.Mesh(heapGeometryPointer, heapUVPointer, heapPathVersesPointer, arr.length, arrUV.length);
-					console.log("boundingsphere")
-					//console.log(meshInstance.boundingSphere);
 					console.log(Module["HEAPF32"][heapGeometryPointer >> 2])
 				}
 				catch (error) {
@@ -433,39 +434,19 @@ function plusOne() {
 	});
 }*/
 
-function plusOne() {
-	object.traverse(function (child) {
-		if (child.isMesh) {
-			let arr = child.geometry.attributes.position.array;
-			Module.ccall(
-				"plusOne", // The name of C++ function
-				null, // The return type
-				["number", "number"], // The argument types
-				[heapGeometryPointer, arr.length] // The arguments
-			);
-			child.geometry.setAttribute('position', new THREE.BufferAttribute(Module["HEAPF32"].slice(heapGeometryPointer >> 2, (heapGeometryPointer >> 2) + arr.length), 3));
-		}
 
-	});
-}
 
 function interpolate() {
 	object.traverse(function (child) {
 		if (child.isMesh) {
 
 			let arr = child.geometry.attributes.position.array;
-			/*
-			Module.ccall(
-				"interpolate", // The name of C++ function
-				null, // The return type
-				["number", "number", "number", "number", "number"], // The argument types
-				[heapGeometryPointer, heapUVPointer, slider.value, arr.length, heapGeometryPointInterpolated] // The arguments
-			);
-			*/
-			//meshInstance.interpolate(parseInt(interpolationSlider.value))
+			
 			meshInstance.interpolatePerTriangle(parseInt(interpolationSlider.value), splitResidual, linear, shortestPath);
 			child.geometry.setAttribute('position', new THREE.BufferAttribute(Module["HEAPF32"].slice(heapGeometryPointer >> 2, (heapGeometryPointer >> 2) + arr.length), 3));
 			child.geometry.setAttribute('pathVerse', new THREE.BufferAttribute(Module["HEAPF32"].slice(heapPathVersesPointer >> 2, (heapPathVersesPointer >> 2) + child.geometry.attributes.pathVerse.array.length), 1));
+			child.geometry.attributes.pathVerse.needsUpdate = true;
+			console.log(child.geometry.attributes.pathVerse)
 		}
 
 	});
@@ -480,7 +461,9 @@ function onWindowResize() {
 }
 
 function render() {
+
 	interpolate();
 	renderer.clear();
+	console.log(scene)
 	renderer.render(scene, camera);
 }

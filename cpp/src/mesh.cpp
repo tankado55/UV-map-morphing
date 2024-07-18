@@ -148,7 +148,7 @@ static float sigmoid(float t) // ease in ease out
     return (glm::sin(t * PI - PI / 2) + 1) / 2;
 }
 
-void Mesh::interpolatePerTriangle(int tPercent, bool spitResidual, bool linear, bool shortestPath) const // TODO: remove shortestPath and create a method that update it
+void Mesh::interpolatePerTriangle(int tPercent, bool spitResidual, bool linear, bool shortestPath) const
 {
     float t = tPercent / 100.0;
     
@@ -389,7 +389,8 @@ void Mesh::updatePathVerse(int mode)
     }
     for (int i = 0; i < v.size(); i++)
     {
-        pathVersePtr[i] = v[i].pathVerse;
+        //pathVersePtr[i] = v[i].pathVerse;
+        //pathVersePtr[i] = 2.5;
     }
 }
 
@@ -422,7 +423,8 @@ void Mesh::updatePathVersePerIsland()
     }
     for (int i = 0; i < v.size(); i++)
     {
-        pathVersePtr[i] = v[i].pathVerse;
+        //pathVersePtr[i] = v[i].pathVerse;
+        //pathVersePtr[i] = 2.5;
     }
 
     std::cout << "island:" << countIslands() << std::endl;

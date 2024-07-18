@@ -29,3 +29,19 @@ void Mesh::enforceArea() const // not work, probably useless
         heapPosPtr[posIndex + 8] = p3.z;
     }
 }
+
+function plusOne() {
+	object.traverse(function (child) {
+		if (child.isMesh) {
+			let arr = child.geometry.attributes.position.array;
+			Module.ccall(
+				"plusOne", // The name of C++ function
+				null, // The return type
+				["number", "number"], // The argument types
+				[heapGeometryPointer, arr.length] // The arguments
+			);
+			child.geometry.setAttribute('position', new THREE.BufferAttribute(Module["HEAPF32"].slice(heapGeometryPointer >> 2, (heapGeometryPointer >> 2) + arr.length), 3));
+		}
+
+	});
+}
