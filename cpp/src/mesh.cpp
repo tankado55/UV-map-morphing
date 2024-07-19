@@ -36,8 +36,8 @@ Mesh::Mesh(int positions, int uvs, int pathVerse, int posCount, int uvCount) : m
     updateUVScaling();
     updateBB();
     std::cout << "debug mesh class, bounding sphere radius: " << boundingSphere.radius << std::endl;
-    setTimingInsideOut(1.0);
-    UpdateAverageTimingPerFace();
+    setTimingWithUVdir(0.4, glm::vec2(1.0, 0.0));
+    updateAverageTimingPerFace();
     updateRotoTransl();
     updateAverageQuaternionRotationAreaWeighted();
     updateRotoTransl();
@@ -173,7 +173,6 @@ void Mesh::interpolatePerTriangle(int tPercent, bool spitResidual, bool linear, 
         Face face = f[i];
         for (int j = 0; j < 3; j++)
         {
-            glm::vec3 originV = v[face.vi[j]].pos;
             float interpolationValue = (t - v[face.vi[j]].tStart) / (v[face.vi[j]].tEnd - v[face.vi[j]].tStart);
             interpolationValue = glm::clamp(interpolationValue, 0.0f, 1.0f);
             interpolationValue = sigmoid(interpolationValue);
@@ -186,6 +185,7 @@ void Mesh::interpolatePerTriangle(int tPercent, bool spitResidual, bool linear, 
             {
                 T = mix(I, face.three2two, interpolationValue, spitResidual, face.pathVerse);
             }
+            glm::vec3 originV = v[face.vi[j]].pos;
             glm::vec3 resultV = T.apply(originV);
 
             // Write in the Heap
@@ -318,7 +318,7 @@ void Mesh::setTimingInsideOut(float k)
     }
 }
 
-void Mesh::UpdateAverageTimingPerFace()
+void Mesh::updateAverageTimingPerFace()
 {
     for (Face fi : f)
     {
