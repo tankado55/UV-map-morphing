@@ -9,7 +9,7 @@ Mesh::Mesh(int positions, int uvs, int pathVerse, int posCount, int uvCount) : m
     heapPosPtr = reinterpret_cast<glm::vec3 *>(positions);
     heapUvPtr = reinterpret_cast<glm::vec2 *>(uvs);
     pathVersePtr = reinterpret_cast<float *>(pathVerse);
-    
+
     if (nv * 2 != uvCount || nv * 3 != posCount)
     {
         std::cout << "posCount and uvCount are NOT compatible" << std::endl;
@@ -36,7 +36,8 @@ Mesh::Mesh(int positions, int uvs, int pathVerse, int posCount, int uvCount) : m
     updateUVScaling();
     updateBB();
     std::cout << "debug mesh class, bounding sphere radius: " << boundingSphere.radius << std::endl;
-    setTimingWithV(0.4);
+    setTimingInsideOut(1.0);
+    UpdateAverageTimingPerFace();
     updateRotoTransl();
     updateAverageQuaternionRotationAreaWeighted();
     updateRotoTransl();
@@ -44,37 +45,51 @@ Mesh::Mesh(int positions, int uvs, int pathVerse, int posCount, int uvCount) : m
     updateIsland();
 }
 
-inline bool operator< (const glm::vec<3, float>& el,
-                        const glm::vec<3, float>& el2) {
-    if (el.x < el2.x) return true;
-    if (el2.x < el.x) return false;
-    if (el.y < el2.y) return true;
-    if (el2.y < el.y) return false;
+inline bool operator<(const glm::vec<3, float> &el,
+                      const glm::vec<3, float> &el2)
+{
+    if (el.x < el2.x)
+        return true;
+    if (el2.x < el.x)
+        return false;
+    if (el.y < el2.y)
+        return true;
+    if (el2.y < el.y)
+        return false;
 
     return el.z < el2.z;
 }
 
-inline bool operator< (const glm::vec<2, float>& el,
-                        const glm::vec<2, float>& el2) {
-    if (el.x < el2.x) return true;
-    if (el2.x < el.x) return false;
+inline bool operator<(const glm::vec<2, float> &el,
+                      const glm::vec<2, float> &el2)
+{
+    if (el.x < el2.x)
+        return true;
+    if (el2.x < el.x)
+        return false;
 
     return el.y < el2.y;
 }
 
-struct XYZUV{
+struct XYZUV
+{
     glm::vec3 first;
     glm::vec2 second;
     int path;
-    XYZUV() { };
-    XYZUV(glm::vec3 vec3, glm::vec2 vec2, int p): first(vec3), second(vec2), path(p) {} ;
+    XYZUV(){};
+    XYZUV(glm::vec3 vec3, glm::vec2 vec2, int p) : first(vec3), second(vec2), path(p){};
 
-    friend bool operator< (const XYZUV& el,
-                           const XYZUV& el2) {
-        if (el.first < el2.first) return true;
-        if (el2.first < el.first) return false;
-        if (el.second < el2.second) return true;
-        if (el2.second < el.second) return false;
+    friend bool operator<(const XYZUV &el,
+                          const XYZUV &el2)
+    {
+        if (el.first < el2.first)
+            return true;
+        if (el2.first < el.first)
+            return false;
+        if (el.second < el2.second)
+            return true;
+        if (el2.second < el.second)
+            return false;
         return el.path < el2.path;
     };
 };
@@ -108,7 +123,7 @@ void Mesh::updateCopyOf(bool pathDependent)
 
 void Mesh::glueTriangles() const
 {
-    std::vector<glm::vec3> sum(v.size(), glm::vec3(0.0,0.0,0.0));
+    std::vector<glm::vec3> sum(v.size(), glm::vec3(0.0, 0.0, 0.0));
     std::vector<int> count(v.size(), 0);
 
     for (int i = 0; i < v.size(); ++i)
@@ -151,7 +166,6 @@ static float sigmoid(float t) // ease in ease out
 void Mesh::interpolatePerTriangle(int tPercent, bool spitResidual, bool linear, bool shortestPath) const
 {
     float t = tPercent / 100.0;
-    
 
     decltype(f[0].three2two) I;
     for (int i = 0; i < f.size(); i++)
@@ -160,17 +174,21 @@ void Mesh::interpolatePerTriangle(int tPercent, bool spitResidual, bool linear, 
         for (int j = 0; j < 3; j++)
         {
             glm::vec3 originV = v[face.vi[j]].pos;
+            float interpolationValue = (t - v[face.vi[j]].tStart) / (v[face.vi[j]].tEnd - v[face.vi[j]].tStart);
+            interpolationValue = glm::clamp(interpolationValue, 0.0f, 1.0f);
+            interpolationValue = sigmoid(interpolationValue);
             decltype(f[0].three2two) T;
             if (linear)
             {
-                T = mixLinear(I, face.three2two, t);
-            } else
+                T = mixLinear(I, face.three2two, interpolationValue);
+            }
+            else
             {
-                T = mix(I, face.three2two, t, spitResidual, face.pathVerse);
+                T = mix(I, face.three2two, interpolationValue, spitResidual, face.pathVerse);
             }
             glm::vec3 resultV = T.apply(originV);
 
-            // Write in the Heap 
+            // Write in the Heap
             int heapIndex = i * 3 + j;
             heapPosPtr[heapIndex] = resultV;
         }
@@ -178,10 +196,6 @@ void Mesh::interpolatePerTriangle(int tPercent, bool spitResidual, bool linear, 
     if (glued)
         glueTriangles();
 }
-
-
-
-
 
 void Mesh::updateRotoTransl()
 {
@@ -205,7 +219,7 @@ void Mesh::updateRotoTransl()
         glm::vec2 c2 = v[fi.vi[2]].uv;
         c2 = glm::vec2(toCenterMat * glm::vec4(c2, 0.0, 1.0));
         c2 = c2 * averageScaling;
-        
+
         fi.three2two.fromTo(a3, b3, c3, a2, b2, c2);
         if (glm::dot(glm::quat(1.0f, 0.0f, 0.0f, 0.0f), fi.three2two.dqTransf.dualQuaternion.real) < 0.0f)
         {
@@ -304,6 +318,27 @@ void Mesh::setTimingInsideOut(float k)
     }
 }
 
+void Mesh::UpdateAverageTimingPerFace()
+{
+    for (Face fi : f)
+    {
+        float averageStart = 0.0;
+        float averageEnd = 0.0;
+        for (int i : fi.vi)
+        {
+            averageStart += v[i].tStart;
+            averageEnd += v[i].tEnd;
+        }
+        averageStart /= sizeof(fi.vi);
+        averageEnd /= sizeof(fi.vi);
+        for (int i : fi.vi)
+        {
+            v[i].tStart = averageStart;
+            v[i].tEnd = averageEnd;
+        }
+    }
+}
+
 void Mesh::setTimingWithUVdir(float flightTime, glm::vec2 dirUV)
 {
     dirUV = glm::normalize(dirUV);
@@ -334,22 +369,22 @@ void Mesh::updateAverageQuaternionRotationAreaWeighted()
         glm::dualquat dq = fi.three2two.dqTransf.dualQuaternion;
         float area = ComputeArea(v[fi.vi[0]].pos, v[fi.vi[1]].pos, v[fi.vi[2]].pos);
         if (area <= 0.000001)
-             continue;
+            continue;
         areaSum += area;
 
-        dqSum = sum(dqSum, dq * area) ;
+        dqSum = sum(dqSum, dq * area);
     }
-        initialTranform = dqSum / areaSum;
-        initialTranform = myNormalized(initialTranform);
+    initialTranform = dqSum / areaSum;
+    initialTranform = myNormalized(initialTranform);
 
     // Apply
-    //DualQuatTransform t = DualQuatTransform(glm::dualquat(initialTranform.real, glm::quat()));
+    // DualQuatTransform t = DualQuatTransform(glm::dualquat(initialTranform.real, glm::quat()));
     DualQuatTransform t = DualQuatTransform(initialTranform);
     for (int i = 0; i < v.size(); ++i)
     {
-        //std::cout << v[i].pos.x << std::endl;
+        // std::cout << v[i].pos.x << std::endl;
         v[i].pos = t.apply(v[i].pos);
-        //std::cout << v[i].pos.x << std::endl;
+        // std::cout << v[i].pos.x << std::endl;
     }
 }
 
@@ -357,7 +392,7 @@ void Mesh::updatePathVerse(int mode)
 {
     for (Face &fi : f)
     {
-        
+
         if (mode == -1 && glm::dot(glm::quat(1.0f, 0.0f, 0.0f, 0.0f), fi.three2two.dqTransf.dualQuaternion.real) <= 0.0f)
         {
             fi.pathVerse = -1;
@@ -400,7 +435,7 @@ void Mesh::updatePathVersePerIsland()
     updatePathVerse(-1);
 
     std::vector<int> votation(v.size(), 0);
-    
+
     for (Face &fi : f)
     {
         int island = v[fi.vi[0]].islandId;
@@ -439,27 +474,30 @@ int Mesh::findIsland(int i) const
 }
 
 void Mesh::unionIsland(int x, int y)
-{ 
+{
     int xset = findIsland(x);
     int yset = findIsland(y);
 
-    if (xset == yset) 
-        return; 
+    if (xset == yset)
+        return;
 
-    // Put smaller ranked item under 
-    // bigger ranked item if ranks are 
-    // different 
-    if (v[xset].islandRank < v[yset].islandRank) { 
-        v[xset].islandId = yset; 
-    } 
-    else if (v[xset].islandRank > v[yset].islandRank) { 
-        v[yset].islandId = xset; 
-    } 
-    else { 
-        v[yset].islandId = xset; 
-        v[xset].islandRank = v[xset].islandRank + 1; 
-    } 
-} 
+    // Put smaller ranked item under
+    // bigger ranked item if ranks are
+    // different
+    if (v[xset].islandRank < v[yset].islandRank)
+    {
+        v[xset].islandId = yset;
+    }
+    else if (v[xset].islandRank > v[yset].islandRank)
+    {
+        v[yset].islandId = xset;
+    }
+    else
+    {
+        v[yset].islandId = xset;
+        v[xset].islandRank = v[xset].islandRank + 1;
+    }
+}
 
 void Mesh::updateIsland()
 {
@@ -493,7 +531,8 @@ int Mesh::countIslands()
     int count = 0;
     for (int i = 0; i < v.size(); i++)
     {
-        if(v[i].islandId == i) count++;
+        if (v[i].islandId == i)
+            count++;
     }
     return count;
 }

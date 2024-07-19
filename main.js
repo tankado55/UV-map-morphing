@@ -65,6 +65,8 @@ var splitResidualElement = document.getElementById("splitResidual");
 var splitResidual = splitResidualElement.value;
 var shortestElement = document.getElementById("shortestPath");
 var shortestPath = shortestElement.value;
+var debugIslandElement = document.getElementById("debugIsland");
+var debugIsland = debugIslandElement.value;
 //glued
 var gluedElement = document.getElementById("glued");
 var glued = gluedElement.value;
@@ -84,6 +86,7 @@ function updateUI() {
 	splitResidualElement.dispatchEvent(event);
 	shortestElement.dispatchEvent(event);
 	gluedModElement.dispatchEvent(event);
+	debugIslandElement.dispatchEvent(event);
 }
 
 interpolationSlider.oninput = function () {
@@ -136,6 +139,22 @@ gluedElement.onchange = function () {
 gluedModElement.onchange = function () {
 	gluedMod = gluedModElement.value;
 	meshInstance.updateCopyOf(parseInt(gluedMod));
+	render();
+}
+debugIslandElement.onchange = function () {
+	debugIsland = debugIslandElement.checked;
+	object.traverse(function (child) {
+
+		if (child.isMesh) {
+			if (!debugIsland)
+				child.material = new THREE.MeshStandardMaterial({ map: rtTextureTarget.texture })
+			else
+				child.material = customShaderMaterial;
+			child.material.side = THREE.DoubleSide;
+		}
+
+	});
+	renderQuadTexture()
 	render();
 }
 /////////////////////////////////////////*** Init */
@@ -370,8 +389,10 @@ function initLoadModel() {
 		obj.traverse(function (child) {
 
 			if (child.isMesh) {
-				// child.material = new THREE.MeshStandardMaterial({ map: rtTextureTarget.texture })
-				child.material = customShaderMaterial;
+				if (!debugIsland)
+					child.material = new THREE.MeshStandardMaterial({ map: rtTextureTarget.texture })
+				else
+					child.material = customShaderMaterial;
 				child.material.side = THREE.DoubleSide;
 				child.castShadow = true;
 				child.receiveShadow = true;
@@ -421,7 +442,6 @@ function interpolate() {
 			child.geometry.setAttribute('position', new THREE.BufferAttribute(Module["HEAPF32"].slice(heapGeometryPointer >> 2, (heapGeometryPointer >> 2) + arr.length), 3));
 			child.geometry.setAttribute('pathVerse', new THREE.BufferAttribute(Module["HEAPF32"].slice(heapPathVersesPointer >> 2, (heapPathVersesPointer >> 2) + child.geometry.attributes.pathVerse.array.length), 1));
 			child.geometry.attributes.pathVerse.needsUpdate = true;
-			console.log(child.geometry.attributes.pathVerse)
 		}
 
 	});
