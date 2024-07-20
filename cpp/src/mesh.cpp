@@ -329,8 +329,9 @@ void Mesh::updateAverageTimingPerFace()
             averageStart += v[i].tStart;
             averageEnd += v[i].tEnd;
         }
-        averageStart /= sizeof(fi.vi);
-        averageEnd /= sizeof(fi.vi);
+        averageStart /= 3;
+        averageEnd /= 3;
+        std::cout << sizeof(fi.vi) << std::endl;
         for (int i : fi.vi)
         {
             v[i].tStart = averageStart;
