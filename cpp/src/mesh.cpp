@@ -406,24 +406,26 @@ void Mesh::updateAverageTimingPerIsland()
 void Mesh::updateAverageQuaternionRotationAreaWeighted()
 {
     float areaSum = 0.0;
-    glm::dualquat dqSum;
+    glm::dualquat dqSum = glm::dualquat();
     for (Face fi : f)
     {
         glm::dualquat dq = fi.three2two.dqTransf.dualQuaternion;
         //float area = ComputeArea(v[fi.vi[0]].pos, v[fi.vi[1]].pos, v[fi.vi[2]].pos);
         float area = 0.5 * length(cross(v[fi.vi[0]].pos - v[fi.vi[1]].pos, v[fi.vi[0]].pos - v[fi.vi[2]].pos));
-        //area /= averageScaling; 
-        // if (area <= 1.0)
-        //     continue;
+        area /= averageScaling; 
+        if (area <= 0.000001)
+             continue;
         areaSum += area;
 
         dqSum = sum(dqSum, dq * area);
-        std::cout << area<< areaSum << std::endl;
-        std::cout << dqSum.real.x << areaSum << std::endl;
+        std::cout << area << " areaSum: "<<areaSum << std::endl;
+        std::cout << dqSum.real.x << std::endl;
     }
-    initialTranform = dqSum / areaSum;
-    std::cout << "areaSum: " << areaSum << std::endl;
-    initialTranform = myNormalized(initialTranform);
+    if (areaSum > 0.0)
+    {
+        initialTranform = dqSum / areaSum;
+        initialTranform = myNormalized(initialTranform);
+    }
 
     // Apply
     // DualQuatTransform t = DualQuatTransform(glm::dualquat(initialTranform.real, glm::quat())); // remove translation
