@@ -2,7 +2,7 @@
 <Project>
   <ProjectOutputs>
     <ProjectOutput>
-      <FullPath>D:\dev\webUVMapVisualizer\build\x64\Debug\ZERO_CHECK</FullPath>
+      <FullPath>D:\dev\web_UVmap_visualizer\build\x64\Debug\ZERO_CHECK</FullPath>
     </ProjectOutput>
   </ProjectOutputs>
   <ContentFiles />

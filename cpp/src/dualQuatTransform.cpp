@@ -76,7 +76,6 @@ glm::dualquat myNormalized(glm::dualquat dq)
 
 glm::dualquat sum(glm::dualquat dq1, glm::dualquat dq2)
 {
-    glm::dualquat result;
     if (glm::dot(dq1.real, dq2.real) < 0.0f){
 		dq2 = -dq2;
 	}

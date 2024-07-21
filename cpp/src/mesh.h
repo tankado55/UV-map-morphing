@@ -75,6 +75,7 @@ struct Mesh
 	void setTimingWithUVdir(float flightTime, glm::vec2 dirUV);
 	void setTimingWithU(float flightTime) {setTimingWithUVdir(flightTime, glm::vec2(1.0, 0.0));}
 	void setTimingWithV(float flightTime) {setTimingWithUVdir(flightTime, glm::vec2(0.0, 1.0));}
+	void resetTiming();
 	void updateCopyOf(bool pathDependent);
 	void glueTriangles() const;
 	void updateAverageQuaternionRotationAreaWeighted();
@@ -98,6 +99,10 @@ EMSCRIPTEN_BINDINGS(my_class_example) {
     .function("updateCopyOf", &Mesh::updateCopyOf)
     .function("updatePathVerse", &Mesh::updatePathVerse)
     .function("updatePathVersePerIsland", &Mesh::updatePathVersePerIsland)
+    .function("setTimingWithU", &Mesh::setTimingWithU)
+    .function("setTimingWithV", &Mesh::setTimingWithV)
+    .function("setTimingInsideOut", &Mesh::setTimingInsideOut)
+    .function("resetTiming", &Mesh::resetTiming)
 	.property("boundingSphere", &Mesh::getBBCenter)
 	.property("glued", &Mesh::glued)
     ;

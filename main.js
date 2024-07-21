@@ -79,6 +79,8 @@ shortestElement.disabled = linear;
 splitResidualElement.disabled = linear;
 gluedElement.disabled = linear;
 gluedModElement.disabled = linear;
+var temporizeElement = document.getElementById("temporize");
+var flightTimeElement = document.getElementById("flightTime");
 
 function updateUI() {
 	gluedElement.dispatchEvent(event);
@@ -87,6 +89,7 @@ function updateUI() {
 	shortestElement.dispatchEvent(event);
 	gluedModElement.dispatchEvent(event);
 	debugIslandElement.dispatchEvent(event);
+	temporizeElement.dispatchEvent(event);
 }
 
 interpolationSlider.oninput = function () {
@@ -155,6 +158,24 @@ debugIslandElement.onchange = function () {
 
 	});
 	renderQuadTexture()
+	render();
+}
+temporizeElement.onchange = function () {
+	var value = temporizeElement.value;
+	if (value == "no")
+		meshInstance.resetTiming();
+	else if (value == "u")
+	{
+		meshInstance.setTimingWithU(parseFloat(flightTimeElement.value))
+	}
+	else if (value == "v")
+	{
+		meshInstance.setTimingWithV(parseFloat(flightTimeElement.value))
+	}
+	else if (value == "insideO")
+	{
+		meshInstance.setTimingInsideOut(parseFloat(flightTimeElement.value))
+	}
 	render();
 }
 /////////////////////////////////////////*** Init */

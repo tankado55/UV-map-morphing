@@ -20,5 +20,5 @@ add_subdirectory("cpp/vendor/glm-1.0.0-light/glm")
 add_executable(${PROJECT_NAME} ${SOURCES})
 
 target_include_directories(${PROJECT_NAME} PRIVATE 
-    cpp/vendor/glm-1.0.0-light/glm 
+    cpp/vendor/glm-1.0.0-light
 )

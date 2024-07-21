@@ -36,14 +36,14 @@ Mesh::Mesh(int positions, int uvs, int pathVerse, int posCount, int uvCount) : m
     updateUVScaling();
     updateBB();
     std::cout << "debug mesh class, bounding sphere radius: " << boundingSphere.radius << std::endl;
-    setTimingWithUVdir(0.4, glm::vec2(1.0, 0.0));
+    //setTimingWithUVdir(0.4, glm::vec2(1.0, 0.0));
     //updateAverageTimingPerFace();
     updateRotoTransl();
     updateAverageQuaternionRotationAreaWeighted();
     updateRotoTransl();
     updateCopyOf(false);
     updateIsland();
-    updateAverageTimingPerIsland();
+    //updateAverageTimingPerIsland();
 }
 
 inline bool operator<(const glm::vec<3, float> &el,
@@ -94,6 +94,8 @@ struct XYZUV
         return el.path < el2.path;
     };
 };
+
+
 
 void Mesh::updateCopyOf(bool pathDependent)
 {
@@ -299,6 +301,15 @@ void Mesh::updateUVScaling()
         averageScaling = 1.0;
 }
 
+void Mesh::resetTiming()
+{
+    for (Vertex &vi : v)
+    {
+        vi.tStart = 0.0;
+        vi.tEnd = 1.0;
+    }
+}
+
 void Mesh::setTimingWithVertexIndex(float k)
 {
     int n = v.size();
@@ -308,6 +319,8 @@ void Mesh::setTimingWithVertexIndex(float k)
         v[i].tEnd = v[i].tStart + k;
     }
 }
+
+
 void Mesh::setTimingInsideOut(float k)
 {
     for (Vertex &vi : v)
@@ -317,6 +330,29 @@ void Mesh::setTimingInsideOut(float k)
         vi.tStart = (1 - k) * (1 - d * d * d);
         vi.tEnd = vi.tStart + k;
     }
+    updateAverageTimingPerIsland();
+}
+
+void Mesh::setTimingWithUVdir(float flightTime, glm::vec2 dirUV)
+{
+    dirUV = glm::normalize(dirUV);
+    float mind = 99999;
+    float maxd = -99999;
+    for (Vertex &vi : v)
+    {
+        float d = glm::dot(vi.uv, dirUV);
+        mind = std::min(mind, d);
+        maxd = std::max(maxd, d);
+    }
+
+    for (Vertex &vi : v)
+    {
+        float d = glm::dot(vi.uv, dirUV);
+        d = (d - mind) / (maxd - mind);
+        vi.tStart = (1 - flightTime) * d;
+        vi.tEnd = vi.tStart + flightTime;
+    }
+    updateAverageTimingPerIsland();
 }
 
 void Mesh::updateAverageTimingPerFace()
@@ -367,27 +403,6 @@ void Mesh::updateAverageTimingPerIsland()
     }
 }
 
-void Mesh::setTimingWithUVdir(float flightTime, glm::vec2 dirUV)
-{
-    dirUV = glm::normalize(dirUV);
-    float mind = 99999;
-    float maxd = -99999;
-    for (Vertex &vi : v)
-    {
-        float d = glm::dot(vi.uv, dirUV);
-        mind = std::min(mind, d);
-        maxd = std::max(maxd, d);
-    }
-
-    for (Vertex &vi : v)
-    {
-        float d = glm::dot(vi.uv, dirUV);
-        d = (d - mind) / (maxd - mind);
-        vi.tStart = (1 - flightTime) * d;
-        vi.tEnd = vi.tStart + flightTime;
-    }
-}
-
 void Mesh::updateAverageQuaternionRotationAreaWeighted()
 {
     float areaSum = 0.0;
@@ -395,25 +410,29 @@ void Mesh::updateAverageQuaternionRotationAreaWeighted()
     for (Face fi : f)
     {
         glm::dualquat dq = fi.three2two.dqTransf.dualQuaternion;
-        float area = ComputeArea(v[fi.vi[0]].pos, v[fi.vi[1]].pos, v[fi.vi[2]].pos);
-        if (area <= 0.000001)
-            continue;
+        //float area = ComputeArea(v[fi.vi[0]].pos, v[fi.vi[1]].pos, v[fi.vi[2]].pos);
+        float area = 0.5 * length(cross(v[fi.vi[0]].pos - v[fi.vi[1]].pos, v[fi.vi[0]].pos - v[fi.vi[2]].pos));
+        //area /= averageScaling; 
+        // if (area <= 1.0)
+        //     continue;
         areaSum += area;
 
         dqSum = sum(dqSum, dq * area);
+        std::cout << area<< areaSum << std::endl;
+        std::cout << dqSum.real.x << areaSum << std::endl;
     }
     initialTranform = dqSum / areaSum;
+    std::cout << "areaSum: " << areaSum << std::endl;
     initialTranform = myNormalized(initialTranform);
 
     // Apply
-    // DualQuatTransform t = DualQuatTransform(glm::dualquat(initialTranform.real, glm::quat()));
+    // DualQuatTransform t = DualQuatTransform(glm::dualquat(initialTranform.real, glm::quat())); // remove translation
     DualQuatTransform t = DualQuatTransform(initialTranform);
     for (int i = 0; i < v.size(); ++i)
     {
-        // std::cout << v[i].pos.x << std::endl;
         v[i].pos = t.apply(v[i].pos);
-        // std::cout << v[i].pos.x << std::endl;
     }
+    boundingSphere.center = t.apply(boundingSphere.center);
 }
 
 void Mesh::updatePathVerse(int mode)
