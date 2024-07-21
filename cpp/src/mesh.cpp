@@ -37,12 +37,13 @@ Mesh::Mesh(int positions, int uvs, int pathVerse, int posCount, int uvCount) : m
     updateBB();
     std::cout << "debug mesh class, bounding sphere radius: " << boundingSphere.radius << std::endl;
     setTimingWithUVdir(0.4, glm::vec2(1.0, 0.0));
-    updateAverageTimingPerFace();
+    //updateAverageTimingPerFace();
     updateRotoTransl();
     updateAverageQuaternionRotationAreaWeighted();
     updateRotoTransl();
     updateCopyOf(false);
     updateIsland();
+    updateAverageTimingPerIsland();
 }
 
 inline bool operator<(const glm::vec<3, float> &el,
@@ -337,6 +338,32 @@ void Mesh::updateAverageTimingPerFace()
             v[i].tStart = averageStart;
             v[i].tEnd = averageEnd;
         }
+    }
+}
+
+void Mesh::updateAverageTimingPerIsland()
+{
+    std::vector<float> averageStarts(v.size(), 0);
+    std::vector<float> averageEnds(v.size(), 0);
+    std::vector<int> counts(v.size(), 0);
+
+    for (Vertex &vi : v)
+    {
+        averageStarts[vi.islandId] += vi.tStart;
+        averageEnds[vi.islandId] += vi.tEnd;
+        counts[vi.islandId] += 1;
+    }
+
+    for (int i = 0; i < v.size(); i++)
+    {
+        averageStarts[i] /= counts[i];
+        averageEnds[i] /= counts[i];
+    }
+    
+    for (Vertex &vi : v)
+    {
+        vi.tStart = averageStarts[vi.islandId];
+        vi.tEnd = averageEnds[vi.islandId];
     }
 }
 

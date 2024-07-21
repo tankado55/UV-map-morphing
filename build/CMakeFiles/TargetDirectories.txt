@@ -1,3 +1,3 @@
-D:/dev/webUVMapVisualizer/build/CMakeFiles/webUV.dir
-D:/dev/webUVMapVisualizer/build/CMakeFiles/ALL_BUILD.dir
-D:/dev/webUVMapVisualizer/build/CMakeFiles/ZERO_CHECK.dir
+D:/dev/web_UVmap_visualizer/build/CMakeFiles/webUV.dir
+D:/dev/web_UVmap_visualizer/build/CMakeFiles/ALL_BUILD.dir
+D:/dev/web_UVmap_visualizer/build/CMakeFiles/ZERO_CHECK.dir

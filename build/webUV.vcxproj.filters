@@ -1,16 +1,28 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="17.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
-    <ClCompile Include="D:\dev\webUVMapVisualizer\cpp\src\mesh.cpp">
+    <ClCompile Include="D:\dev\web_UVmap_visualizer\cpp\src\hello.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\dev\web_UVmap_visualizer\cpp\src\mesh.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\dev\web_UVmap_visualizer\cpp\src\linearTransform.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\dev\web_UVmap_visualizer\cpp\src\dualQuatTransform.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\dev\web_UVmap_visualizer\cpp\src\smartTransform.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <CustomBuild Include="D:\dev\webUVMapVisualizer\CMakeLists.txt" />
+    <CustomBuild Include="D:\dev\web_UVmap_visualizer\CMakeLists.txt" />
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Source Files">
-      <UniqueIdentifier>{587FD9C4-507E-3D3D-857F-F516F9C0BD53}</UniqueIdentifier>
+      <UniqueIdentifier>{508BFFF1-52A2-37F7-85E3-A57630C422B4}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
 </Project>

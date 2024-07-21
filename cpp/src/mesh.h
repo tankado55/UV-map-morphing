@@ -86,6 +86,7 @@ struct Mesh
 	void updateIsland();
 	int countIslands();
 	void updateAverageTimingPerFace();
+	void updateAverageTimingPerIsland();
 };
 
 // Binding code

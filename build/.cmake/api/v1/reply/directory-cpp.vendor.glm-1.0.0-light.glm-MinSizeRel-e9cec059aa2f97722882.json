@@ -1,0 +1,14 @@
+{
+	"backtraceGraph" : 
+	{
+		"commands" : [],
+		"files" : [],
+		"nodes" : []
+	},
+	"installers" : [],
+	"paths" : 
+	{
+		"build" : "cpp/vendor/glm-1.0.0-light/glm",
+		"source" : "cpp/vendor/glm-1.0.0-light/glm"
+	}
+}

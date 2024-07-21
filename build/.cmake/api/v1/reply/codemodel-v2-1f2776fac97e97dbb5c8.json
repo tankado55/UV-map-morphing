@@ -1,0 +1,328 @@
+{
+	"configurations" : 
+	[
+		{
+			"directories" : 
+			[
+				{
+					"build" : ".",
+					"childIndexes" : 
+					[
+						1
+					],
+					"jsonFile" : "directory-.-Debug-d0094a50bb2071803777.json",
+					"minimumCMakeVersion" : 
+					{
+						"string" : "3.29.1"
+					},
+					"projectIndex" : 0,
+					"source" : ".",
+					"targetIndexes" : 
+					[
+						0,
+						1,
+						2
+					]
+				},
+				{
+					"build" : "cpp/vendor/glm-1.0.0-light/glm",
+					"jsonFile" : "directory-cpp.vendor.glm-1.0.0-light.glm-Debug-e9cec059aa2f97722882.json",
+					"minimumCMakeVersion" : 
+					{
+						"string" : "3.29.1"
+					},
+					"parentIndex" : 0,
+					"projectIndex" : 0,
+					"source" : "cpp/vendor/glm-1.0.0-light/glm"
+				}
+			],
+			"name" : "Debug",
+			"projects" : 
+			[
+				{
+					"directoryIndexes" : 
+					[
+						0,
+						1
+					],
+					"name" : "webUV",
+					"targetIndexes" : 
+					[
+						0,
+						1,
+						2
+					]
+				}
+			],
+			"targets" : 
+			[
+				{
+					"directoryIndex" : 0,
+					"id" : "ALL_BUILD::@6890427a1f51a3e7e1df",
+					"jsonFile" : "target-ALL_BUILD-Debug-ae8e0529eb89dbce5d21.json",
+					"name" : "ALL_BUILD",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 0,
+					"id" : "ZERO_CHECK::@6890427a1f51a3e7e1df",
+					"jsonFile" : "target-ZERO_CHECK-Debug-71645a789f0652847fd8.json",
+					"name" : "ZERO_CHECK",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 0,
+					"id" : "webUV::@6890427a1f51a3e7e1df",
+					"jsonFile" : "target-webUV-Debug-14016b55cbbbc20c0fb3.json",
+					"name" : "webUV",
+					"projectIndex" : 0
+				}
+			]
+		},
+		{
+			"directories" : 
+			[
+				{
+					"build" : ".",
+					"childIndexes" : 
+					[
+						1
+					],
+					"jsonFile" : "directory-.-Release-d0094a50bb2071803777.json",
+					"minimumCMakeVersion" : 
+					{
+						"string" : "3.29.1"
+					},
+					"projectIndex" : 0,
+					"source" : ".",
+					"targetIndexes" : 
+					[
+						0,
+						1,
+						2
+					]
+				},
+				{
+					"build" : "cpp/vendor/glm-1.0.0-light/glm",
+					"jsonFile" : "directory-cpp.vendor.glm-1.0.0-light.glm-Release-e9cec059aa2f97722882.json",
+					"minimumCMakeVersion" : 
+					{
+						"string" : "3.29.1"
+					},
+					"parentIndex" : 0,
+					"projectIndex" : 0,
+					"source" : "cpp/vendor/glm-1.0.0-light/glm"
+				}
+			],
+			"name" : "Release",
+			"projects" : 
+			[
+				{
+					"directoryIndexes" : 
+					[
+						0,
+						1
+					],
+					"name" : "webUV",
+					"targetIndexes" : 
+					[
+						0,
+						1,
+						2
+					]
+				}
+			],
+			"targets" : 
+			[
+				{
+					"directoryIndex" : 0,
+					"id" : "ALL_BUILD::@6890427a1f51a3e7e1df",
+					"jsonFile" : "target-ALL_BUILD-Release-ae8e0529eb89dbce5d21.json",
+					"name" : "ALL_BUILD",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 0,
+					"id" : "ZERO_CHECK::@6890427a1f51a3e7e1df",
+					"jsonFile" : "target-ZERO_CHECK-Release-71645a789f0652847fd8.json",
+					"name" : "ZERO_CHECK",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 0,
+					"id" : "webUV::@6890427a1f51a3e7e1df",
+					"jsonFile" : "target-webUV-Release-ae8713fc1d4de794a118.json",
+					"name" : "webUV",
+					"projectIndex" : 0
+				}
+			]
+		},
+		{
+			"directories" : 
+			[
+				{
+					"build" : ".",
+					"childIndexes" : 
+					[
+						1
+					],
+					"jsonFile" : "directory-.-MinSizeRel-d0094a50bb2071803777.json",
+					"minimumCMakeVersion" : 
+					{
+						"string" : "3.29.1"
+					},
+					"projectIndex" : 0,
+					"source" : ".",
+					"targetIndexes" : 
+					[
+						0,
+						1,
+						2
+					]
+				},
+				{
+					"build" : "cpp/vendor/glm-1.0.0-light/glm",
+					"jsonFile" : "directory-cpp.vendor.glm-1.0.0-light.glm-MinSizeRel-e9cec059aa2f97722882.json",
+					"minimumCMakeVersion" : 
+					{
+						"string" : "3.29.1"
+					},
+					"parentIndex" : 0,
+					"projectIndex" : 0,
+					"source" : "cpp/vendor/glm-1.0.0-light/glm"
+				}
+			],
+			"name" : "MinSizeRel",
+			"projects" : 
+			[
+				{
+					"directoryIndexes" : 
+					[
+						0,
+						1
+					],
+					"name" : "webUV",
+					"targetIndexes" : 
+					[
+						0,
+						1,
+						2
+					]
+				}
+			],
+			"targets" : 
+			[
+				{
+					"directoryIndex" : 0,
+					"id" : "ALL_BUILD::@6890427a1f51a3e7e1df",
+					"jsonFile" : "target-ALL_BUILD-MinSizeRel-ae8e0529eb89dbce5d21.json",
+					"name" : "ALL_BUILD",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 0,
+					"id" : "ZERO_CHECK::@6890427a1f51a3e7e1df",
+					"jsonFile" : "target-ZERO_CHECK-MinSizeRel-71645a789f0652847fd8.json",
+					"name" : "ZERO_CHECK",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 0,
+					"id" : "webUV::@6890427a1f51a3e7e1df",
+					"jsonFile" : "target-webUV-MinSizeRel-b2293ce8dd0cef4ad601.json",
+					"name" : "webUV",
+					"projectIndex" : 0
+				}
+			]
+		},
+		{
+			"directories" : 
+			[
+				{
+					"build" : ".",
+					"childIndexes" : 
+					[
+						1
+					],
+					"jsonFile" : "directory-.-RelWithDebInfo-d0094a50bb2071803777.json",
+					"minimumCMakeVersion" : 
+					{
+						"string" : "3.29.1"
+					},
+					"projectIndex" : 0,
+					"source" : ".",
+					"targetIndexes" : 
+					[
+						0,
+						1,
+						2
+					]
+				},
+				{
+					"build" : "cpp/vendor/glm-1.0.0-light/glm",
+					"jsonFile" : "directory-cpp.vendor.glm-1.0.0-light.glm-RelWithDebInfo-e9cec059aa2f97722882.json",
+					"minimumCMakeVersion" : 
+					{
+						"string" : "3.29.1"
+					},
+					"parentIndex" : 0,
+					"projectIndex" : 0,
+					"source" : "cpp/vendor/glm-1.0.0-light/glm"
+				}
+			],
+			"name" : "RelWithDebInfo",
+			"projects" : 
+			[
+				{
+					"directoryIndexes" : 
+					[
+						0,
+						1
+					],
+					"name" : "webUV",
+					"targetIndexes" : 
+					[
+						0,
+						1,
+						2
+					]
+				}
+			],
+			"targets" : 
+			[
+				{
+					"directoryIndex" : 0,
+					"id" : "ALL_BUILD::@6890427a1f51a3e7e1df",
+					"jsonFile" : "target-ALL_BUILD-RelWithDebInfo-ae8e0529eb89dbce5d21.json",
+					"name" : "ALL_BUILD",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 0,
+					"id" : "ZERO_CHECK::@6890427a1f51a3e7e1df",
+					"jsonFile" : "target-ZERO_CHECK-RelWithDebInfo-71645a789f0652847fd8.json",
+					"name" : "ZERO_CHECK",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 0,
+					"id" : "webUV::@6890427a1f51a3e7e1df",
+					"jsonFile" : "target-webUV-RelWithDebInfo-a61b70cd1a48fa961d8c.json",
+					"name" : "webUV",
+					"projectIndex" : 0
+				}
+			]
+		}
+	],
+	"kind" : "codemodel",
+	"paths" : 
+	{
+		"build" : "D:/dev/web_UVmap_visualizer/build",
+		"source" : "D:/dev/web_UVmap_visualizer"
+	},
+	"version" : 
+	{
+		"major" : 2,
+		"minor" : 7
+	}
+}
