@@ -187,7 +187,7 @@ initHorPlane();
 
 function initHorPlane() {
 	const geometry = new THREE.PlaneGeometry(10, 10);
-	const material = new THREE.MeshStandardMaterial({ color: 0xfdfdfd, side: THREE.DoubleSide });
+	const material = new THREE.MeshStandardMaterial({ color: 0xfdfdfd});
 	const plane = new THREE.Mesh(geometry, material);
 	plane.translateY(-3.0);
 	plane.rotateX(- PI / 2);

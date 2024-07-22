@@ -45,7 +45,10 @@ Mesh::Mesh(int positions, int uvs, int pathVerse, int posCount, int uvCount) : m
     updateIsland();
     //updateAverageTimingPerIsland();
     updateFacesNeighbors();
-    uniformQuaternionSigns();
+    if (!uniformQuaternionSigns())
+    {
+        std::cout << "uniformQuaternionSigns False" << std::endl;
+    }
 }
 
 inline bool operator<(const glm::vec<3, float> &el,

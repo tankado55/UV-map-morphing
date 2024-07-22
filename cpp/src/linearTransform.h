@@ -19,6 +19,8 @@ struct LinearTransform
 	LinearTransform(glm::mat4 _M);
 	void fromTo(glm::vec3 a3, glm::vec3 b3, glm::vec3 c3,
 	 		    glm::vec2 a2, glm::vec2 b2, glm::vec2 c2);
+	void fromTo(glm::vec3 a3, glm::vec3 b3, glm::vec3 c3,
+                glm::vec3 a2, glm::vec3 b2, glm::vec3 c2);
 			
 	glm::vec3 apply(glm::vec3 point) const;
 };
