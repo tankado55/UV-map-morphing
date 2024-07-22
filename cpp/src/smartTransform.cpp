@@ -6,6 +6,10 @@ inline glm::mat3 closestRotation(glm::mat3 M)
 
     for (int i = 0; i < 20; i++)
     {
+        if (glm::determinant(glm::transpose(rotationMatrix)) == 0)
+        {
+            std::cout << "not invertible\n";
+        }
         rotationMatrix = 0.5f * rotationMatrix + 0.5f * glm::inverse(glm::transpose(rotationMatrix));
     }
     return rotationMatrix;
@@ -26,7 +30,7 @@ void SmartTransform::fromTo(glm::vec3 a3, glm::vec3 b3, glm::vec3 c3, glm::vec2 
 
     glm::mat3 T2(glm::vec3(a2v.x, 0.0, a2v.y), glm::vec3(b2v.x, 0.0, b2v.y), n2);
     glm::mat3 T3(a3v, b3v, n3);
-
+    
     glm::mat3 R = T2 * glm::inverse(T3);
 
     linearTransf.M = glm::mat4(
@@ -37,6 +41,8 @@ void SmartTransform::fromTo(glm::vec3 a3, glm::vec3 b3, glm::vec3 c3, glm::vec2 
     );
 
 // Dualquat
+    if (R[0].x != R[0].x)
+        return;
     glm::mat3 rotationMatrix = closestRotation(R);
     glm::vec3 translationVector = glm::vec3(bari2.x, 0.0, bari2.y) - rotationMatrix * bari3;
 
@@ -45,6 +51,7 @@ void SmartTransform::fromTo(glm::vec3 a3, glm::vec3 b3, glm::vec3 c3, glm::vec2 
     glm::quat translQuat(0.0, translationVector.x, translationVector.y, translationVector.z);
     glm::quat dual = translQuat * rotationQuaternion * 0.5f;
     dqTransf.dualQuaternion = glm::dualquat(rotationQuaternion, dual);
+    
     
     a3 = dqTransf.apply(a3);
     b3 = dqTransf.apply(b3);

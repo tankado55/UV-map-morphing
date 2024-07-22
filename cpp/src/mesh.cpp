@@ -44,6 +44,8 @@ Mesh::Mesh(int positions, int uvs, int pathVerse, int posCount, int uvCount) : m
     updateCopyOf(false);
     updateIsland();
     //updateAverageTimingPerIsland();
+    updateFacesNeighbors();
+    uniformQuaternionSigns();
 }
 
 inline bool operator<(const glm::vec<3, float> &el,
@@ -413,13 +415,11 @@ void Mesh::updateAverageQuaternionRotationAreaWeighted()
         //float area = ComputeArea(v[fi.vi[0]].pos, v[fi.vi[1]].pos, v[fi.vi[2]].pos);
         float area = 0.5 * length(cross(v[fi.vi[0]].pos - v[fi.vi[1]].pos, v[fi.vi[0]].pos - v[fi.vi[2]].pos));
         area /= averageScaling; 
-        if (area <= 0.000001)
+        if (area <= 0.000001f)
              continue;
         areaSum += area;
 
         dqSum = sum(dqSum, dq * area);
-        std::cout << area << " areaSum: "<<areaSum << std::endl;
-        std::cout << dqSum.real.x << std::endl;
     }
     if (areaSum > 0.0)
     {
@@ -454,7 +454,7 @@ void Mesh::updatePathVerse(int mode)
         {
             fi.pathVerse = 1;
         }
-        else if (mode == 2)
+        else if (mode == 2) // neutral
         {
             fi.pathVerse = -1;
         }
@@ -495,6 +495,10 @@ void Mesh::updatePathVersePerIsland()
     {
         int votationResult = votation[v[fi.vi[0]].islandId];
         fi.pathVerse = std::max(-1, std::min(votationResult, 1));
+        if (fi.pathVerse == 0)
+        {
+            fi.pathVerse = 1;
+        }
     }
     // update pathVerse per vertex for using it in shaders TODO: refactoring
     for (Face &fi : f)
@@ -584,4 +588,100 @@ int Mesh::countIslands()
             count++;
     }
     return count;
+}
+
+// void Mesh::updateFacesNeighbors()
+// {
+//     for (int i = 0; i < f.size(); i++)
+//     {
+//         for (int j = i + 1; j < f.size(); j++)
+//         {
+//             int count = 0;
+//             for (int k = 0; k < 3; k++)
+//             {
+//                 for (int l = 0; l < 3; l++)
+//                 {
+//                     if (v[f[i].vi[k]].copyOf == v[f[j].vi[l]].copyOf)
+//                     {
+//                         count++;
+//                     }
+//                 }
+//             }
+//             if (count > 1)
+//             {
+//                 f[i].neighbors.insert(j);
+//                 f[j].neighbors.insert(i);
+//             }
+//         }
+//     }
+// }
+
+void Mesh::updateFacesNeighbors()
+{
+    updateCopyOf(false);
+    std::map<std::pair<int, int>, std::vector<int>> edgeMap;
+
+    for (int i = 0; i < f.size(); i++)
+    {
+        for (int j = 0; j < 3; j++)
+        {
+            int v1 = v[f[i].vi[j]].copyOf;
+            int v2 = v[f[i].vi[(j + 1) % 3]].copyOf;
+            if (v1 < v2)
+            {
+                int temp = v1;
+                v1 = v2;
+                v2 = temp;
+            }
+            std::pair<int, int> edge(v1, v2);
+            edgeMap[edge].push_back(i);
+        }
+    }
+
+    for (const auto& [key, values] : edgeMap)
+    {
+        for (int i : values)
+        {
+            for (int j : values)
+            {
+                if (i == j) continue;
+                f[i].neighbors.insert(j);
+            }
+        }
+    }
+}
+
+bool Mesh::uniformQuaternionSigns()
+{
+    bool success = true;
+    std::vector<bool> processed(f.size(), false);
+    for (int seedi = 0; seedi < f.size(); seedi++)
+    {
+        if (processed[seedi]) continue; 
+        std::vector<int> processingQueue;
+        processingQueue.push_back(seedi);
+        int k = 0; // indices of the processing queue
+        while (k < processingQueue.size())
+        {
+            int i = processingQueue[k++];
+            if (processed[i]) continue;
+            processed[i] = true; 
+            for (int j : f[i].neighbors)
+            {
+                processingQueue.push_back(j);
+                if (glm::dot(f[i].three2two.dqTransf.dualQuaternion.real, f[j].three2two.dqTransf.dualQuaternion.real) < 0.0)
+                {
+                    if (processed[j])
+                    {
+                        success = false;
+                    }
+                    else{
+                        f[j].three2two.dqTransf.dualQuaternion = -f[j].three2two.dqTransf.dualQuaternion;
+                    }
+                }
+            }
+        }
+
+    }
+    return success;
 }

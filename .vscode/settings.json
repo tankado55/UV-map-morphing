@@ -71,7 +71,9 @@
         "coroutine": "cpp",
         "map": "cpp",
         "variant": "cpp",
-        "xtree": "cpp"
+        "xtree": "cpp",
+        "unordered_set": "cpp",
+        "hash_set": "cpp"
     },
     "C_Cpp.errorSquiggles": "disabled"
 }

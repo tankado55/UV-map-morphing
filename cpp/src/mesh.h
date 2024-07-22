@@ -14,6 +14,7 @@
 #include "linearTransform.h"
 #include "dualQuatTransform.h"
 #include "smartTransform.h"
+#include <unordered_set>
 
 struct Vertex
 {
@@ -33,6 +34,7 @@ struct Face
 	int vi[3];
 	SmartTransform three2two;
 	int pathVerse = 1; // Individual choice for the shortest path for this triangle
+	std::unordered_set<int> neighbors;
 };
 
 struct BoundingSphere
@@ -88,6 +90,8 @@ struct Mesh
 	int countIslands();
 	void updateAverageTimingPerFace();
 	void updateAverageTimingPerIsland();
+	void updateFacesNeighbors();
+	bool uniformQuaternionSigns();
 };
 
 // Binding code
