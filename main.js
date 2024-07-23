@@ -72,6 +72,8 @@ var gluedElement = document.getElementById("glued");
 var glued = gluedElement.value;
 var gluedModElement = document.getElementById("gluedMod");
 var gluedMod = gluedModElement.value;
+var gluedAverageElement = document.getElementById("gluedAverage");
+gluedAverageElement.checked = false;
 // Linear
 var linearElement = document.getElementById("linear");
 var linear = linearElement.value;
@@ -79,6 +81,7 @@ shortestElement.disabled = linear;
 splitResidualElement.disabled = linear;
 gluedElement.disabled = linear;
 gluedModElement.disabled = linear;
+gluedAverageElement.disabled = linear;
 var temporizeElement = document.getElementById("temporize");
 var flightTimeElement = document.getElementById("flightTime");
 
@@ -90,6 +93,7 @@ function updateUI() {
 	gluedModElement.dispatchEvent(event);
 	debugIslandElement.dispatchEvent(event);
 	temporizeElement.dispatchEvent(event);
+	gluedAverageElement.dispatchEvent(event);
 }
 
 interpolationSlider.oninput = function () {
@@ -116,6 +120,7 @@ linearElement.onchange = function () {
 	splitResidualElement.disabled = linear;
 	gluedElement.disabled = linear;
 	gluedModElement.disabled = linear;
+	gluedAverageElement.disabled = linear;
 	render();
 }
 shortestElement.onchange = function () {
@@ -139,6 +144,11 @@ gluedElement.onchange = function () {
 	}
 	render();
 }
+gluedAverageElement.onchange = function () {
+	meshInstance.gluedAveraged = gluedAverageElement.checked;
+	render();
+}
+
 gluedModElement.onchange = function () {
 	gluedMod = gluedModElement.value;
 	meshInstance.updateCopyOf(parseInt(gluedMod));

@@ -27,6 +27,9 @@ struct Vertex
 	int islandId = 0;
 	int islandRank = 0;
 	int pathVerse = 0;
+	float area3D = 0.0;
+	float area2D = 0.0;
+
 };
 
 struct Face
@@ -59,6 +62,7 @@ struct Mesh
 	glm::vec2* heapUvPtr;
 	float* pathVersePtr;
 	bool glued;
+	bool gluedAveraged;
 	glm::dualquat initialTranform;
 
 	Mesh();
@@ -92,6 +96,8 @@ struct Mesh
 	void updateAverageTimingPerIsland();
 	void updateFacesNeighbors();
 	bool uniformQuaternionSigns();
+	void updateAreaPerVertex();
+	void glueTrianglesWeighted() const;
 };
 
 // Binding code
@@ -109,5 +115,6 @@ EMSCRIPTEN_BINDINGS(my_class_example) {
     .function("resetTiming", &Mesh::resetTiming)
 	.property("boundingSphere", &Mesh::getBBCenter)
 	.property("glued", &Mesh::glued)
+	.property("gluedAveraged", &Mesh::gluedAveraged)
     ;
 }

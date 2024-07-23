@@ -1,5 +1,7 @@
 #include "smartTransform.h"
 
+#define LINEAR_THEN_QUAT
+
 inline glm::mat3 closestRotation(glm::mat3 M)
 {
     glm::mat3 rotationMatrix = M;
@@ -65,7 +67,7 @@ void SmartTransform::fromTo(glm::vec3 a3, glm::vec3 b3, glm::vec3 c3, glm::vec2 
     dqTransf.dualQuaternion = glm::dualquat(rotationQuaternion, dual);
 
 #ifdef LINEAR_THEN_QUAT
-    glm::dualquat dqInverse = glm::inverse(dqTransf.dualQuaternion);
+    DualQuatTransform dqInverse = dqTransf.inverse();
     glm::vec3 ai = dqInverse.apply(glm::vec3(a2.x, 0.0, a2.y));
     glm::vec3 bi = dqInverse.apply(glm::vec3(b2.x, 0.0, b2.y));
     glm::vec3 ci = dqInverse.apply(glm::vec3(c2.x, 0.0, c2.y));

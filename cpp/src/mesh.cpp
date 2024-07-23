@@ -3,7 +3,7 @@
 
 #define PI 3.14159265358979323846
 
-Mesh::Mesh(int positions, int uvs, int pathVerse, int posCount, int uvCount) : m_PosCount(posCount), glued(true)
+Mesh::Mesh(int positions, int uvs, int pathVerse, int posCount, int uvCount) : m_PosCount(posCount), glued(true), gluedAveraged(false)
 {
     int nv = posCount / 3;
     heapPosPtr = reinterpret_cast<glm::vec3 *>(positions);
@@ -36,15 +36,16 @@ Mesh::Mesh(int positions, int uvs, int pathVerse, int posCount, int uvCount) : m
     updateUVScaling();
     updateBB();
     std::cout << "debug mesh class, bounding sphere radius: " << boundingSphere.radius << std::endl;
-    //setTimingWithUVdir(0.4, glm::vec2(1.0, 0.0));
-    //updateAverageTimingPerFace();
+    // setTimingWithUVdir(0.4, glm::vec2(1.0, 0.0));
+    // updateAverageTimingPerFace();
     updateRotoTransl();
     updateAverageQuaternionRotationAreaWeighted();
     updateRotoTransl();
     updateCopyOf(false);
     updateIsland();
-    //updateAverageTimingPerIsland();
+    // updateAverageTimingPerIsland();
     updateFacesNeighbors();
+    updateAreaPerVertex();
     if (!uniformQuaternionSigns())
     {
         std::cout << "uniformQuaternionSigns False" << std::endl;
@@ -99,8 +100,6 @@ struct XYZUV
         return el.path < el2.path;
     };
 };
-
-
 
 void Mesh::updateCopyOf(bool pathDependent)
 {
@@ -161,6 +160,39 @@ static float ComputeArea(glm::vec3 p1, glm::vec3 p2, glm::vec3 p3)
     return sqrt(s * (s - l1) * (s - l2) * (s - l3));
 }
 
+void Mesh::updateAreaPerVertex()
+{
+    for (Face fi : f)
+    {
+        float area3D = 0.5 * length(glm::cross(v[fi.vi[0]].pos - v[fi.vi[1]].pos, v[fi.vi[0]].pos - v[fi.vi[2]].pos));
+        float area2D = 0.5 * length(glm::cross(glm::vec3(v[fi.vi[0]].uv, 0.0) - glm::vec3(v[fi.vi[1]].uv, 0.0), glm::vec3(v[fi.vi[0]].uv, 0.0) - glm::vec3(v[fi.vi[2]].uv, 0.0)));
+
+        for (int i : fi.vi)
+        {
+            v[i].area3D += area3D;
+            v[i].area2D += area2D;
+        }
+    }
+}
+
+void Mesh::glueTrianglesWeighted() const
+{
+    std::vector<glm::vec3> sum(v.size(), glm::vec3(0.0, 0.0, 0.0));
+    std::vector<float> areaSum(v.size(), 0);
+
+    for (int i = 0; i < v.size(); ++i)
+    {
+        int j = v[i].copyOf;
+        sum[j] += heapPosPtr[i] * ((v[i].area3D + v[i].area2D) / 2.0f);
+        areaSum[j] += (v[i].area3D + v[i].area2D) / 2.0f;
+    }
+    for (int i = 0; i < v.size(); ++i)
+    {
+        int j = v[i].copyOf;
+        heapPosPtr[i] = sum[j] / areaSum[j];
+    }
+}
+
 glm::vec3 uv2xzy(glm::vec2 v)
 {
     return glm::vec3(v.x, 0.0, v.y);
@@ -202,7 +234,12 @@ void Mesh::interpolatePerTriangle(int tPercent, bool spitResidual, bool linear, 
         }
     }
     if (glued)
-        glueTriangles();
+    {
+        if (gluedAveraged)
+            glueTrianglesWeighted();
+        else
+            glueTriangles();
+    }
 }
 
 void Mesh::updateRotoTransl()
@@ -325,7 +362,6 @@ void Mesh::setTimingWithVertexIndex(float k)
     }
 }
 
-
 void Mesh::setTimingInsideOut(float k)
 {
     for (Vertex &vi : v)
@@ -400,7 +436,7 @@ void Mesh::updateAverageTimingPerIsland()
         averageStarts[i] /= counts[i];
         averageEnds[i] /= counts[i];
     }
-    
+
     for (Vertex &vi : v)
     {
         vi.tStart = averageStarts[vi.islandId];
@@ -415,11 +451,11 @@ void Mesh::updateAverageQuaternionRotationAreaWeighted()
     for (Face fi : f)
     {
         glm::dualquat dq = fi.three2two.dqTransf.dualQuaternion;
-        //float area = ComputeArea(v[fi.vi[0]].pos, v[fi.vi[1]].pos, v[fi.vi[2]].pos);
+        // float area = ComputeArea(v[fi.vi[0]].pos, v[fi.vi[1]].pos, v[fi.vi[2]].pos);
         float area = 0.5 * length(cross(v[fi.vi[0]].pos - v[fi.vi[1]].pos, v[fi.vi[0]].pos - v[fi.vi[2]].pos));
-        area /= averageScaling; 
+        area /= averageScaling;
         if (area <= 0.000001f)
-             continue;
+            continue;
         areaSum += area;
 
         dqSum = sum(dqSum, dq * area);
@@ -641,13 +677,14 @@ void Mesh::updateFacesNeighbors()
         }
     }
 
-    for (const auto& [key, values] : edgeMap)
+    for (const auto &[key, values] : edgeMap)
     {
         for (int i : values)
         {
             for (int j : values)
             {
-                if (i == j) continue;
+                if (i == j)
+                    continue;
                 f[i].neighbors.insert(j);
             }
         }
@@ -660,15 +697,17 @@ bool Mesh::uniformQuaternionSigns()
     std::vector<bool> processed(f.size(), false);
     for (int seedi = 0; seedi < f.size(); seedi++)
     {
-        if (processed[seedi]) continue; 
+        if (processed[seedi])
+            continue;
         std::vector<int> processingQueue;
         processingQueue.push_back(seedi);
         int k = 0; // indices of the processing queue
         while (k < processingQueue.size())
         {
             int i = processingQueue[k++];
-            if (processed[i]) continue;
-            processed[i] = true; 
+            if (processed[i])
+                continue;
+            processed[i] = true;
             for (int j : f[i].neighbors)
             {
                 processingQueue.push_back(j);
@@ -678,13 +717,13 @@ bool Mesh::uniformQuaternionSigns()
                     {
                         success = false;
                     }
-                    else{
+                    else
+                    {
                         f[j].three2two.dqTransf.dualQuaternion = -f[j].three2two.dqTransf.dualQuaternion;
                     }
                 }
             }
         }
-
     }
     return success;
 }
