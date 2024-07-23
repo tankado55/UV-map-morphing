@@ -62,8 +62,9 @@ struct Mesh
 	glm::vec2* heapUvPtr;
 	float* pathVersePtr;
 	bool glued;
-	bool gluedAveraged;
+	bool gluedWeighted;
 	glm::dualquat initialTranform;
+	float gluingThreshold = 0.0;
 
 	Mesh();
 	Mesh(int positions, int uvs, int pathVerse, int posSize, int uvSize);
@@ -115,6 +116,6 @@ EMSCRIPTEN_BINDINGS(my_class_example) {
     .function("resetTiming", &Mesh::resetTiming)
 	.property("boundingSphere", &Mesh::getBBCenter)
 	.property("glued", &Mesh::glued)
-	.property("gluedAveraged", &Mesh::gluedAveraged)
+	.property("gluedWeighted", &Mesh::gluedWeighted)
     ;
 }

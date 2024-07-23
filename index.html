@@ -84,7 +84,10 @@
 	</select>
 
 	<div class="slidecontainer"></div>
-	<input type="range" min="0" max="100" value="50" id="interpolationSlider">
+	<input type="range" min="0" max="100" value="50" id="interpolationSlider" style="width: 500px">
+	</div>
+
+	<div class="slidecontainer"></div>
 	<input type="range" min="0" max="100" value="50" id="gridSlider">
 	<input type="range" min="0" max="100" value="50" id="whiteSlider">
 	</div>
@@ -109,6 +112,7 @@
 		<label for="glued">Glued</label>
 		<input type="checkbox" id="gluedAverage" name="gluedAverage" checked />
 		<label for="gluedAverage">Averaged</label>
+		<input type="number" step="0.01" value="20.0" id="gluingThreshold">
 	</div>
 	<select name="gluedMod" id="gluedMod">
 		<option value=0>PathVerse independent</option>

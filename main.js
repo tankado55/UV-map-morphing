@@ -74,6 +74,7 @@ var gluedModElement = document.getElementById("gluedMod");
 var gluedMod = gluedModElement.value;
 var gluedAverageElement = document.getElementById("gluedAverage");
 gluedAverageElement.checked = false;
+var gluingThresholdElement = document.getElementById("gluingThreshold");
 // Linear
 var linearElement = document.getElementById("linear");
 var linear = linearElement.value;
@@ -145,7 +146,7 @@ gluedElement.onchange = function () {
 	render();
 }
 gluedAverageElement.onchange = function () {
-	meshInstance.gluedAveraged = gluedAverageElement.checked;
+	meshInstance.gluedWeighted = gluedAverageElement.checked;
 	render();
 }
 
@@ -187,6 +188,9 @@ temporizeElement.onchange = function () {
 		meshInstance.setTimingInsideOut(parseFloat(flightTimeElement.value))
 	}
 	render();
+}
+gluingThresholdElement.onchange = function () {
+	meshInstance.gluingThreshold = parseFloat(gluingThresholdElement.value);
 }
 /////////////////////////////////////////*** Init */
 
@@ -282,7 +286,7 @@ function init() {
 	const controls = new OrbitControls(camera, renderer.domElement);
 	controls.minDistance = 2;
 	controls.maxDistance = 160;
-	controls.addEventListener('change', render);
+	controls.addEventListener('change', onlyRender);
 
 	//
 
@@ -489,6 +493,11 @@ function onWindowResize() {
 function render() {
 
 	interpolate();
+	renderer.clear();
+	renderer.render(scene, camera);
+}
+function onlyRender() {
+
 	renderer.clear();
 	renderer.render(scene, camera);
 }

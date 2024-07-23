@@ -3,7 +3,7 @@
 
 #define PI 3.14159265358979323846
 
-Mesh::Mesh(int positions, int uvs, int pathVerse, int posCount, int uvCount) : m_PosCount(posCount), glued(true), gluedAveraged(false)
+Mesh::Mesh(int positions, int uvs, int pathVerse, int posCount, int uvCount) : m_PosCount(posCount), glued(true), gluedWeighted(false)
 {
     int nv = posCount / 3;
     heapPosPtr = reinterpret_cast<glm::vec3 *>(positions);
@@ -178,7 +178,7 @@ void Mesh::updateAreaPerVertex()
 void Mesh::glueTrianglesWeighted() const
 {
     std::vector<glm::vec3> sum(v.size(), glm::vec3(0.0, 0.0, 0.0));
-    std::vector<float> areaSum(v.size(), 0);
+    std::vector<float> areaSum(v.size(), 0.0);
 
     for (int i = 0; i < v.size(); ++i)
     {
@@ -186,10 +186,14 @@ void Mesh::glueTrianglesWeighted() const
         sum[j] += heapPosPtr[i] * ((v[i].area3D + v[i].area2D) / 2.0f);
         areaSum[j] += (v[i].area3D + v[i].area2D) / 2.0f;
     }
-    for (int i = 0; i < v.size(); ++i)
+    for (int i = 0; i < v.size(); ++i) // TODO: divide in two for, must check if all the points should abort
     {
         int j = v[i].copyOf;
-        heapPosPtr[i] = sum[j] / areaSum[j];
+        glm::vec3 newPos = sum[j] / areaSum[j];
+        if (glm::length(newPos - heapPosPtr[i]) < gluingThreshold)
+        {
+            heapPosPtr[i] = sum[j] / areaSum[j];
+        }
     }
 }
 
@@ -235,7 +239,7 @@ void Mesh::interpolatePerTriangle(int tPercent, bool spitResidual, bool linear, 
     }
     if (glued)
     {
-        if (gluedAveraged)
+        if (gluedWeighted)
             glueTrianglesWeighted();
         else
             glueTriangles();
