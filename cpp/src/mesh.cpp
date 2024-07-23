@@ -36,14 +36,10 @@ Mesh::Mesh(int positions, int uvs, int pathVerse, int posCount, int uvCount) : m
     updateUVScaling();
     updateBB();
     std::cout << "debug mesh class, bounding sphere radius: " << boundingSphere.radius << std::endl;
-    // setTimingWithUVdir(0.4, glm::vec2(1.0, 0.0));
-    // updateAverageTimingPerFace();
     updateRotoTransl();
     updateAverageQuaternionRotationAreaWeighted();
     updateRotoTransl();
-    updateCopyOf(false);
     updateIsland();
-    // updateAverageTimingPerIsland();
     updateFacesNeighbors();
     updateAreaPerVertex();
     if (!uniformQuaternionSigns())
@@ -128,6 +124,41 @@ void Mesh::updateCopyOf(bool pathDependent)
     }
 }
 
+void Mesh::updateCopyOfUsingThreshold(bool pathDependent)
+{
+    std::map<XYZUV, int> map;
+    for (int i = 0; i < v.size(); i++)
+    {
+        XYZUV key;
+        if (pathDependent)
+        {
+            int faceIndex = i / 3;
+            key = XYZUV(v[i].pos, v[i].uv, f[faceIndex].pathVerse);
+        }
+        else
+        {
+            key = XYZUV(v[i].pos, v[i].uv, 1);
+        }
+        if (map.contains(key))
+        {
+            if (glm::length(heapPosPtr[i] - heapPosPtr[map[key]]) < gluingThreshold)
+            {
+                v[i].copyOf = map[key];
+            }
+            else
+            {
+                map[key] = i;
+                v[i].copyOf = i;
+            }
+        }
+        else
+        {
+            map[key] = i;
+            v[i].copyOf = i;
+        }
+    }
+}
+
 void Mesh::glueTriangles() const
 {
     std::vector<glm::vec3> sum(v.size(), glm::vec3(0.0, 0.0, 0.0));
@@ -175,10 +206,12 @@ void Mesh::updateAreaPerVertex()
     }
 }
 
-void Mesh::glueTrianglesWeighted() const
+void Mesh::glueTrianglesWeighted()
 {
     std::vector<glm::vec3> sum(v.size(), glm::vec3(0.0, 0.0, 0.0));
     std::vector<float> areaSum(v.size(), 0.0);
+
+    updateCopyOfUsingThreshold(true);
 
     for (int i = 0; i < v.size(); ++i)
     {
@@ -186,14 +219,12 @@ void Mesh::glueTrianglesWeighted() const
         sum[j] += heapPosPtr[i] * ((v[i].area3D + v[i].area2D) / 2.0f);
         areaSum[j] += (v[i].area3D + v[i].area2D) / 2.0f;
     }
-    for (int i = 0; i < v.size(); ++i) // TODO: divide in two for, must check if all the points should abort
+    
+    // Apply
+    for (int i = 0; i < v.size(); ++i)
     {
         int j = v[i].copyOf;
-        glm::vec3 newPos = sum[j] / areaSum[j];
-        if (glm::length(newPos - heapPosPtr[i]) < gluingThreshold)
-        {
-            heapPosPtr[i] = sum[j] / areaSum[j];
-        }
+        heapPosPtr[i] = sum[j] / areaSum[j];
     }
 }
 
@@ -207,7 +238,7 @@ static float sigmoid(float t) // ease in ease out
     return (glm::sin(t * PI - PI / 2) + 1) / 2;
 }
 
-void Mesh::interpolatePerTriangle(int tPercent, bool spitResidual, bool linear, bool shortestPath) const
+void Mesh::interpolatePerTriangle(int tPercent, bool spitResidual, bool linear, bool shortestPath)
 {
     float t = tPercent / 100.0;
 
@@ -597,6 +628,7 @@ void Mesh::unionIsland(int x, int y)
 
 void Mesh::updateIsland()
 {
+    updateCopyOf(false);
     initIsland();
     for (int i = 0; i < f.size(); i++)
     {

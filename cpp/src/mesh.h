@@ -69,7 +69,7 @@ struct Mesh
 	Mesh();
 	Mesh(int positions, int uvs, int pathVerse, int posSize, int uvSize);
 	void interpolate(int t) const;
-	void interpolatePerTriangle(int tPercent, bool spitResidual, bool linear, bool shortestPath) const;
+	void interpolatePerTriangle(int tPercent, bool spitResidual, bool linear, bool shortestPath);
 	void buildCylinder();
 	void updateBB();
 	void updateToFlipBool();
@@ -98,7 +98,8 @@ struct Mesh
 	void updateFacesNeighbors();
 	bool uniformQuaternionSigns();
 	void updateAreaPerVertex();
-	void glueTrianglesWeighted() const;
+	void glueTrianglesWeighted();
+	void updateCopyOfUsingThreshold(bool pathDependent);
 };
 
 // Binding code
@@ -117,5 +118,6 @@ EMSCRIPTEN_BINDINGS(my_class_example) {
 	.property("boundingSphere", &Mesh::getBBCenter)
 	.property("glued", &Mesh::glued)
 	.property("gluedWeighted", &Mesh::gluedWeighted)
+	.property("gluingThreshold", &Mesh::gluingThreshold)
     ;
 }

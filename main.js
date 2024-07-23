@@ -147,6 +147,10 @@ gluedElement.onchange = function () {
 }
 gluedAverageElement.onchange = function () {
 	meshInstance.gluedWeighted = gluedAverageElement.checked;
+	if (!gluedAverageElement.checked)
+	{
+		meshInstance.updateCopyOf(parseInt(gluedMod));
+	}
 	render();
 }
 
@@ -189,8 +193,9 @@ temporizeElement.onchange = function () {
 	}
 	render();
 }
-gluingThresholdElement.onchange = function () {
+gluingThresholdElement.oninput = function () {
 	meshInstance.gluingThreshold = parseFloat(gluingThresholdElement.value);
+	render();
 }
 /////////////////////////////////////////*** Init */
 
@@ -331,7 +336,6 @@ function initLoadModel() {
 						hasFloatValue ? TYPES.f32 : TYPES.f32 // forcing f32
 					);
 					meshInstance = new Module.Mesh(heapGeometryPointer, heapUVPointer, heapPathVersesPointer, arr.length, arrUV.length);
-					console.log(Module["HEAPF32"][heapGeometryPointer >> 2])
 				}
 				catch (error) {
 					console.log("error in transfer to heap")
@@ -475,7 +479,7 @@ function interpolate() {
 
 			meshInstance.interpolatePerTriangle(parseInt(interpolationSlider.value), splitResidual, linear, shortestPath);
 			child.geometry.setAttribute('position', new THREE.BufferAttribute(Module["HEAPF32"].slice(heapGeometryPointer >> 2, (heapGeometryPointer >> 2) + arr.length), 3));
-			child.geometry.setAttribute('pathVerse', new THREE.BufferAttribute(Module["HEAPF32"].slice(heapPathVersesPointer >> 2, (heapPathVersesPointer >> 2) + child.geometry.attributes.pathVerse.array.length), 1));
+			child.geometry.setAttribute('pathVerse', new THREE.BufferAttribute(Module["HEAPF32"].slice(heapPathVersesPointer >> 2, (heapPathVersesPointer >> 2) + child.geometry.attributes.position.length), 1));
 			child.geometry.attributes.pathVerse.needsUpdate = true;
 		}
 
