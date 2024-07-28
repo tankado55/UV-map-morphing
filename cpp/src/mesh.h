@@ -102,6 +102,8 @@ struct Mesh
 	void updateCopyOfUsingThreshold(bool pathDependent);
 };
 
+static float sigmoid(float t);
+
 // Binding code
 EMSCRIPTEN_BINDINGS(my_class_example) {
   emscripten::class_<Mesh>("Mesh")

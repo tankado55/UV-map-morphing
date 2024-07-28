@@ -73,16 +73,12 @@ var glued = gluedElement.value;
 var gluedModElement = document.getElementById("gluedMod");
 var gluedMod = gluedModElement.value;
 var gluedAverageElement = document.getElementById("gluedAverage");
-gluedAverageElement.checked = false;
+gluedAverageElement.checked = true;
 var gluingThresholdElement = document.getElementById("gluingThreshold");
 // Linear
 var linearElement = document.getElementById("linear");
+linearElement.checked = false;
 var linear = linearElement.value;
-shortestElement.disabled = linear;
-splitResidualElement.disabled = linear;
-gluedElement.disabled = linear;
-gluedModElement.disabled = linear;
-gluedAverageElement.disabled = linear;
 var temporizeElement = document.getElementById("temporize");
 var flightTimeElement = document.getElementById("flightTime");
 
@@ -350,17 +346,8 @@ function initLoadModel() {
 				child.rotation.y = 0;
 				child.rotation.z = 0;
 				child.position.set(0, 0, 0);
-				console.log(radius)
-				console.log(object.scale)
 				console.log(child.geometry)
 
-				// debug
-				let sphGeometry = new THREE.SphereGeometry(radius, 32, 16);
-				sphGeometry = new THREE.WireframeGeometry(sphGeometry);
-				const sphMaterial = new THREE.MeshBasicMaterial({ color: 0xffff00 });
-				const sphere = new THREE.Mesh(sphGeometry, sphMaterial);
-				//sphere.scale.set(1.0 / radius, 1.0 / radius, 1.0 / radius)
-				console.log(object)
 				updateUI();
 
 			}

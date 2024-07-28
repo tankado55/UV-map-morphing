@@ -5,18 +5,18 @@
 
 Mesh::Mesh(int positions, int uvs, int pathVerse, int posCount, int uvCount) : m_PosCount(posCount), glued(true), gluedWeighted(false)
 {
-    int nv = posCount / 3;
+    int verticesCount = posCount / 3;
     heapPosPtr = reinterpret_cast<glm::vec3 *>(positions);
     heapUvPtr = reinterpret_cast<glm::vec2 *>(uvs);
     pathVersePtr = reinterpret_cast<float *>(pathVerse);
 
-    if (nv * 2 != uvCount || nv * 3 != posCount)
+    if (verticesCount * 2 != uvCount || verticesCount * 3 != posCount)
     {
         std::cout << "posCount and uvCount are NOT compatible" << std::endl;
     }
 
     v.clear();
-    for (int i = 0; i < nv; i++)
+    for (int i = 0; i < verticesCount; i++)
     {
         Vertex vertex;
         vertex.pos = heapPosPtr[i];
@@ -31,11 +31,11 @@ Mesh::Mesh(int positions, int uvs, int pathVerse, int posCount, int uvCount) : m
         face.vi[2] = i + 2;
         f.push_back(face);
     }
-    std::cout << "debug mesh class: position count:" << posCount << std::endl;
-    std::cout << "debug mesh class: uv count:" << uvCount << std::endl;
+    std::cout << "debug mesh class cpp, position count:" << posCount << std::endl;
+    std::cout << "debug mesh class cpp, uv count:" << uvCount << std::endl;
     updateUVScaling();
     updateBB();
-    std::cout << "debug mesh class, bounding sphere radius: " << boundingSphere.radius << std::endl;
+    std::cout << "debug mesh class cpp, bounding sphere radius: " << boundingSphere.radius << std::endl;
     updateRotoTransl();
     updateAverageQuaternionRotationAreaWeighted();
     updateRotoTransl();
@@ -45,6 +45,45 @@ Mesh::Mesh(int positions, int uvs, int pathVerse, int posCount, int uvCount) : m
     if (!uniformQuaternionSigns())
     {
         std::cout << "uniformQuaternionSigns False" << std::endl;
+    }
+}
+
+void Mesh::interpolatePerTriangle(int tPercent, bool spitResidual, bool linear, bool shortestPath)
+{
+    float t = tPercent / 100.0;
+
+    decltype(f[0].three2two) I;
+    for (int i = 0; i < f.size(); i++)
+    {
+        Face face = f[i];
+        for (int j = 0; j < 3; j++)
+        {
+            float interpolationValue = (t - v[face.vi[j]].tStart) / (v[face.vi[j]].tEnd - v[face.vi[j]].tStart);
+            interpolationValue = glm::clamp(interpolationValue, 0.0f, 1.0f);
+            interpolationValue = sigmoid(interpolationValue);
+            decltype(f[0].three2two) T;
+            if (linear)
+            {
+                T = mixLinear(I, face.three2two, interpolationValue);
+            }
+            else
+            {
+                T = mix(I, face.three2two, interpolationValue, spitResidual, face.pathVerse);
+            }
+            glm::vec3 originV = v[face.vi[j]].pos;
+            glm::vec3 resultV = T.apply(originV);
+
+            // Write in the Heap
+            int heapIndex = i * 3 + j;
+            heapPosPtr[heapIndex] = resultV;
+        }
+    }
+    if (glued)
+    {
+        if (gluedWeighted)
+            glueTrianglesWeighted();
+        else
+            glueTriangles();
     }
 }
 
@@ -238,44 +277,7 @@ static float sigmoid(float t) // ease in ease out
     return (glm::sin(t * PI - PI / 2) + 1) / 2;
 }
 
-void Mesh::interpolatePerTriangle(int tPercent, bool spitResidual, bool linear, bool shortestPath)
-{
-    float t = tPercent / 100.0;
 
-    decltype(f[0].three2two) I;
-    for (int i = 0; i < f.size(); i++)
-    {
-        Face face = f[i];
-        for (int j = 0; j < 3; j++)
-        {
-            float interpolationValue = (t - v[face.vi[j]].tStart) / (v[face.vi[j]].tEnd - v[face.vi[j]].tStart);
-            interpolationValue = glm::clamp(interpolationValue, 0.0f, 1.0f);
-            interpolationValue = sigmoid(interpolationValue);
-            decltype(f[0].three2two) T;
-            if (linear)
-            {
-                T = mixLinear(I, face.three2two, interpolationValue);
-            }
-            else
-            {
-                T = mix(I, face.three2two, interpolationValue, spitResidual, face.pathVerse);
-            }
-            glm::vec3 originV = v[face.vi[j]].pos;
-            glm::vec3 resultV = T.apply(originV);
-
-            // Write in the Heap
-            int heapIndex = i * 3 + j;
-            heapPosPtr[heapIndex] = resultV;
-        }
-    }
-    if (glued)
-    {
-        if (gluedWeighted)
-            glueTrianglesWeighted();
-        else
-            glueTriangles();
-    }
-}
 
 void Mesh::updateRotoTransl()
 {
@@ -301,6 +303,9 @@ void Mesh::updateRotoTransl()
         c2 = c2 * averageScaling;
 
         fi.three2two.fromTo(a3, b3, c3, a2, b2, c2);
+        if (isnan(fi.three2two.dqTransf.dualQuaternion.real.x))
+            std::cout << "ERROR! NaN" << std::endl;
+
         if (glm::dot(glm::quat(1.0f, 0.0f, 0.0f, 0.0f), fi.three2two.dqTransf.dualQuaternion.real) < 0.0f)
         {
             fi.pathVerse = -1;
