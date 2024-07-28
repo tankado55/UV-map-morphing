@@ -62,8 +62,6 @@ DualQuatTransform mixNoShortestPath(const DualQuatTransform& a, const DualQuatTr
 	return DualQuatTransform( myNormalized(glm::dualquat(primal, dual)));
 }
 
-
-
 DualQuatTransform DualQuatTransform::inverse() const
 {
     glm::dualquat result = glm::dualquat(glm::conjugate(dualQuaternion.real), glm::conjugate(dualQuaternion.dual));
