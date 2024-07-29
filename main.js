@@ -6,12 +6,8 @@ import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 
 const PI = 3.141592653589793;
 
-//var int_sqrt = Module.cwrap('int_sqrt', 'number', ['number'])
-//console.log(int_sqrt(300))
-
 let camera, scene, renderer;
-let cameraRTT
-let sceneRTT
+let cameraRTT, sceneRTT;
 
 let object;
 let heapGeometryPointer;
@@ -22,6 +18,7 @@ let meshInstance;
 
 let objPath = "res/models/"
 let objSelect = document.getElementById("meshSelect");
+let texturePath = "res/models/_Wheel_195_50R13x10_OBJ/diffuse.png"
 objPath = objPath + objSelect.value;
 var event = new Event('change', { 'bubbles': true });
 objSelect.onchange = function () {
@@ -32,7 +29,6 @@ objSelect.onchange = function () {
 	initLoadModel();
 
 };
-let texturePath = "res/models/_Wheel_195_50R13x10_OBJ/diffuse.png"
 let texture;
 let rtTextureTarget;
 let basicMaterial;
@@ -347,6 +343,7 @@ function initLoadModel() {
 				child.rotation.z = 0;
 				child.position.set(0, 0, 0);
 				console.log(child.geometry)
+				console.log(child)
 
 				updateUI();
 
@@ -362,24 +359,23 @@ function initLoadModel() {
 	// texture
 
 	const textureLoader = new THREE.TextureLoader();
-	textureLoader.load(
-		texturePath,
+	// textureLoader.load(
+	// 	texturePath,
 
-		// onLoad callback
-		function (texture) {
-			// in this example we create the material when the texture is loaded
-			material.uniforms.tDiffuse.value = texture;
+	// 	// onLoad callback
+	// 	function (texture) {
+	// 		// in this example we create the material when the texture is loaded
+	// 		material.uniforms.tDiffuse.value = texture;
 
-		},
+	// 	},
 
-		// onProgress
-		undefined,
+	// 	// onProgress
+	// 	undefined,
 
-		// onError callback
-		function (err) {
-			console.error('An error happened.');
-		}
-	);
+	// 	function (err) {
+	// 		console.error('Error in loading texture');
+	// 	}
+	// );
 
 
 	// model
@@ -416,7 +412,9 @@ function initLoadModel() {
 
 			if (child.isMesh) {
 				if (!debugIsland)
-					child.material = new THREE.MeshStandardMaterial({ map: rtTextureTarget.texture })
+				{
+					//child.material = new THREE.MeshStandardMaterial({ map: rtTextureTarget.texture })
+				}
 				else
 					child.material = customShaderMaterial;
 				child.material.side = THREE.DoubleSide;
@@ -487,6 +485,7 @@ function render() {
 	renderer.clear();
 	renderer.render(scene, camera);
 }
+
 function onlyRender() {
 
 	renderer.clear();
