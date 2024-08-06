@@ -18,18 +18,20 @@ let meshInstance;
 
 let objPath = "res/models/"
 let objSelect = document.getElementById("meshSelect");
-let texturePath = "res/models/_Wheel_195_50R13x10_OBJ/diffuse.png"
-objPath = objPath + objSelect.value;
+let texturePath = "res/models/"
+objPath = objPath + JSON.parse(objSelect.value).model;
+texturePath = texturePath + JSON.parse(objSelect.value).tex;
+console.log("texturePath: " + texturePath)
 var event = new Event('change', { 'bubbles': true });
 objSelect.onchange = function () {
 	console.log("select onChange");
 	let objSelect = document.getElementById("meshSelect");
-	objPath = "res/models/" + objSelect.value;
+	objPath = "res/models/" + JSON.parse(objSelect.value).model;
+	texturePath = "res/models/" + JSON.parse(objSelect.value).tex;
 	deallocateHeap();
 	initLoadModel();
 
 };
-let texture;
 let rtTextureTarget;
 let basicMaterial;
 let material;
@@ -90,21 +92,25 @@ function updateUI() {
 }
 
 interpolationSlider.oninput = function () {
+	interpolate();
 	render();
 }
 gridSlider.oninput = function () {
 	material.uniforms.u_TextureGridMode.value = parseFloat(gridSlider.value) / 100.0;
 	renderQuadTexture()
+	interpolate()
 	render();
 }
 whiteSlider.oninput = function () {
 	material.uniforms.u_TextureColorMode.value = parseFloat(whiteSlider.value) / 100.0;
-	renderQuadTexture()
+	renderQuadTexture();
+	interpolate()
 	render();
 }
 
 splitResidualElement.onchange = function () {
 	splitResidual = splitResidualElement.checked;
+	interpolate()
 	render();
 }
 linearElement.onchange = function () {
@@ -114,6 +120,7 @@ linearElement.onchange = function () {
 	gluedElement.disabled = linear;
 	gluedModElement.disabled = linear;
 	gluedAverageElement.disabled = linear;
+	interpolate()
 	render();
 }
 shortestElement.onchange = function () {
@@ -124,6 +131,7 @@ shortestElement.onchange = function () {
 	else {
 		meshInstance.updatePathVersePerIsland();
 	}
+	interpolate()
 	render();
 }
 gluedElement.onchange = function () {
@@ -135,6 +143,7 @@ gluedElement.onchange = function () {
 	else {
 		gluedModElement.disabled = false;
 	}
+	interpolate()
 	render();
 }
 gluedAverageElement.onchange = function () {
@@ -143,12 +152,14 @@ gluedAverageElement.onchange = function () {
 	{
 		meshInstance.updateCopyOf(parseInt(gluedMod));
 	}
+	interpolate()
 	render();
 }
 
 gluedModElement.onchange = function () {
 	gluedMod = gluedModElement.value;
 	meshInstance.updateCopyOf(parseInt(gluedMod));
+	interpolate()
 	render();
 }
 debugIslandElement.onchange = function () {
@@ -157,14 +168,17 @@ debugIslandElement.onchange = function () {
 
 		if (child.isMesh) {
 			if (!debugIsland)
+			{
 				child.material = new THREE.MeshStandardMaterial({ map: rtTextureTarget.texture })
+				child.material.side = THREE.DoubleSide;
+			}
 			else
 				child.material = customShaderMaterial;
-			child.material.side = THREE.DoubleSide;
 		}
 
 	});
 	renderQuadTexture()
+	interpolate()
 	render();
 }
 temporizeElement.onchange = function () {
@@ -183,10 +197,12 @@ temporizeElement.onchange = function () {
 	{
 		meshInstance.setTimingInsideOut(parseFloat(flightTimeElement.value))
 	}
+	interpolate()
 	render();
 }
 gluingThresholdElement.oninput = function () {
 	meshInstance.gluingThreshold = parseFloat(gluingThresholdElement.value);
+	interpolate()
 	render();
 }
 /////////////////////////////////////////*** Init */
@@ -231,8 +247,7 @@ function initRTT() {
 	rtTextureTarget = new THREE.WebGLRenderTarget(window.innerWidth, window.innerHeight);
 	material = new THREE.ShaderMaterial({
 
-		uniforms: { tDiffuse: { value: texture }, u_TextureGridMode: { value: parseFloat(gridSlider.value) / 100.0 }, u_TextureColorMode: { value: parseFloat(whiteSlider.value) / 100.0 } },
-		//uniforms: { tDiffuse: { value: texture } },
+		uniforms: { tDiffuse: { value: null }, u_TextureGridMode: { value: parseFloat(gridSlider.value) / 100.0 }, u_TextureColorMode: { value: parseFloat(whiteSlider.value) / 100.0 } },
 		vertexShader: document.getElementById('vertexshader').textContent,
 		fragmentShader: document.getElementById('fragmentshader').textContent
 
@@ -283,7 +298,7 @@ function init() {
 	const controls = new OrbitControls(camera, renderer.domElement);
 	controls.minDistance = 2;
 	controls.maxDistance = 160;
-	controls.addEventListener('change', onlyRender);
+	controls.addEventListener('change', render);
 
 	//
 
@@ -292,7 +307,7 @@ function init() {
 }
 
 function initLoadModel() {
-	// manager
+	
 	function loadModel() {
 
 		// heap pointer
@@ -349,6 +364,7 @@ function initLoadModel() {
 
 			}
 		});
+		interpolate()
 		render();
 
 	}
@@ -359,23 +375,22 @@ function initLoadModel() {
 	// texture
 
 	const textureLoader = new THREE.TextureLoader();
-	// textureLoader.load(
-	// 	texturePath,
+	textureLoader.load(
+		texturePath,
 
-	// 	// onLoad callback
-	// 	function (texture) {
-	// 		// in this example we create the material when the texture is loaded
-	// 		material.uniforms.tDiffuse.value = texture;
+		// onLoad callback
+		function (texture) {
+			material.uniforms.tDiffuse.value = texture;
 
-	// 	},
+		},
 
-	// 	// onProgress
-	// 	undefined,
+		// onProgress
+		undefined,
 
-	// 	function (err) {
-	// 		console.error('Error in loading texture');
-	// 	}
-	// );
+		function (err) {
+			console.error('Error in loading texture');
+		}
+	);
 
 
 	// model
@@ -413,7 +428,7 @@ function initLoadModel() {
 			if (child.isMesh) {
 				if (!debugIsland)
 				{
-					//child.material = new THREE.MeshStandardMaterial({ map: rtTextureTarget.texture })
+					child.material = new THREE.MeshStandardMaterial({ map: rtTextureTarget.texture })
 				}
 				else
 					child.material = customShaderMaterial;
@@ -453,8 +468,13 @@ function containsFloatValue(array) {
 	return array.some((value) => !Number.isInteger(value));
 }
 
-
-
+function onWindowResize() {
+	
+	camera.aspect = window.innerWidth / window.innerHeight;
+	camera.updateProjectionMatrix();
+	
+	renderer.setSize(window.innerWidth, window.innerHeight);
+}
 
 function interpolate() {
 	object.traverse(function (child) {
@@ -471,23 +491,7 @@ function interpolate() {
 	});
 }
 
-function onWindowResize() {
-
-	camera.aspect = window.innerWidth / window.innerHeight;
-	camera.updateProjectionMatrix();
-
-	renderer.setSize(window.innerWidth, window.innerHeight);
-}
-
 function render() {
-
-	interpolate();
-	renderer.clear();
-	renderer.render(scene, camera);
-}
-
-function onlyRender() {
-
 	renderer.clear();
 	renderer.render(scene, camera);
 }
