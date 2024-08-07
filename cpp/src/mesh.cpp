@@ -37,7 +37,7 @@ Mesh::Mesh(int positions, int uvs, int pathVerse, int posCount, int uvCount) : m
     updateBB();
     std::cout << "debug mesh class cpp, bounding sphere radius: " << boundingSphere.radius << std::endl;
     updateRotoTransl();
-    updateAverageQuaternionRotationAreaWeighted();
+    updateAverageQuaternionRotationAreaWeighted(); //Initial rotation
     updateRotoTransl();
     updateIsland();
     updateFacesNeighbors();
@@ -45,6 +45,68 @@ Mesh::Mesh(int positions, int uvs, int pathVerse, int posCount, int uvCount) : m
     if (!uniformQuaternionSigns())
     {
         std::cout << "uniformQuaternionSigns False" << std::endl;
+    }
+    bake(101, true, false);
+}
+
+void Mesh::bake(int sampleCount, bool splitResidual, bool linear)
+{
+    bakedVertices.clear();
+    for (int i = 0; i < sampleCount; i++)
+    {
+        std::vector<glm::vec3> interpolations = interpolateConst(i, splitResidual, linear);
+        bakedVertices.push_back(interpolations);
+    }
+    std::cout << "end of baking: " << bakedVertices.size() << std:: endl;
+    std::cout << "end of baking: " << bakedVertices[0][0].x << " " << bakedVertices[1][0].x << " "  << bakedVertices[100][0].x << std:: endl;
+}
+
+std::vector<glm::vec3> Mesh::interpolateConst(int tPercent, bool splitResidual, bool linear) const // TODO: manca gluing
+{
+    std::vector<glm::vec3> result;
+    float t = tPercent / 100.0;
+    
+
+    decltype(f[0].three2two) I;
+    for (int i = 0; i < f.size(); i++)
+    {
+        Face face = f[i];
+        for (int j = 0; j < 3; j++)
+        {
+            float interpolationValue = (t - v[face.vi[j]].tStart) / (v[face.vi[j]].tEnd - v[face.vi[j]].tStart);
+            interpolationValue = glm::clamp(interpolationValue, 0.0f, 1.0f);
+            interpolationValue = sigmoid(interpolationValue);
+            decltype(f[0].three2two) T;
+            if (linear)
+            {
+                T = mixLinear(I, face.three2two, interpolationValue);
+            }
+            else
+            {
+                T = mix(I, face.three2two, interpolationValue, splitResidual, face.pathVerse);
+            }
+            glm::vec3 originV = v[face.vi[j]].pos;
+            glm::vec3 resultV = T.apply(originV);
+
+            result.push_back(resultV);
+        }
+    }
+    return result;
+}
+
+void Mesh::applyBaked(int t)
+{
+    std::cout << "Applying baked" << t << std::endl;
+    if (t >= bakedVertices.size())
+    {
+        std::cout << "Missing baked data" << std::endl;
+        return;
+    }
+    for (int i = 0; i < bakedVertices[t].size(); i++)
+    {
+        // if (heapPosPtr[i].x != bakedVertices[t][i].x)
+        //     std::cout << "copy" << heapPosPtr[i].x << " " << bakedVertices[t][i].x << std::endl;
+        heapPosPtr[i] = bakedVertices[t][i];
     }
 }
 

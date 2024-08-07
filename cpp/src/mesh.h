@@ -21,8 +21,8 @@ struct Vertex
 	glm::vec3 pos;
 	glm::vec2 uv;
 	glm::vec3 normal;
-	float tStart;
-	float tEnd;
+	float tStart = 0.0;
+	float tEnd = 1.0;
 	int copyOf;
 	int islandId = 0;
 	int islandRank = 0;
@@ -65,6 +65,7 @@ struct Mesh
 	bool gluedWeighted;
 	glm::dualquat initialTranform;
 	float gluingThreshold = 0.0;
+	std::vector<std::vector<glm::vec3>> bakedVertices;
 
 	Mesh();
 	Mesh(int positions, int uvs, int pathVerse, int posSize, int uvSize);
@@ -100,6 +101,9 @@ struct Mesh
 	void updateAreaPerVertex();
 	void glueTrianglesWeighted();
 	void updateCopyOfUsingThreshold(bool pathDependent);
+	void bake(int sampleCount, bool splitResidual, bool linear);
+	std::vector<glm::vec3> interpolateConst(int tPercent, bool spitResidual, bool linear) const;
+	void applyBaked(int t);
 };
 
 static float sigmoid(float t);
@@ -110,6 +114,7 @@ EMSCRIPTEN_BINDINGS(my_class_example) {
     .constructor<int, int, int, int, int>()
 	.property("posSize", &Mesh::getPosSize)
     .function("interpolatePerTriangle", &Mesh::interpolatePerTriangle)
+    .function("applyBaked", &Mesh::applyBaked)
     .function("updateCopyOf", &Mesh::updateCopyOf)
     .function("updatePathVerse", &Mesh::updatePathVerse)
     .function("updatePathVersePerIsland", &Mesh::updatePathVersePerIsland)

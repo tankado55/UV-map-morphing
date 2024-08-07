@@ -389,6 +389,7 @@ function initLoadModel() {
 
 		function (err) {
 			console.error('Error in loading texture');
+			console.log(err)
 		}
 	);
 
@@ -479,10 +480,11 @@ function onWindowResize() {
 function interpolate() {
 	object.traverse(function (child) {
 		if (child.isMesh) {
-
+			console.log("Interpolating: " + interpolationSlider.value)
 			let arr = child.geometry.attributes.position.array;
 
-			meshInstance.interpolatePerTriangle(parseInt(interpolationSlider.value), splitResidual, linear, shortestPath);
+			// meshInstance.interpolatePerTriangle(parseInt(interpolationSlider.value), splitResidual, linear, shortestPath);
+			meshInstance.applyBaked(parseInt(interpolationSlider.value));
 			child.geometry.setAttribute('position', new THREE.BufferAttribute(Module["HEAPF32"].slice(heapGeometryPointer >> 2, (heapGeometryPointer >> 2) + arr.length), 3));
 			child.geometry.setAttribute('pathVerse', new THREE.BufferAttribute(Module["HEAPF32"].slice(heapPathVersesPointer >> 2, (heapPathVersesPointer >> 2) + child.geometry.attributes.position.length), 1));
 			child.geometry.attributes.pathVerse.needsUpdate = true;
