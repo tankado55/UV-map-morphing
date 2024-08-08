@@ -26,7 +26,7 @@ struct Vertex
 	int copyOf;
 	int islandId = 0;
 	int islandRank = 0;
-	int pathVerse = 0;
+	int pathVerse = 1;
 	float area3D = 0.0;
 	float area2D = 0.0;
 
@@ -122,6 +122,7 @@ EMSCRIPTEN_BINDINGS(my_class_example) {
     .function("setTimingWithV", &Mesh::setTimingWithV)
     .function("setTimingInsideOut", &Mesh::setTimingInsideOut)
     .function("resetTiming", &Mesh::resetTiming)
+    .function("bake", &Mesh::bake)
 	.property("boundingSphere", &Mesh::getBBCenter)
 	.property("glued", &Mesh::glued)
 	.property("gluedWeighted", &Mesh::gluedWeighted)

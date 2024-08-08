@@ -46,27 +46,29 @@ Mesh::Mesh(int positions, int uvs, int pathVerse, int posCount, int uvCount) : m
     {
         std::cout << "uniformQuaternionSigns False" << std::endl;
     }
-    bake(101, true, false);
+    //bake(101, true, false);
 }
 
 void Mesh::bake(int sampleCount, bool splitResidual, bool linear)
 {
+    std::cout << "Baking ..." << std::endl;
     bakedVertices.clear();
+    bakedVertices.resize(sampleCount);
     for (int i = 0; i < sampleCount; i++)
     {
         std::vector<glm::vec3> interpolations = interpolateConst(i, splitResidual, linear);
-        bakedVertices.push_back(interpolations);
+        bakedVertices[i] = std::move(interpolations);
     }
     std::cout << "end of baking: " << bakedVertices.size() << std:: endl;
-    std::cout << "end of baking: " << bakedVertices[0][0].x << " " << bakedVertices[1][0].x << " "  << bakedVertices[100][0].x << std:: endl;
 }
 
-std::vector<glm::vec3> Mesh::interpolateConst(int tPercent, bool splitResidual, bool linear) const // TODO: manca gluing
+std::vector<glm::vec3> Mesh::interpolateConst(int tPercent, bool splitResidual, bool linear) const // TODO: manca gluing e pathverse, linear, split, temporize
 {
     std::vector<glm::vec3> result;
+    result.reserve(f.size() * 3);
+
     float t = tPercent / 100.0;
     
-
     decltype(f[0].three2two) I;
     for (int i = 0; i < f.size(); i++)
     {
@@ -96,7 +98,6 @@ std::vector<glm::vec3> Mesh::interpolateConst(int tPercent, bool splitResidual, 
 
 void Mesh::applyBaked(int t)
 {
-    std::cout << "Applying baked" << t << std::endl;
     if (t >= bakedVertices.size())
     {
         std::cout << "Missing baked data" << std::endl;
@@ -104,8 +105,6 @@ void Mesh::applyBaked(int t)
     }
     for (int i = 0; i < bakedVertices[t].size(); i++)
     {
-        // if (heapPosPtr[i].x != bakedVertices[t][i].x)
-        //     std::cout << "copy" << heapPosPtr[i].x << " " << bakedVertices[t][i].x << std::endl;
         heapPosPtr[i] = bakedVertices[t][i];
     }
 }
@@ -367,12 +366,6 @@ void Mesh::updateRotoTransl()
         fi.three2two.fromTo(a3, b3, c3, a2, b2, c2);
         if (isnan(fi.three2two.dqTransf.dualQuaternion.real.x))
             std::cout << "ERROR! NaN" << std::endl;
-
-        if (glm::dot(glm::quat(1.0f, 0.0f, 0.0f, 0.0f), fi.three2two.dqTransf.dualQuaternion.real) < 0.0f)
-        {
-            fi.pathVerse = -1;
-            std::cout << "minus 1 found\n";
-        }
     }
 }
 
