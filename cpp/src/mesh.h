@@ -86,6 +86,9 @@ struct Mesh
 	void resetTiming();
 	void updateCopyOf(bool pathDependent);
 	void glueTriangles() const;
+	void glueTrianglesWeighted();
+	std::vector<glm::vec3> glueTrianglesWeightedRet();
+	void glueTriangleArap();
 	void updateAverageQuaternionRotationAreaWeighted();
 	void updatePathVerse(int verse);
 	void updatePathVersePerIsland();
@@ -99,7 +102,6 @@ struct Mesh
 	void updateFacesNeighbors();
 	bool uniformQuaternionSigns();
 	void updateAreaPerVertex();
-	void glueTrianglesWeighted();
 	void updateCopyOfUsingThreshold(bool pathDependent);
 	void bake(int sampleCount, bool splitResidual, bool linear);
 	std::vector<glm::vec3> interpolateConst(int tPercent, bool spitResidual, bool linear) const;

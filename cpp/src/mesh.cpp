@@ -142,7 +142,11 @@ void Mesh::interpolatePerTriangle(int tPercent, bool spitResidual, bool linear, 
     if (glued)
     {
         if (gluedWeighted)
-            glueTrianglesWeighted();
+            //glueTrianglesWeighted(); TODO: decomment this
+            for (int i = 0; i < 100; i++)
+            {
+                glueTriangleArap();
+            }
         else
             glueTriangles();
     }
@@ -259,23 +263,7 @@ void Mesh::updateCopyOfUsingThreshold(bool pathDependent)
     }
 }
 
-void Mesh::glueTriangles() const
-{
-    std::vector<glm::vec3> sum(v.size(), glm::vec3(0.0, 0.0, 0.0));
-    std::vector<int> count(v.size(), 0);
 
-    for (int i = 0; i < v.size(); ++i)
-    {
-        int j = v[i].copyOf;
-        sum[j] += heapPosPtr[i];
-        count[j]++;
-    }
-    for (int i = 0; i < v.size(); ++i)
-    {
-        int j = v[i].copyOf;
-        heapPosPtr[i] = sum[j] / float(count[j]);
-    }
-}
 
 static float ComputeArea(glm::vec3 p1, glm::vec3 p2, glm::vec3 p3)
 {
@@ -306,6 +294,24 @@ void Mesh::updateAreaPerVertex()
     }
 }
 
+void Mesh::glueTriangles() const
+{
+    std::vector<glm::vec3> sum(v.size(), glm::vec3(0.0, 0.0, 0.0));
+    std::vector<int> count(v.size(), 0);
+
+    for (int i = 0; i < v.size(); ++i)
+    {
+        int j = v[i].copyOf;
+        sum[j] += heapPosPtr[i];
+        count[j]++;
+    }
+    for (int i = 0; i < v.size(); ++i)
+    {
+        int j = v[i].copyOf;
+        heapPosPtr[i] = sum[j] / float(count[j]);
+    }
+}
+
 void Mesh::glueTrianglesWeighted()
 {
     std::vector<glm::vec3> sum(v.size(), glm::vec3(0.0, 0.0, 0.0));
@@ -325,6 +331,51 @@ void Mesh::glueTrianglesWeighted()
     {
         int j = v[i].copyOf;
         heapPosPtr[i] = sum[j] / areaSum[j];
+    }
+}
+
+std::vector<glm::vec3> Mesh::glueTrianglesWeightedRet()
+{
+    std::vector<glm::vec3> sum(v.size(), glm::vec3(0.0, 0.0, 0.0));
+    std::vector<float> areaSum(v.size(), 0.0);
+    std::vector<glm::vec3> result(v.size());
+
+    updateCopyOfUsingThreshold(true);
+
+    for (int i = 0; i < v.size(); ++i)
+    {
+        int j = v[i].copyOf;
+        sum[j] += heapPosPtr[i] * ((v[i].area3D + v[i].area2D) / 2.0f);
+        areaSum[j] += (v[i].area3D + v[i].area2D) / 2.0f;
+    }
+    
+    // Result
+    for (int i = 0; i < v.size(); ++i)
+    {
+        int j = v[i].copyOf;
+        result[i] = sum[j] / areaSum[j];
+    }
+
+    return result;
+}
+
+void Mesh::glueTriangleArap()
+{
+    std::vector<glm::vec3> deformed = glueTrianglesWeightedRet();
+    for (int i = 0; i < f.size(); i++)
+    {
+        int j = i * 3;
+        LinearTransform t;
+        t.fromTo(heapPosPtr[j], heapPosPtr[j+1], heapPosPtr[j+2], deformed[j], deformed[j+1], deformed[j+2]);
+        // heapPosPtr[j] = t.apply(heapPosPtr[j]);
+        // heapPosPtr[j+1] = t.apply(heapPosPtr[j+1]);
+        // heapPosPtr[j+2] = t.apply(heapPosPtr[j+2]);
+        heapPosPtr[j] = heapPosPtr[j] + glm::vec3(t.M[3]);
+        heapPosPtr[j+1] = heapPosPtr[j+1] + glm::vec3(t.M[3]);
+        heapPosPtr[j+2] = heapPosPtr[j+2] + glm::vec3(t.M[3]);
+        // heapPosPtr[j] = deformed[j];
+        // heapPosPtr[j+1] = deformed[j+1];
+        // heapPosPtr[j+2] = deformed[j+2];
     }
 }
 
