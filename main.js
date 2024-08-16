@@ -172,6 +172,9 @@ debugIslandElement.onchange = function () {
 			{
 				child.material = new THREE.MeshStandardMaterial({ map: rtTextureTarget.texture })
 				child.material.side = THREE.DoubleSide;
+				child.castShadow = true;
+				// child.receiveShadow = true;
+				//child.material.shadowSide = THREE.FrontSide;
 			}
 			else
 				child.material = customShaderMaterial;
@@ -442,9 +445,11 @@ function initLoadModel() {
 				}
 				else
 					child.material = customShaderMaterial;
+
 				child.material.side = THREE.DoubleSide;
 				child.castShadow = true;
-				child.receiveShadow = true;
+				//child.receiveShadow = true;
+				//child.material.shadowSide = THREE.FrontSide;
 			}
 
 		});
@@ -502,6 +507,7 @@ function interpolate() {
 			child.geometry.setAttribute('position', new THREE.BufferAttribute(Module["HEAPF32"].slice(heapGeometryPointer >> 2, (heapGeometryPointer >> 2) + arr.length), 3));
 			child.geometry.setAttribute('pathVerse', new THREE.BufferAttribute(Module["HEAPF32"].slice(heapPathVersesPointer >> 2, (heapPathVersesPointer >> 2) + child.geometry.attributes.position.length), 1));
 			child.geometry.attributes.pathVerse.needsUpdate = true;
+			child.geometry.computeVertexNormals()
 		}
 
 	});

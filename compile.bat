@@ -4,6 +4,7 @@ em++ -g -fdebug-compilation-dir='.' ^
     -s EXPORTED_RUNTIME_METHODS=ccall,cwrap ^
     -I D:\dev\my_libs\glm-1.0.0-light ^
     -I /D:/dev/emsdk/upstream/emscripten/system/include ^
+    -I D:\dev\my_libs\eigen-3.4.0 ^
     -s ALLOW_MEMORY_GROWTH ^
     -std=c++20
 
