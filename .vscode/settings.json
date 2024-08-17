@@ -73,7 +73,14 @@
         "variant": "cpp",
         "xtree": "cpp",
         "unordered_set": "cpp",
-        "hash_set": "cpp"
+        "hash_set": "cpp",
+        "deque": "cpp",
+        "queue": "cpp",
+        "ranges": "cpp",
+        "span": "cpp",
+        "core": "cpp",
+        "complex": "cpp",
+        "set": "cpp"
     },
     "C_Cpp.errorSquiggles": "disabled"
 }

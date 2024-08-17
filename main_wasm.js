@@ -6584,10 +6584,10 @@ var wasmImports = {
 var wasmExports = createWasm();
 var ___wasm_call_ctors = createExportWrapper('__wasm_call_ctors');
 var _interpolate = Module['_interpolate'] = createExportWrapper('interpolate');
+var _free = Module['_free'] = createExportWrapper('free');
+var _malloc = Module['_malloc'] = createExportWrapper('malloc');
 var ___getTypeName = createExportWrapper('__getTypeName');
 var _fflush = createExportWrapper('fflush');
-var _malloc = Module['_malloc'] = createExportWrapper('malloc');
-var _free = Module['_free'] = createExportWrapper('free');
 var _emscripten_stack_init = () => (_emscripten_stack_init = wasmExports['emscripten_stack_init'])();
 var _emscripten_stack_get_free = () => (_emscripten_stack_get_free = wasmExports['emscripten_stack_get_free'])();
 var _emscripten_stack_get_base = () => (_emscripten_stack_get_base = wasmExports['emscripten_stack_get_base'])();

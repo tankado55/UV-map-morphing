@@ -37,7 +37,7 @@ Mesh::Mesh(int positions, int uvs, int pathVerse, int posCount, int uvCount) : m
     updateBB();
     std::cout << "debug mesh class cpp, bounding sphere radius: " << boundingSphere.radius << std::endl;
     updateRotoTransl();
-    updateAverageQuaternionRotationAreaWeighted(); //Initial rotation
+    updateAverageQuaternionRotationAreaWeighted(); // Initial rotation
     updateRotoTransl();
     updateIsland();
     updateFacesNeighbors();
@@ -46,7 +46,7 @@ Mesh::Mesh(int positions, int uvs, int pathVerse, int posCount, int uvCount) : m
     {
         std::cout << "uniformQuaternionSigns False" << std::endl;
     }
-    //bake(101, true, false);
+    // bake(101, true, false);
 }
 
 void Mesh::bake(int sampleCount, bool splitResidual, bool linear)
@@ -59,7 +59,7 @@ void Mesh::bake(int sampleCount, bool splitResidual, bool linear)
         std::vector<glm::vec3> interpolations = interpolateConst(i, splitResidual, linear);
         bakedVertices[i] = std::move(interpolations);
     }
-    std::cout << "end of baking: " << bakedVertices.size() << std:: endl;
+    std::cout << "end of baking: " << bakedVertices.size() << std::endl;
 }
 
 std::vector<glm::vec3> Mesh::interpolateConst(int tPercent, bool splitResidual, bool linear) const // TODO: manca gluing e pathverse, linear, split, temporize
@@ -68,7 +68,7 @@ std::vector<glm::vec3> Mesh::interpolateConst(int tPercent, bool splitResidual, 
     result.reserve(f.size() * 3);
 
     float t = tPercent / 100.0;
-    
+
     decltype(f[0].three2two) I;
     for (int i = 0; i < f.size(); i++)
     {
@@ -142,8 +142,8 @@ void Mesh::interpolatePerTriangle(int tPercent, bool spitResidual, bool linear, 
     if (glued)
     {
         if (gluedWeighted)
-            //glueTrianglesWeighted(); TODO: decomment this
-            for (int i = 0; i < 100; i++)
+            // glueTrianglesWeighted(); TODO: decomment this
+            for (int i = 0; i < 1; i++)
             {
                 glueTriangleArap();
             }
@@ -183,8 +183,8 @@ struct XYZUV
     glm::vec3 first;
     glm::vec2 second;
     int path;
-    XYZUV(){};
-    XYZUV(glm::vec3 vec3, glm::vec2 vec2, int p) : first(vec3), second(vec2), path(p){};
+    XYZUV() {};
+    XYZUV(glm::vec3 vec3, glm::vec2 vec2, int p) : first(vec3), second(vec2), path(p) {};
 
     friend bool operator<(const XYZUV &el,
                           const XYZUV &el2)
@@ -263,8 +263,6 @@ void Mesh::updateCopyOfUsingThreshold(bool pathDependent)
     }
 }
 
-
-
 static float ComputeArea(glm::vec3 p1, glm::vec3 p2, glm::vec3 p3)
 {
     float l1 = glm::length(p1 - p2);
@@ -325,7 +323,7 @@ void Mesh::glueTrianglesWeighted()
         sum[j] += heapPosPtr[i] * ((v[i].area3D + v[i].area2D) / 2.0f);
         areaSum[j] += (v[i].area3D + v[i].area2D) / 2.0f;
     }
-    
+
     // Apply
     for (int i = 0; i < v.size(); ++i)
     {
@@ -348,7 +346,7 @@ std::vector<glm::vec3> Mesh::glueTrianglesWeightedRet()
         sum[j] += heapPosPtr[i] * ((v[i].area3D + v[i].area2D) / 2.0f);
         areaSum[j] += (v[i].area3D + v[i].area2D) / 2.0f;
     }
-    
+
     // Result
     for (int i = 0; i < v.size(); ++i)
     {
@@ -359,27 +357,105 @@ std::vector<glm::vec3> Mesh::glueTrianglesWeightedRet()
     return result;
 }
 
-void Mesh::glueTriangleArap()
+void Mesh::glueTriangleArapNaive()
 {
     std::vector<glm::vec3> deformed = glueTrianglesWeightedRet();
     for (int i = 0; i < f.size(); i++)
     {
         int j = i * 3;
         LinearTransform t;
-        t.fromTo(heapPosPtr[j], heapPosPtr[j+1], heapPosPtr[j+2], deformed[j], deformed[j+1], deformed[j+2]);
-        glm::vec3 transl = deformed[j] - heapPosPtr[j] + deformed[j+1] - heapPosPtr[j+1] + deformed[j+2] - heapPosPtr[j+2];
+        t.fromTo(heapPosPtr[j], heapPosPtr[j + 1], heapPosPtr[j + 2], deformed[j], deformed[j + 1], deformed[j + 2]);
+        glm::vec3 transl = deformed[j] - heapPosPtr[j] + deformed[j + 1] - heapPosPtr[j + 1] + deformed[j + 2] - heapPosPtr[j + 2];
         // heapPosPtr[j] = t.apply(heapPosPtr[j]);
         // heapPosPtr[j+1] = t.apply(heapPosPtr[j+1]);
         // heapPosPtr[j+2] = t.apply(heapPosPtr[j+2]);
         heapPosPtr[j] = heapPosPtr[j] + transl;
-        heapPosPtr[j+1] = heapPosPtr[j+1] + transl;
-        heapPosPtr[j+2] = heapPosPtr[j+2] + transl;
+        heapPosPtr[j + 1] = heapPosPtr[j + 1] + transl;
+        heapPosPtr[j + 2] = heapPosPtr[j + 2] + transl;
         // heapPosPtr[j] = heapPosPtr[j] + glm::vec3(t.M[3]);
         // heapPosPtr[j+1] = heapPosPtr[j+1] + glm::vec3(t.M[3]);
         // heapPosPtr[j+2] = heapPosPtr[j+2] + glm::vec3(t.M[3]);
         // heapPosPtr[j] = deformed[j];
         // heapPosPtr[j+1] = deformed[j+1];
         // heapPosPtr[j+2] = deformed[j+2];
+    }
+}
+
+void Mesh::glueTriangleArap()
+{
+    std::cout << "starting System Solving..." << std::endl;
+    updateCopyOf(false);
+    // Build System
+    Eigen::SparseMatrix<double> A;
+    Eigen::VectorXd b;
+    A.resize(v.size() * 3, v.size() * 3);
+    b.resize(v.size() * 3);
+    b.setZero();
+
+    std::vector<Eigen::Triplet<double>> tripletList;
+
+    for (int i = 0; i < v.size(); i++)
+    {
+        int j = i / 3; // face
+        if (v[i].copyOf != i)
+        {
+            for (int k = 0; k < 3; k++)
+            {
+                tripletList.push_back({(i * 3) + k, (i * 3) + k, 1.0});
+                tripletList.push_back({(i * 3) + k, (v[i].copyOf * 3) + k, -1.0});
+            }
+            glm::vec3 tempVec = heapPosPtr[v[i].copyOf] - heapPosPtr[i];
+            b((i * 3) + 0) = tempVec.x;
+            b((i * 3) + 1) = tempVec.y;
+            b((i * 3) + 2) = tempVec.z;
+            // glm::vec3 tempVec1 = heapPosPtr[i] - v[i].pos;
+            // glm::vec3 tempVec2 = heapPosPtr[v[i].copyOf] - v[v[i].copyOf].pos;
+            // glm::vec3 diff = tempVec1 - tempVec2;
+            // b((i * 3) + 0) = diff.x;
+            // b((i * 3) + 1) = diff.y;
+            // b((i * 3) + 2) = diff.z;
+        }
+        else
+        {
+            //find the next index in the same triangle
+            int offset = i % 3;
+            int nextV = f[j].vi[(offset + 1) % 3];
+            glm::vec3 tempVec = heapPosPtr[i] - heapPosPtr[nextV];
+            float tempArr[] = {tempVec.x, tempVec.y, tempVec.z};
+            for (int k = 0; k < 3; k++)
+            {
+                tripletList.push_back({(i * 3) + k, (i * 3) + k, -tempArr[k]});
+                tripletList.push_back({(i * 3) + k, nextV * 3 + k, tempArr[k]});
+            }
+            
+            b((i * 3) + 0) = 0;
+            b((i * 3) + 1) = 0;
+            b((i * 3) + 2) = 0;
+            
+        }
+    }
+    A.setFromTriplets(tripletList.begin(), tripletList.end());
+
+    // Solve
+    Eigen::SparseQR<Eigen::SparseMatrix<double>, Eigen::COLAMDOrdering<int>> solver;
+    solver.analyzePattern(A);
+  solver.factorize(A);
+
+    
+    
+    Eigen::VectorXd x = solver.solve(b);
+    if (solver.info() != Eigen::Success)
+    {
+        std::cerr << "Solving failed!" << std::endl;
+        std::cerr << x << std::endl;
+        // return -1;
+    }
+
+    // Apply
+    for (int i = 0; i < v.size(); i++)
+    {
+        Eigen::Vector3d translation = x.segment<3>(i * 3);
+        heapPosPtr[i] = heapPosPtr[i] + glm::vec3(translation.x(), translation.y(), translation.z());
     }
 }
 
@@ -392,8 +468,6 @@ static float sigmoid(float t) // ease in ease out
 {
     return (glm::sin(t * PI - PI / 2) + 1) / 2;
 }
-
-
 
 void Mesh::updateRotoTransl()
 {

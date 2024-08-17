@@ -71,7 +71,7 @@ var glued = gluedElement.value;
 var gluedModElement = document.getElementById("gluedMod");
 var gluedMod = gluedModElement.value;
 var gluedAverageElement = document.getElementById("gluedAverage");
-gluedAverageElement.checked = true;
+gluedAverageElement.checked = false;
 var gluingThresholdElement = document.getElementById("gluingThreshold");
 // Linear
 var linearElement = document.getElementById("linear");

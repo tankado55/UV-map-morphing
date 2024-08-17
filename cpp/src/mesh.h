@@ -15,6 +15,8 @@
 #include "dualQuatTransform.h"
 #include "smartTransform.h"
 #include <unordered_set>
+#include <Eigen/Sparse>
+#include <Eigen/Dense>
 
 struct Vertex
 {
@@ -88,6 +90,7 @@ struct Mesh
 	void glueTriangles() const;
 	void glueTrianglesWeighted();
 	std::vector<glm::vec3> glueTrianglesWeightedRet();
+	void glueTriangleArapNaive();
 	void glueTriangleArap();
 	void updateAverageQuaternionRotationAreaWeighted();
 	void updatePathVerse(int verse);
