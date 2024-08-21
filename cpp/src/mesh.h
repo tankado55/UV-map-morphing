@@ -64,10 +64,10 @@ struct Mesh
 	glm::vec2* heapUvPtr;
 	float* pathVersePtr;
 	bool glued;
-	bool gluedWeighted;
 	glm::dualquat initialTranform;
 	float gluingThreshold = 0.0;
 	std::vector<std::vector<glm::vec3>> bakedVertices;
+	bool weightedGluing = false;
 
 	Mesh();
 	Mesh(int positions, int uvs, int pathVerse, int posSize, int uvSize);
@@ -109,6 +109,7 @@ struct Mesh
 	void bake(int sampleCount, bool splitResidual, bool linear);
 	std::vector<glm::vec3> interpolateConst(int tPercent, bool spitResidual, bool linear) const;
 	void applyBaked(int t);
+	void setGluingThreshold(float threshold);
 };
 
 static float sigmoid(float t);
@@ -121,6 +122,7 @@ EMSCRIPTEN_BINDINGS(my_class_example) {
     .function("interpolatePerTriangle", &Mesh::interpolatePerTriangle)
     .function("applyBaked", &Mesh::applyBaked)
     .function("updateCopyOf", &Mesh::updateCopyOf)
+    .function("updateCopyOfUsingThreshold", &Mesh::updateCopyOfUsingThreshold)
     .function("updatePathVerse", &Mesh::updatePathVerse)
     .function("updatePathVersePerIsland", &Mesh::updatePathVersePerIsland)
     .function("setTimingWithU", &Mesh::setTimingWithU)
@@ -129,8 +131,10 @@ EMSCRIPTEN_BINDINGS(my_class_example) {
     .function("resetTiming", &Mesh::resetTiming)
     .function("bake", &Mesh::bake)
 	.property("boundingSphere", &Mesh::getBBCenter)
+	.property("weightedGluing", &Mesh::weightedGluing)
 	.property("glued", &Mesh::glued)
-	.property("gluedWeighted", &Mesh::gluedWeighted)
-	.property("gluingThreshold", &Mesh::gluingThreshold)
+	.function("setGluingThreshold", &Mesh::setGluingThreshold)
+	.function("glueTriangles", &Mesh::glueTriangles)
+	.function("glueTrianglesWeighted", &Mesh::glueTrianglesWeighted)
     ;
 }

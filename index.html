@@ -109,20 +109,24 @@
 		<input type="checkbox" id="splitResidual" name="splitResidual"/>
 		<label for="splitResidual">Split Residual</label>
 	</div>
-	<select name="shortestPath" id="shortestPath">
-		<option value=0>Neutral</option>
-		<option value=2>Neutral Inverse</option>
-		<option value=1>Long</option>
-		<option value=-1>Short</option>
-		<option value=4>Per Island</option>
-		<label for="shortestPath">Shortest Path</label>
-	</select>
+	<div>
+		Path:
+		<select name="shortestPath" id="shortestPath">
+			<option value=4>Per Island</option>
+			<option value=0>Neutral</option>
+			<option value=2>Neutral Inverse</option>
+			<option value=1>Long</option>
+			<option value=-1>Short</option>
+			<label for="shortestPath">Shortest Path</label>
+		</select>
+	</div>
 	<div>
 		<input type="checkbox" id="glued" name="glued" checked />
 		<label for="glued">Glued</label>
-		<input type="checkbox" id="gluedAverage" name="gluedAverage"/>
-		<label for="gluedAverage">Averaged</label>
-		<input type="range" min="0" max="1" step="0.01" value="0" id="gluingThreshold" style="width: 500px">
+		<input type="checkbox" id="gluedWeighted" name="gluedWeighted"/>
+		<label for="gluedWeighted">Weighted</label>
+		<input type="range" min="0" max="1" step="0.01" value="1" id="gluingThreshold" style="width: 500px">
+		Threshold
 	</div>
 	<select name="gluedMod" id="gluedMod">
 		<option value=0>PathVerse independent</option>

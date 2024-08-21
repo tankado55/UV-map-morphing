@@ -3,7 +3,7 @@
 
 #define PI 3.14159265358979323846
 
-Mesh::Mesh(int positions, int uvs, int pathVerse, int posCount, int uvCount) : m_PosCount(posCount), glued(true), gluedWeighted(false)
+Mesh::Mesh(int positions, int uvs, int pathVerse, int posCount, int uvCount) : m_PosCount(posCount), glued(true)
 {
     int verticesCount = posCount / 3;
     heapPosPtr = reinterpret_cast<glm::vec3 *>(positions);
@@ -109,6 +109,11 @@ void Mesh::applyBaked(int t)
     }
 }
 
+void Mesh::setGluingThreshold(float threshold)
+{
+    gluingThreshold = threshold * boundingSphere.radius * 2;
+}
+
 void Mesh::interpolatePerTriangle(int tPercent, bool spitResidual, bool linear, bool shortestPath)
 {
     float t = tPercent / 100.0;
@@ -138,17 +143,6 @@ void Mesh::interpolatePerTriangle(int tPercent, bool spitResidual, bool linear, 
             int heapIndex = i * 3 + j;
             heapPosPtr[heapIndex] = resultV;
         }
-    }
-    if (glued)
-    {
-        if (gluedWeighted)
-            // glueTrianglesWeighted(); TODO: decomment this
-            for (int i = 0; i < 1; i++)
-            {
-                glueTriangleArap();
-            }
-        else
-            glueTriangles();
     }
 }
 
@@ -230,6 +224,7 @@ void Mesh::updateCopyOf(bool pathDependent)
 
 void Mesh::updateCopyOfUsingThreshold(bool pathDependent)
 {
+    std::cout << "updating CopyOf..." << std::endl;
     std::map<XYZUV, int> map;
     for (int i = 0; i < v.size(); i++)
     {
@@ -315,8 +310,6 @@ void Mesh::glueTrianglesWeighted()
     std::vector<glm::vec3> sum(v.size(), glm::vec3(0.0, 0.0, 0.0));
     std::vector<float> areaSum(v.size(), 0.0);
 
-    updateCopyOfUsingThreshold(true);
-
     for (int i = 0; i < v.size(); ++i)
     {
         int j = v[i].copyOf;
@@ -337,8 +330,6 @@ std::vector<glm::vec3> Mesh::glueTrianglesWeightedRet()
     std::vector<glm::vec3> sum(v.size(), glm::vec3(0.0, 0.0, 0.0));
     std::vector<float> areaSum(v.size(), 0.0);
     std::vector<glm::vec3> result(v.size());
-
-    updateCopyOfUsingThreshold(true);
 
     for (int i = 0; i < v.size(); ++i)
     {
@@ -417,7 +408,7 @@ void Mesh::glueTriangleArap()
         }
         else
         {
-            //find the next index in the same triangle
+            // find the next index in the same triangle
             int offset = i % 3;
             int nextV = f[j].vi[(offset + 1) % 3];
             glm::vec3 tempVec = heapPosPtr[i] - heapPosPtr[nextV];
@@ -427,11 +418,10 @@ void Mesh::glueTriangleArap()
                 tripletList.push_back({(i * 3) + k, (i * 3) + k, -tempArr[k]});
                 tripletList.push_back({(i * 3) + k, nextV * 3 + k, tempArr[k]});
             }
-            
+
             b((i * 3) + 0) = 0;
             b((i * 3) + 1) = 0;
             b((i * 3) + 2) = 0;
-            
         }
     }
     A.setFromTriplets(tripletList.begin(), tripletList.end());
@@ -439,10 +429,8 @@ void Mesh::glueTriangleArap()
     // Solve
     Eigen::SparseQR<Eigen::SparseMatrix<double>, Eigen::COLAMDOrdering<int>> solver;
     solver.analyzePattern(A);
-  solver.factorize(A);
+    solver.factorize(A);
 
-    
-    
     Eigen::VectorXd x = solver.solve(b);
     if (solver.info() != Eigen::Success)
     {

@@ -69,9 +69,7 @@ var debugIsland = debugIslandElement.value;
 var gluedElement = document.getElementById("glued");
 var glued = gluedElement.value;
 var gluedModElement = document.getElementById("gluedMod");
-var gluedMod = gluedModElement.value;
-var gluedAverageElement = document.getElementById("gluedAverage");
-gluedAverageElement.checked = false;
+var gluedWeightedElement = document.getElementById("gluedWeighted");
 var gluingThresholdElement = document.getElementById("gluingThreshold");
 // Linear
 var linearElement = document.getElementById("linear");
@@ -89,7 +87,7 @@ function updateUI() {
 	gluedModElement.dispatchEvent(event);
 	debugIslandElement.dispatchEvent(event);
 	temporizeElement.dispatchEvent(event);
-	gluedAverageElement.dispatchEvent(event);
+	gluedWeightedElement.dispatchEvent(event);
 }
 
 interpolationSlider.oninput = function () {
@@ -120,14 +118,13 @@ linearElement.onchange = function () {
 	splitResidualElement.disabled = linear;
 	gluedElement.disabled = linear;
 	gluedModElement.disabled = linear;
-	gluedAverageElement.disabled = linear;
+	gluedWeightedElement.disabled = linear;
 	interpolate()
 	render();
 }
 shortestElement.onchange = function () {
-	shortestPath = shortestElement.value;
-	if (shortestPath < 3) {
-		meshInstance.updatePathVerse(parseInt(shortestPath));
+	if (shortestElement.value < 3) {
+		meshInstance.updatePathVerse(parseInt(shortestElement.value));
 	}
 	else {
 		meshInstance.updatePathVersePerIsland();
@@ -147,19 +144,14 @@ gluedElement.onchange = function () {
 	interpolate()
 	render();
 }
-gluedAverageElement.onchange = function () {
-	meshInstance.gluedWeighted = gluedAverageElement.checked;
-	if (!gluedAverageElement.checked)
-	{
-		meshInstance.updateCopyOf(parseInt(gluedMod));
-	}
+gluedWeightedElement.onchange = function () {
+	meshInstance.weightedGluing = gluedWeightedElement.checked
 	interpolate()
 	render();
 }
 
 gluedModElement.onchange = function () {
-	gluedMod = gluedModElement.value;
-	meshInstance.updateCopyOf(parseInt(gluedMod));
+	meshInstance.updateCopyOf(parseInt(gluedModElement.value));
 	interpolate()
 	render();
 }
@@ -205,7 +197,11 @@ temporizeElement.onchange = function () {
 	render();
 }
 gluingThresholdElement.oninput = function () {
-	meshInstance.gluingThreshold = parseFloat(gluingThresholdElement.value);
+	meshInstance.setGluingThreshold(parseFloat(gluingThresholdElement.value));
+	if (parseInt(gluingThresholdElement.value) == 1)
+		{
+			meshInstance.updateCopyOfUsingThreshold(parseInt(gluedModElement.value));
+		}
 	interpolate()
 	render();
 }
@@ -495,6 +491,7 @@ function interpolate() {
 	object.traverse(function (child) {
 		if (child.isMesh) {
 			console.log("Interpolating: " + interpolationSlider.value)
+			
 			let arr = child.geometry.attributes.position.array;
 			if (bakingElement.checked)
 			{
@@ -504,6 +501,23 @@ function interpolate() {
 			{
 				meshInstance.interpolatePerTriangle(parseInt(interpolationSlider.value), splitResidual, linear, shortestPath);
 			}
+
+			if (gluedElement.checked)
+				{
+					if (parseInt(gluingThresholdElement.value) < 1)
+						{
+							meshInstance.updateCopyOfUsingThreshold(parseInt(gluedModElement.value));
+						}
+					if (gluedWeightedElement.checked)
+					{
+						meshInstance.glueTrianglesWeighted()
+					}
+					else
+					{
+						meshInstance.glueTriangles();
+					}
+				}
+
 			child.geometry.setAttribute('position', new THREE.BufferAttribute(Module["HEAPF32"].slice(heapGeometryPointer >> 2, (heapGeometryPointer >> 2) + arr.length), 3));
 			child.geometry.setAttribute('pathVerse', new THREE.BufferAttribute(Module["HEAPF32"].slice(heapPathVersesPointer >> 2, (heapPathVersesPointer >> 2) + child.geometry.attributes.position.length), 1));
 			child.geometry.attributes.pathVerse.needsUpdate = true;
