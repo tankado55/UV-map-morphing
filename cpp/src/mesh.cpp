@@ -114,7 +114,7 @@ void Mesh::setGluingThreshold(float threshold)
     gluingThreshold = threshold * boundingSphere.radius * 2;
 }
 
-void Mesh::interpolatePerTriangle(int tPercent, bool spitResidual, bool linear, bool shortestPath)
+void Mesh::interpolatePerTriangle(int tPercent, bool spitResidual, bool linear)
 {
     float t = tPercent / 100.0;
 
@@ -375,7 +375,6 @@ void Mesh::glueTriangleArapNaive()
 void Mesh::glueTriangleArap()
 {
     std::cout << "starting System Solving..." << std::endl;
-    updateCopyOf(false);
     // Build System
     Eigen::SparseMatrix<double> A;
     Eigen::VectorXd b;
@@ -445,6 +444,7 @@ void Mesh::glueTriangleArap()
         Eigen::Vector3d translation = x.segment<3>(i * 3);
         heapPosPtr[i] = heapPosPtr[i] + glm::vec3(translation.x(), translation.y(), translation.z());
     }
+    std::cout << "System Done." << std::endl;
 }
 
 glm::vec3 uv2xzy(glm::vec2 v)

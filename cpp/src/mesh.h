@@ -72,7 +72,7 @@ struct Mesh
 	Mesh();
 	Mesh(int positions, int uvs, int pathVerse, int posSize, int uvSize);
 	void interpolate(int t) const;
-	void interpolatePerTriangle(int tPercent, bool spitResidual, bool linear, bool shortestPath);
+	void interpolatePerTriangle(int tPercent, bool spitResidual, bool linear);
 	void buildCylinder();
 	void updateBB();
 	void updateToFlipBool();
@@ -136,5 +136,6 @@ EMSCRIPTEN_BINDINGS(my_class_example) {
 	.function("setGluingThreshold", &Mesh::setGluingThreshold)
 	.function("glueTriangles", &Mesh::glueTriangles)
 	.function("glueTrianglesWeighted", &Mesh::glueTrianglesWeighted)
+	.function("glueTriangleArap", &Mesh::glueTriangleArap)
     ;
 }

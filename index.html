@@ -2,8 +2,10 @@
 <html lang="en">
 
 <head>
-	<meta charset="utf-8">
 	<title>My first three.js app</title>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
+	<link type="text/css" rel="stylesheet" href="main.css">
 	<style>
 		body {
 			margin: 0;
@@ -15,145 +17,163 @@
 	</style>
 </head>
 
+
 <body>
+
+
+	<div id="ui">
+		<select name="mesh" id="meshSelect">
+			<option value='{"model":"simpleMeshes/cubeCross.obj"}'>Cube 1</option>
+			<option value='{"model":"simpleMeshes/cubeSubdivided.obj"}'>Cube 2</option>
+			<option value='{"model":"BakerHouse/Models/Baker_house.fbx", "tex":"BakerHouse/Textures/Baker_house.tif"}'>
+				House</option>
+			<option value='{"model":"_Wheel_195_50R13x10_OBJ/wheel.obj"}'>Wheel</option>
+			<option value='{"model":"BakerHouse/Models/Barrel.FBX"}'>Barrel</option>
+			<option
+				value='{"model":"SpaceRobotKyle/Models/KyleRobot.fbx", "tex": "SpaceRobotKyle/Textures/KyleRobot_BaseMap.png"} '>
+				Robot</option>
+			<option value='{"model":"Sci_Fi_Gun_Light/_models/GunHeavy.fbx"}'>Gun</option>
+			<option value='{"model":"simpleMeshes/cylSimple.obj"}'>Cylinder 1</option>
+			<option value='{"model":"simpleMeshes/cylSimpleReoriented.obj"}'>Cylinder 2</option>
+			<option value='{"model":"9mm_cartridge/9mm_cartridge.obj"}'>9mm_cartridge</option>
+			<option value='{"model":"anvil/anvil.obj"}'>anvil</option>
+			<option value='{"model":"apple/apple.obj"}'>apple</option>
+			<option value='{"model":"cannon_with_base/cannon_with_base.obj"}'>cannon_with_base</option>
+			<option value='{"model":"cartoon_bomb/cartoon_bomb.obj"}'>cartoon_bomb</option>
+			<option value='{"model":"crystal/crystal.obj"}'>crystal</option>
+			<option value='{"model":"bedside_table_01/bedside_table_01.obj"}'>table</option>
+			<option value='{"model":"apollo_exterior-150k-4096-obj/x3d-cm-exterior-shell-90k-uvs-150k-unwrapped.obj"}'>
+				apollo</option>
+			<option value='{"model":"acorn/acorn.obj"}'>acorn</option>
+			<option value='{"model":"d20_dice/d20_dice.obj"}'>d20</option>
+			<option value='{"model":"goblet_03/goblet_03.obj"}'>goblet_03</option>
+			<option value='{"model":"iron_chandelier_01/iron_chandelier_01.obj"}'>iron_chandelier_01</option>
+			<option value='{"model":"outdoor_bin/outdoor_bin.obj"}'>outdoor_bin</option>
+			<option value='{"model":"phone_handset_01/phone_handset_01.obj"}'>phone_handset_01</option>
+			<option value='{"model":"table_tennis_paddle/table_tennis_paddle.obj"}'>table_tennis_paddle</option>
+			<option value='{"model":"wooden_wheelbarrow/wooden_wheelbarrow.obj"}'>wooden_wheelbarrow</option>
+		</select>
+
+		<div class="slidecontainer"></div>
+		<input type="range" min="0" max="100" value="50" id="interpolationSlider" style="width: 500px">
+
+
+		<div class="slidecontainer"></div>
+		<input type="range" min="0" max="100" value="50" id="gridSlider">
+		<input type="range" min="0" max="100" value="50" id="whiteSlider">
+		<div>
+			<input type="checkbox" id="linear" name="linear" />
+			<label for="linear">Linear</label>
+		</div>
+		<div>
+			<input type="checkbox" id="splitResidual" name="splitResidual" />
+			<label for="splitResidual">Split Residual</label>
+		</div>
+		<div>
+			Path:
+			<select name="shortestPath" id="shortestPath">
+				<option value=4>Per Island</option>
+				<option value=0>Neutral</option>
+				<option value=2>Neutral Inverse</option>
+				<option value=1>Long</option>
+				<option value=-1>Short</option>
+				<label for="shortestPath">Shortest Path</label>
+			</select>
+		</div>
+		<fieldset id="gluing">
+			<legend>Gluing</legend>
+			<div>
+				<input type="checkbox" id="glued" name="glued" checked />
+				<label for="glued">Glued</label>
+				<input type="checkbox" id="gluedWeighted" name="gluedWeighted" />
+				<label for="gluedWeighted">Weighted</label>
+				<input type="range" min="0" max="1" step="0.01" value="1" id="gluingThreshold" style="width: 500px">
+				Threshold
+				
+			</div>
+			<select name="gluedMod" id="gluedMod">
+				<option value=0>PathVerse independent</option>
+				<option value=1>Based on faces pathVerse</option>
+				<label for="gluedMod">Glued Mod</label>
+			</select>
+			<div>
+				<input type="checkbox" id="arap"/>
+			<label for="arap">ARAP</label>
+			</div>
+			
+
+		</fieldset>
+		
+		<div>
+			<input type="checkbox" id="debugIsland" name="debugIsland" />
+			<label for="debugIsland">Debug Island</label>
+		</div>
+		Temporize:
+		<select name="temporize" id="temporize">
+			<option value="no">No</option>
+			<option value="u">By U coordinates</option>
+			<option value="v">By V coordinates</option>
+			<option value="insideO">Inside Out</option>
+			<label for="temporize">temporize</label>
+		</select>
+		<label for="flightTime">Fligth Time</label>
+		<input type="number" step="0.01" value="0.40" id="flightTime">
+		<div>
+			<input type="checkbox" id="baking" name="baking" />
+			<label for="baking">Baking</label>
+		</div>
+
+	</div>
+
+
 	<script type="x-shader/x-vertex" id="vertexshader">
 
-			varying vec2 vUv;
+		varying vec2 vUv;
 
-			void main() {
+		void main() {
 
-				vUv = uv;
-				gl_Position = projectionMatrix * modelViewMatrix * vec4( position, 1.0 );
-			}
+			vUv = uv;
+			gl_Position = projectionMatrix * modelViewMatrix * vec4( position, 1.0 );
+		}
 
-		</script>
+	</script>
 
 	<script type="x-shader/x-fragment" id="fragmentshader">
 
-			varying vec2 vUv;
-			uniform sampler2D tDiffuse;
-			uniform float u_TextureGridMode;
-			uniform float u_TextureColorMode;
+		varying vec2 vUv;
+		uniform sampler2D tDiffuse;
+		uniform float u_TextureGridMode;
+		uniform float u_TextureColorMode;
 
-			const vec4 plainColor = vec4(1.0);
+		const vec4 plainColor = vec4(1.0);
 
-			// function prototypes
-			vec4 calcGridColor(vec2 p, vec4 defaultColor);
+		// function prototypes
+		vec4 calcGridColor(vec2 p, vec4 defaultColor);
 
-			void main() {
-				vec4 colTexture =  texture2D(tDiffuse, vUv);
-				colTexture = mix(plainColor, colTexture, u_TextureColorMode);
-				vec4 gridTexture = calcGridColor(vUv, colTexture);
+		void main() {
+			vec4 colTexture =  texture2D(tDiffuse, vUv);
+			colTexture = mix(plainColor, colTexture, u_TextureColorMode);
+			vec4 gridTexture = calcGridColor(vUv, colTexture);
 
-				vec4 diffuse = mix(
-					colTexture,
-					gridTexture,
-					u_TextureGridMode
-				);
+			vec4 diffuse = mix(
+				colTexture,
+				gridTexture,
+				u_TextureGridMode
+			);
 
-				gl_FragColor = diffuse;
-			}
+			gl_FragColor = diffuse;
+		}
 
-			vec4 calcGridColor(vec2 p, vec4 defaultColor)
-			{
-				const float nCells = 30.0;
-				vec2 q = fract(p * nCells);
-				if (q.x < 0.1) return vec4(0.8, 0.0, 0.0, 1.0);
-				if (q.y < 0.1) return vec4(0.0, 0.0, 0.5, 1.0);
-				return defaultColor;
-			}
+		vec4 calcGridColor(vec2 p, vec4 defaultColor)
+		{
+			const float nCells = 30.0;
+			vec2 q = fract(p * nCells);
+			if (q.x < 0.1) return vec4(0.8, 0.0, 0.0, 1.0);
+			if (q.y < 0.1) return vec4(0.0, 0.0, 0.5, 1.0);
+			return defaultColor;
+		}
 
-		</script>
-
-	<select name="mesh" id="meshSelect">
-		<option value='{"model":"simpleMeshes/cubeCross.obj"}'>Cube 1</option>
-		<option value='{"model":"simpleMeshes/cubeSubdivided.obj"}'>Cube 2</option>
-		<option value='{"model":"BakerHouse/Models/Baker_house.fbx", "tex":"BakerHouse/Textures/Baker_house.tif"}'>House</option>
-		<option value='{"model":"_Wheel_195_50R13x10_OBJ/wheel.obj"}'>Wheel</option>
-		<option value='{"model":"BakerHouse/Models/Barrel.FBX"}'>Barrel</option>
-		<option value='{"model":"SpaceRobotKyle/Models/KyleRobot.fbx", "tex": "SpaceRobotKyle/Textures/KyleRobot_BaseMap.png"} '>Robot</option>
-		<option value='{"model":"Sci_Fi_Gun_Light/_models/GunHeavy.fbx"}'>Gun</option>
-		<option value='{"model":"simpleMeshes/cylSimple.obj"}'>Cylinder 1</option>
-		<option value='{"model":"simpleMeshes/cylSimpleReoriented.obj"}'>Cylinder 2</option>
-		<option value='{"model":"9mm_cartridge/9mm_cartridge.obj"}'>9mm_cartridge</option>
-		<option value='{"model":"anvil/anvil.obj"}'>anvil</option>
-		<option value='{"model":"apple/apple.obj"}'>apple</option>
-		<option value='{"model":"cannon_with_base/cannon_with_base.obj"}'>cannon_with_base</option>
-		<option value='{"model":"cartoon_bomb/cartoon_bomb.obj"}'>cartoon_bomb</option>
-		<option value='{"model":"crystal/crystal.obj"}'>crystal</option>
-		<option value='{"model":"bedside_table_01/bedside_table_01.obj"}'>table</option>
-		<option value='{"model":"apollo_exterior-150k-4096-obj/x3d-cm-exterior-shell-90k-uvs-150k-unwrapped.obj"}'>apollo</option>
-		<option value='{"model":"acorn/acorn.obj"}'>acorn</option>
-		<option value='{"model":"d20_dice/d20_dice.obj"}'>d20</option>
-		<option value='{"model":"goblet_03/goblet_03.obj"}'>goblet_03</option>
-		<option value='{"model":"iron_chandelier_01/iron_chandelier_01.obj"}'>iron_chandelier_01</option>
-		<option value='{"model":"outdoor_bin/outdoor_bin.obj"}'>outdoor_bin</option>
-		<option value='{"model":"phone_handset_01/phone_handset_01.obj"}'>phone_handset_01</option>
-		<option value='{"model":"table_tennis_paddle/table_tennis_paddle.obj"}'>table_tennis_paddle</option>
-		<option value='{"model":"wooden_wheelbarrow/wooden_wheelbarrow.obj"}'>wooden_wheelbarrow</option>
-	</select>
-
-	<div class="slidecontainer"></div>
-	<input type="range" min="0" max="100" value="50" id="interpolationSlider" style="width: 500px">
-	</div>
-
-	<div class="slidecontainer"></div>
-	<input type="range" min="0" max="100" value="50" id="gridSlider">
-	<input type="range" min="0" max="100" value="50" id="whiteSlider">
-	</div>
-	<div>
-		<input type="checkbox" id="linear" name="linear"/>
-		<label for="linear">Linear</label>
-	</div>
-	<div>
-		<input type="checkbox" id="splitResidual" name="splitResidual"/>
-		<label for="splitResidual">Split Residual</label>
-	</div>
-	<div>
-		Path:
-		<select name="shortestPath" id="shortestPath">
-			<option value=4>Per Island</option>
-			<option value=0>Neutral</option>
-			<option value=2>Neutral Inverse</option>
-			<option value=1>Long</option>
-			<option value=-1>Short</option>
-			<label for="shortestPath">Shortest Path</label>
-		</select>
-	</div>
-	<div>
-		<input type="checkbox" id="glued" name="glued" checked />
-		<label for="glued">Glued</label>
-		<input type="checkbox" id="gluedWeighted" name="gluedWeighted"/>
-		<label for="gluedWeighted">Weighted</label>
-		<input type="range" min="0" max="1" step="0.01" value="1" id="gluingThreshold" style="width: 500px">
-		Threshold
-	</div>
-	<select name="gluedMod" id="gluedMod">
-		<option value=0>PathVerse independent</option>
-		<option value=1>Based on faces pathVerse</option>
-		<label for="gluedMod">Glued Mod</label>
-	</select>
-	<div>
-		<input type="checkbox" id="debugIsland" name="debugIsland"/>
-		<label for="debugIsland">Debug Island</label>
-	</div>
-	Temporize: 
-	<select name="temporize" id="temporize">
-		<option value="no">No</option>
-		<option value="u">By U coordinates</option>
-		<option value="v">By V coordinates</option>
-		<option value="insideO">Inside Out</option>
-		<label for="temporize">temporize</label>
-	</select>
-	<label for="flightTime">Fligth Time</label>
-	<input type="number" step="0.01" value="0.40" id="flightTime">
-	<div>
-		<input type="checkbox" id="baking" name="baking"/>
-		<label for="baking">Baking</label>
-	</div>
-
-
-
+	</script>
 
 	<script type='text/javascript'>
 		var Module = {}

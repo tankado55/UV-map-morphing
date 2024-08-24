@@ -42,6 +42,8 @@ let quad;
 let customFragShader
 let customVertexShader
 
+let defaultMaterial = new THREE.ShaderMaterial()
+
 async function loadShaders()
 {
 	customVertexShader = await (await fetch("res/shaders/customVert.glsl")).text();
@@ -62,7 +64,6 @@ var whiteSlider = document.getElementById("whiteSlider");
 var splitResidualElement = document.getElementById("splitResidual");
 var splitResidual = splitResidualElement.value;
 var shortestElement = document.getElementById("shortestPath");
-var shortestPath = shortestElement.value;
 var debugIslandElement = document.getElementById("debugIsland");
 var debugIsland = debugIslandElement.value;
 //glued
@@ -71,6 +72,7 @@ var glued = gluedElement.value;
 var gluedModElement = document.getElementById("gluedMod");
 var gluedWeightedElement = document.getElementById("gluedWeighted");
 var gluingThresholdElement = document.getElementById("gluingThreshold");
+var arapElement = document.getElementById("arap");
 // Linear
 var linearElement = document.getElementById("linear");
 linearElement.checked = false;
@@ -398,6 +400,7 @@ function initLoadModel() {
 		function (err) {
 			console.error('Error in loading texture');
 			console.log(err)
+			material.uniforms.tDiffuse.value = null;
 		}
 	);
 
@@ -499,7 +502,7 @@ function interpolate() {
 			}
 			else
 			{
-				meshInstance.interpolatePerTriangle(parseInt(interpolationSlider.value), splitResidual, linear, shortestPath);
+				meshInstance.interpolatePerTriangle(parseInt(interpolationSlider.value), splitResidual, linear);
 			}
 
 			if (gluedElement.checked)
@@ -508,7 +511,11 @@ function interpolate() {
 						{
 							meshInstance.updateCopyOfUsingThreshold(parseInt(gluedModElement.value));
 						}
-					if (gluedWeightedElement.checked)
+					if(arapElement.checked)
+					{
+						meshInstance.glueTriangleArap()
+					}
+					else if (gluedWeightedElement.checked)
 					{
 						meshInstance.glueTrianglesWeighted()
 					}
