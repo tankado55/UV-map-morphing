@@ -372,6 +372,81 @@ void Mesh::glueTriangleArapNaive()
     }
 }
 
+// void Mesh::glueTriangleArap()
+// {
+//     std::cout << "starting System Solving..." << std::endl;
+//     // Build System
+//     Eigen::SparseMatrix<double> A;
+//     Eigen::VectorXd b;
+//     A.resize(v.size() * 3, v.size() * 3);
+//     b.resize(v.size() * 3);
+//     b.setZero();
+
+//     std::vector<Eigen::Triplet<double>> tripletList;
+
+//     for (int i = 0; i < v.size(); i++)
+//     {
+//         int j = i / 3; // face
+//         if (v[i].copyOf != i)
+//         {
+//             for (int k = 0; k < 3; k++)
+//             {
+//                 tripletList.push_back({(i * 3) + k, (i * 3) + k, 1.0});
+//                 tripletList.push_back({(i * 3) + k, (v[i].copyOf * 3) + k, -1.0});
+//             }
+//             glm::vec3 tempVec = heapPosPtr[v[i].copyOf] - heapPosPtr[i];
+//             b((i * 3) + 0) = tempVec.x;
+//             b((i * 3) + 1) = tempVec.y;
+//             b((i * 3) + 2) = tempVec.z;
+//             // glm::vec3 tempVec1 = heapPosPtr[i] - v[i].pos;
+//             // glm::vec3 tempVec2 = heapPosPtr[v[i].copyOf] - v[v[i].copyOf].pos;
+//             // glm::vec3 diff = tempVec1 - tempVec2;
+//             // b((i * 3) + 0) = diff.x;
+//             // b((i * 3) + 1) = diff.y;
+//             // b((i * 3) + 2) = diff.z;
+//         }
+//         else
+//         {
+//             // find the next index in the same triangle
+//             int offset = i % 3;
+//             int nextV = f[j].vi[(offset + 1) % 3];
+//             glm::vec3 tempVec = heapPosPtr[i] - heapPosPtr[nextV];
+//             float tempArr[] = {tempVec.x, tempVec.y, tempVec.z};
+//             for (int k = 0; k < 3; k++)
+//             {
+//                 tripletList.push_back({(i * 3) + k, (i * 3) + k, -tempArr[k]});
+//                 tripletList.push_back({(i * 3) + k, nextV * 3 + k, tempArr[k]});
+//             }
+
+//             b((i * 3) + 0) = 0;
+//             b((i * 3) + 1) = 0;
+//             b((i * 3) + 2) = 0;
+//         }
+//     }
+//     A.setFromTriplets(tripletList.begin(), tripletList.end());
+
+//     // Solve
+//     Eigen::SparseQR<Eigen::SparseMatrix<double>, Eigen::COLAMDOrdering<int>> solver;
+//     solver.analyzePattern(A);
+//     solver.factorize(A);
+
+//     Eigen::VectorXd x = solver.solve(b);
+//     if (solver.info() != Eigen::Success)
+//     {
+//         std::cerr << "Solving failed!" << std::endl;
+//         std::cerr << x << std::endl;
+//         // return -1;
+//     }
+
+//     // Apply
+//     for (int i = 0; i < v.size(); i++)
+//     {
+//         Eigen::Vector3d translation = x.segment<3>(i * 3);
+//         heapPosPtr[i] = heapPosPtr[i] + glm::vec3(translation.x(), translation.y(), translation.z());
+//     }
+//     std::cout << "System Done." << std::endl;
+// }
+
 void Mesh::glueTriangleArap()
 {
     std::cout << "starting System Solving..." << std::endl;
@@ -387,25 +462,6 @@ void Mesh::glueTriangleArap()
     for (int i = 0; i < v.size(); i++)
     {
         int j = i / 3; // face
-        if (v[i].copyOf != i)
-        {
-            for (int k = 0; k < 3; k++)
-            {
-                tripletList.push_back({(i * 3) + k, (i * 3) + k, 1.0});
-                tripletList.push_back({(i * 3) + k, (v[i].copyOf * 3) + k, -1.0});
-            }
-            glm::vec3 tempVec = heapPosPtr[v[i].copyOf] - heapPosPtr[i];
-            b((i * 3) + 0) = tempVec.x;
-            b((i * 3) + 1) = tempVec.y;
-            b((i * 3) + 2) = tempVec.z;
-            // glm::vec3 tempVec1 = heapPosPtr[i] - v[i].pos;
-            // glm::vec3 tempVec2 = heapPosPtr[v[i].copyOf] - v[v[i].copyOf].pos;
-            // glm::vec3 diff = tempVec1 - tempVec2;
-            // b((i * 3) + 0) = diff.x;
-            // b((i * 3) + 1) = diff.y;
-            // b((i * 3) + 2) = diff.z;
-        }
-        else
         {
             // find the next index in the same triangle
             int offset = i % 3;

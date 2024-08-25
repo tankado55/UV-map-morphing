@@ -19,9 +19,10 @@
 
 
 <body>
-
-
+	
+	
 	<div id="ui">
+		Mesh Selection:
 		<select name="mesh" id="meshSelect">
 			<option value='{"model":"simpleMeshes/cubeCross.obj"}'>Cube 1</option>
 			<option value='{"model":"simpleMeshes/cubeSubdivided.obj"}'>Cube 2</option>
@@ -55,12 +56,12 @@
 		</select>
 
 		<div class="slidecontainer"></div>
-		<input type="range" min="0" max="100" value="50" id="interpolationSlider" style="width: 500px">
+		<input type="range" min="0" max="100" value="50" id="interpolationSlider" style="width: 400px"> Interpolation
 
 
 		<div class="slidecontainer"></div>
 		<input type="range" min="0" max="100" value="50" id="gridSlider">
-		<input type="range" min="0" max="100" value="50" id="whiteSlider">
+		<input type="range" min="0" max="100" value="50" id="whiteSlider"> Style
 		<div>
 			<input type="checkbox" id="linear" name="linear" />
 			<label for="linear">Linear</label>
@@ -87,8 +88,11 @@
 				<label for="glued">Glued</label>
 				<input type="checkbox" id="gluedWeighted" name="gluedWeighted" />
 				<label for="gluedWeighted">Weighted</label>
-				<input type="range" min="0" max="1" step="0.01" value="1" id="gluingThreshold" style="width: 500px">
-				Threshold
+				<div>
+					<input type="range" min="0" max="1" step="0.01" value="1" id="gluingThreshold" style="width: 400px">
+					Threshold
+				</div>
+				
 				
 			</div>
 			<select name="gluedMod" id="gluedMod">
