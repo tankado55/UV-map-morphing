@@ -2,6 +2,7 @@
 
 #define GLM_ENABLE_EXPERIMENTAL
 
+#include <Eigen/Dense>
 #include "glm/vec3.hpp"
 #include "glm/vec2.hpp"
 #include "glm/mat3x3.hpp"
@@ -12,6 +13,7 @@
 #include "glm/gtx/dual_quaternion.hpp"
 #include "linearTransform.h"
 #include "dualQuatTransform.h"
+#include "utils.h"
 
 struct SmartTransform
 {

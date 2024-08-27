@@ -80,7 +80,8 @@
         "span": "cpp",
         "core": "cpp",
         "complex": "cpp",
-        "set": "cpp"
+        "set": "cpp",
+        "dense": "cpp"
     },
     "C_Cpp.errorSquiggles": "disabled"
 }
