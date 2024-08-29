@@ -62,7 +62,7 @@ void Mesh::bake(int sampleCount, bool splitResidual, bool linear)
     std::cout << "end of baking: " << bakedVertices.size() << std::endl;
 }
 
-std::vector<glm::vec3> Mesh::interpolateConst(int tPercent, bool splitResidual, bool linear) const // TODO: manca gluing e pathverse, linear, split, temporize
+std::vector<glm::vec3> Mesh::interpolateConst(int tPercent, bool splitResidual, bool linear) const // TODO: manca gluing
 {
     std::vector<glm::vec3> result;
     result.reserve(f.size() * 3);
@@ -96,6 +96,16 @@ std::vector<glm::vec3> Mesh::interpolateConst(int tPercent, bool splitResidual, 
     return result;
 }
 
+void Mesh::interpolatePerTriangle(int tPercent, bool splitResidual, bool linear)
+{
+    std::vector<glm::vec3> newPositions = interpolateConst(tPercent, splitResidual, linear);
+
+    for (int i = 0; i < newPositions.size(); i++)
+    {
+        heapPosPtr[i] = newPositions[i];
+    }
+}
+
 void Mesh::applyBaked(int t)
 {
     if (t >= bakedVertices.size())
@@ -114,37 +124,7 @@ void Mesh::setGluingThreshold(float threshold)
     gluingThreshold = threshold * boundingSphere.radius * 2;
 }
 
-void Mesh::interpolatePerTriangle(int tPercent, bool spitResidual, bool linear)
-{
-    float t = tPercent / 100.0;
 
-    decltype(f[0].three2two) I;
-    for (int i = 0; i < f.size(); i++)
-    {
-        Face face = f[i];
-        for (int j = 0; j < 3; j++)
-        {
-            float interpolationValue = (t - v[face.vi[j]].tStart) / (v[face.vi[j]].tEnd - v[face.vi[j]].tStart);
-            interpolationValue = glm::clamp(interpolationValue, 0.0f, 1.0f);
-            interpolationValue = sigmoid(interpolationValue);
-            decltype(f[0].three2two) T;
-            if (linear)
-            {
-                T = mixLinear(I, face.three2two, interpolationValue);
-            }
-            else
-            {
-                T = mix(I, face.three2two, interpolationValue, spitResidual, face.pathVerse);
-            }
-            glm::vec3 originV = v[face.vi[j]].pos;
-            glm::vec3 resultV = T.apply(originV);
-
-            // Write in the Heap
-            int heapIndex = i * 3 + j;
-            heapPosPtr[heapIndex] = resultV;
-        }
-    }
-}
 
 inline bool operator<(const glm::vec<3, float> &el,
                       const glm::vec<3, float> &el2)
