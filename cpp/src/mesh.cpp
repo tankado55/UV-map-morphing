@@ -62,7 +62,7 @@ void Mesh::bake(int sampleCount, bool splitResidual, bool linear)
     std::cout << "end of baking: " << bakedVertices.size() << std::endl;
 }
 
-std::vector<glm::vec3> Mesh::interpolateConst(int tPercent, bool splitResidual, bool linear) const // TODO: manca gluing
+std::vector<glm::vec3> Mesh::interpolateConst(int tPercent, bool splitResidual, bool linear) const
 {
     std::vector<glm::vec3> result;
     result.reserve(f.size() * 3);
@@ -100,10 +100,7 @@ void Mesh::interpolatePerTriangle(int tPercent, bool splitResidual, bool linear)
 {
     std::vector<glm::vec3> newPositions = interpolateConst(tPercent, splitResidual, linear);
 
-    for (int i = 0; i < newPositions.size(); i++)
-    {
-        heapPosPtr[i] = newPositions[i];
-    }
+    std::memcpy(heapPosPtr, newPositions.data(), newPositions.size() * sizeof(newPositions[0]));
 }
 
 void Mesh::applyBaked(int t)
@@ -113,10 +110,7 @@ void Mesh::applyBaked(int t)
         std::cout << "Missing baked data" << std::endl;
         return;
     }
-    for (int i = 0; i < bakedVertices[t].size(); i++)
-    {
-        heapPosPtr[i] = bakedVertices[t][i];
-    }
+    std::memcpy(heapPosPtr, bakedVertices[t].data(), bakedVertices[t].size() * sizeof(bakedVertices[t][0]));
 }
 
 void Mesh::setGluingThreshold(float threshold)
