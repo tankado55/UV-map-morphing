@@ -106,6 +106,7 @@ struct Mesh
 	bool uniformQuaternionSigns();
 	void updateAreaPerVertex();
 	void updateCopyOfUsingThreshold(bool pathDependent);
+	void copyOfUsingThreshold(bool pathDependent, const std::vector<glm::vec3>& vertices, std::vector<int>& outCopyOf);
 	void bake(int sampleCount, bool splitResidual, bool linear);
 	std::vector<glm::vec3> interpolateConst(int tPercent, bool spitResidual, bool linear) const;
 	void applyBaked(int t);

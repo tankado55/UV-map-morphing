@@ -81,7 +81,12 @@
         "core": "cpp",
         "complex": "cpp",
         "set": "cpp",
-        "dense": "cpp"
+        "dense": "cpp",
+        "condition_variable": "cpp",
+        "fstream": "cpp",
+        "future": "cpp",
+        "numeric": "cpp",
+        "valarray": "cpp"
     },
     "C_Cpp.errorSquiggles": "disabled"
 }

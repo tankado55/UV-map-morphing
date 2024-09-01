@@ -503,27 +503,28 @@ function interpolate() {
 			else
 			{
 				meshInstance.interpolatePerTriangle(parseInt(interpolationSlider.value), splitResidual, linear);
+				if (gluedElement.checked)
+					{
+						if (parseInt(gluingThresholdElement.value) < 1)
+							{
+								meshInstance.updateCopyOfUsingThreshold(parseInt(gluedModElement.value));
+							}
+						if(arapElement.checked)
+						{
+							meshInstance.glueTriangleArap()
+						}
+						else if (gluedWeightedElement.checked)
+						{
+							meshInstance.glueTrianglesWeighted()
+						}
+						else
+						{
+							meshInstance.glueTriangles();
+						}
+					}
 			}
 
-			if (gluedElement.checked)
-				{
-					if (parseInt(gluingThresholdElement.value) < 1)
-						{
-							meshInstance.updateCopyOfUsingThreshold(parseInt(gluedModElement.value));
-						}
-					if(arapElement.checked)
-					{
-						meshInstance.glueTriangleArap()
-					}
-					else if (gluedWeightedElement.checked)
-					{
-						meshInstance.glueTrianglesWeighted()
-					}
-					else
-					{
-						meshInstance.glueTriangles();
-					}
-				}
+			
 
 			child.geometry.setAttribute('position', new THREE.BufferAttribute(Module["HEAPF32"].slice(heapGeometryPointer >> 2, (heapGeometryPointer >> 2) + arr.length), 3));
 			child.geometry.setAttribute('pathVerse', new THREE.BufferAttribute(Module["HEAPF32"].slice(heapPathVersesPointer >> 2, (heapPathVersesPointer >> 2) + child.geometry.attributes.position.length), 1));
