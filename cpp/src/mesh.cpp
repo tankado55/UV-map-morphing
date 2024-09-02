@@ -390,7 +390,7 @@ void Mesh::glueTriangleArap()
     Eigen::VectorXd b;
     A.resize(v.size() * 3, v.size() * 3);
     b.resize(v.size() * 3);
-    //b.setZero();
+    // b.setZero();
 
     std::vector<Eigen::Triplet<double>> tripletList;
 
@@ -408,16 +408,9 @@ void Mesh::glueTriangleArap()
             b((i * 3) + 0) = tempVec.x;
             b((i * 3) + 1) = tempVec.y;
             b((i * 3) + 2) = tempVec.z;
-            // glm::vec3 tempVec1 = heapPosPtr[i] - v[i].pos;
-            // glm::vec3 tempVec2 = heapPosPtr[v[i].copyOf] - v[v[i].copyOf].pos;
-            // glm::vec3 diff = tempVec1 - tempVec2;
-            // b((i * 3) + 0) = diff.x;
-            // b((i * 3) + 1) = diff.y;
-            // b((i * 3) + 2) = diff.z;
         }
         else
         {
-           
         }
     }
     A.setFromTriplets(tripletList.begin(), tripletList.end());
@@ -465,28 +458,41 @@ void Mesh::glueTriangleArap()
 
     // here apply the local, rotation?
     // from original to deformed but
-    for (Face &fi : f)
+    // find the next index in the same triangle
+
+    std::cout << "starting System Solving..." << std::endl;
+    tripletList.clear();
+    b.setZero();
+    for (int i = 0; i < v.size(); i++)
     {
-        glm::vec3 a3 = v[fi.vi[0]].pos;
-        glm::vec3 b3 = v[fi.vi[1]].pos;
-        glm::vec3 c3 = v[fi.vi[2]].pos;
+        int j = i / 3; // face
 
-        glm::vec3 a2 = heapPosPtr[fi.vi[0]];
-        a2 = a2 * averageScaling;
+        int offset = i % 3;
+        int nextV = f[j].vi[(offset + 1) % 3];
+        glm::vec3 tempVec1 = v[i].pos - v[nextV].pos;
+        glm::vec3 tempVec2 = heapPosPtr[i] - heapPosPtr[nextV];
+        float tempArr[] = {tempVec1.x, tempVec1.y, tempVec1.z};
+        for (int k = 0; k < 3; k++)
+        {
+            tripletList.push_back({(i * 3) + k, (i * 3) + k, -2.0 * tempArr[k]});
+            tripletList.push_back({(i * 3) + k, nextV * 3 + k, 2.0 * tempArr[k]});
+        }
 
-        glm::vec2 b2 = v[fi.vi[1]].uv;
-        b2 = glm::vec2(toCenterMat * glm::vec4(b2, 0.0, 1.0));
-        b2 = b2 * averageScaling;
-
-        glm::vec2 c2 = v[fi.vi[2]].uv;
-        c2 = glm::vec2(toCenterMat * glm::vec4(c2, 0.0, 1.0));
-        c2 = c2 * averageScaling;
-
-        fi.three2two.fromTo(a3, b3, c3, a2, b2, c2);
-        if (isnan(fi.three2two.dqTransf.dualQuaternion.real.x))
-            std::cout << "ERROR! NaN" << std::endl;
+        b((i * 3) + 0) = 2.0 * tempVec2.x;
+        b((i * 3) + 1) = 2.0 * tempVec2.y;
+        b((i * 3) + 2) = 2.0 * tempVec2.z;
     }
 
+    A.setFromTriplets(tripletList.begin(), tripletList.end());
+    solver.compute(A);
+    x = solver.solve(b);
+
+    for (int i = 0; i < v.size(); i++)
+    {
+        Eigen::Vector3d translation = x.segment<3>(i * 3);
+        heapPosPtr[i] = heapPosPtr[i] + glm::vec3(translation.x(), translation.y(), translation.z());
+    }
+    std::cout << "System Done." << std::endl;
 }
 
 // void Mesh::glueTriangleArap()
