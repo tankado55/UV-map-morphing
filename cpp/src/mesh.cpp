@@ -358,6 +358,19 @@ std::vector<glm::vec3> Mesh::glueTrianglesWeightedRet()
     return result;
 }
 
+void Mesh::unglue()
+{
+    for (int i = 0; i < f.size(); i++)
+    {
+        int j = i * 3;
+        DualQuatTransform t;
+        t.fromTo(v[j].pos, v[j + 1].pos, v[j + 2].pos, heapPosPtr[j], heapPosPtr[j + 1], heapPosPtr[j + 2]);
+        heapPosPtr[j] = t.apply(v[j].pos);
+        heapPosPtr[j + 1] = t.apply(v[j + 1].pos);
+        heapPosPtr[j + 2] = t.apply(v[j + 2].pos);
+    }
+}
+
 void Mesh::glueTriangleArapNaive()
 {
     std::vector<glm::vec3> deformed = glueTrianglesWeightedRet();
@@ -382,36 +395,34 @@ void Mesh::glueTriangleArapNaive()
     }
 }
 
-void Mesh::glueTriangleArap()
+void Mesh::arap(std::vector<glm::vec3> &v_prime, Eigen::SparseMatrix<double> &A, Eigen::VectorXd &b)
 {
     std::cout << "starting System Solving..." << std::endl;
     // Build System
-    Eigen::SparseMatrix<double> A;
-    Eigen::VectorXd b;
-    A.resize(v.size() * 3, v.size() * 3);
-    b.resize(v.size() * 3);
-    // b.setZero();
 
     std::vector<Eigen::Triplet<double>> tripletList;
 
     for (int i = 0; i < v.size(); i++)
     {
         int j = i / 3; // face
-        if (v[i].copyOf != i)
+        int offset = i % 3;
+        int nextV = f[j].vi[(offset + 1) % 3];
+
+        glm::vec3 tempVec = heapPosPtr[v[i].copyOf] - heapPosPtr[v[nextV].copyOf];
+        float tempArr[] = {tempVec.x, tempVec.y, tempVec.z};
+
+        for (int k = 0; k < 3; k++)
         {
-            for (int k = 0; k < 3; k++)
-            {
-                tripletList.push_back({(i * 3) + k, (i * 3) + k, 1.0});
-                tripletList.push_back({(i * 3) + k, (v[i].copyOf * 3) + k, -1.0});
-            }
-            glm::vec3 tempVec = heapPosPtr[v[i].copyOf] - heapPosPtr[i];
-            b((i * 3) + 0) = tempVec.x;
-            b((i * 3) + 1) = tempVec.y;
-            b((i * 3) + 2) = tempVec.z;
+            tripletList.push_back({v[i].copyOf * 3 + k, v[i].copyOf * 3 + k, 1.0}); // ne metto solo uno
+            tripletList.push_back({v[i].copyOf * 3 + k, v[nextV].copyOf * 3 + k, 1.0});
         }
-        else
-        {
-        }
+        
+
+        b((i * 3) + 0) = 0; // metto punto moltiplicato per epsilon
+        b((i * 3) + 1) = 0;
+        b((i * 3) + 2) = 0;
+
+        // se uso epsilon in b metto epsilon per punto medio
     }
     A.setFromTriplets(tripletList.begin(), tripletList.end());
 
@@ -456,43 +467,21 @@ void Mesh::glueTriangleArap()
     }
     std::cout << "System Done." << std::endl;
 
-    // here apply the local, rotation?
-    // from original to deformed but
-    // find the next index in the same triangle
+}
 
-    std::cout << "starting System Solving..." << std::endl;
-    tripletList.clear();
-    b.setZero();
-    for (int i = 0; i < v.size(); i++)
+void Mesh::glueTriangleArap()
+{
+    std::vector<glm::vec3> v_prime;
+    v_prime.reserve(v.size());
+    Eigen::SparseMatrix<double> A;
+    Eigen::VectorXd b;
+    A.resize(v.size() * 3, v.size() * 3);
+    b.resize(v.size() * 3);
+
+    for (int i = 0; i < 1; i++)
     {
-        int j = i / 3; // face
-
-        int offset = i % 3;
-        int nextV = f[j].vi[(offset + 1) % 3];
-        glm::vec3 tempVec1 = v[i].pos - v[nextV].pos;
-        glm::vec3 tempVec2 = heapPosPtr[i] - heapPosPtr[nextV];
-        float tempArr[] = {tempVec1.x, tempVec1.y, tempVec1.z};
-        for (int k = 0; k < 3; k++)
-        {
-            tripletList.push_back({(i * 3) + k, (i * 3) + k, -2.0 * tempArr[k]});
-            tripletList.push_back({(i * 3) + k, nextV * 3 + k, 2.0 * tempArr[k]});
-        }
-
-        b((i * 3) + 0) = 2.0 * tempVec2.x;
-        b((i * 3) + 1) = 2.0 * tempVec2.y;
-        b((i * 3) + 2) = 2.0 * tempVec2.z;
+        arap(v_prime, A, b);
     }
-
-    A.setFromTriplets(tripletList.begin(), tripletList.end());
-    solver.compute(A);
-    x = solver.solve(b);
-
-    for (int i = 0; i < v.size(); i++)
-    {
-        Eigen::Vector3d translation = x.segment<3>(i * 3);
-        heapPosPtr[i] = heapPosPtr[i] + glm::vec3(translation.x(), translation.y(), translation.z());
-    }
-    std::cout << "System Done." << std::endl;
 }
 
 // void Mesh::glueTriangleArap()

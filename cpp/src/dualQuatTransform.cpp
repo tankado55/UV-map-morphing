@@ -7,6 +7,13 @@ void DualQuatTransform::fromTo(glm::vec3 a3, glm::vec3 b3, glm::vec3 c3, glm::ve
     fromMatrix(ln.M);
 }
 
+void DualQuatTransform::fromTo(glm::vec3 a3, glm::vec3 b3, glm::vec3 c3, glm::vec3 a2, glm::vec3 b2, glm::vec3 c2)
+{
+    LinearTransform ln;
+    ln.fromTo(a3, b3, c3, a2, b2, c2);
+    fromMatrix(ln.M);
+}
+
 glm::vec3 DualQuatTransform::apply(glm::vec3 point) const
 {
     glm::dualquat pointDQ(glm::quat(1.0f, 0.0f, 0.0f, 0.0f), glm::quat(0.0f, point.x, point.y, point.z));

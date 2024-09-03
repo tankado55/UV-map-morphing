@@ -111,6 +111,8 @@ struct Mesh
 	std::vector<glm::vec3> interpolateConst(int tPercent, bool spitResidual, bool linear) const;
 	void applyBaked(int t);
 	void setGluingThreshold(float threshold);
+	void arap(std::vector<glm::vec3>& v_prime, Eigen::SparseMatrix<double>& A, Eigen::VectorXd& b);
+	void unglue();
 };
 
 static float sigmoid(float t);
@@ -138,5 +140,6 @@ EMSCRIPTEN_BINDINGS(my_class_example) {
 	.function("glueTriangles", &Mesh::glueTriangles)
 	.function("glueTrianglesWeighted", &Mesh::glueTrianglesWeighted)
 	.function("glueTriangleArap", &Mesh::glueTriangleArap)
+	.function("unglue", &Mesh::unglue)
     ;
 }

@@ -44,15 +44,14 @@ let customVertexShader
 
 let defaultMaterial = new THREE.ShaderMaterial()
 
-async function loadShaders()
-{
+async function loadShaders() {
 	customVertexShader = await (await fetch("res/shaders/customVert.glsl")).text();
 	customFragShader = await (await fetch("res/shaders/customFrag.glsl")).text();
 	customShaderMaterial = new THREE.ShaderMaterial({
 		vertexShader: customVertexShader,
 		fragmentShader: customFragShader
 	});
-	
+
 }
 
 loadShaders();
@@ -80,6 +79,31 @@ var linear = linearElement.value;
 var temporizeElement = document.getElementById("temporize");
 var flightTimeElement = document.getElementById("flightTime");
 var bakingElement = document.getElementById("baking");
+
+var glueBtn = document.getElementById("glueBtn");
+var unglueBtn = document.getElementById("unglueBtn");
+
+glueBtn.onclick = function () {
+	meshInstance.glueTrianglesWeighted();
+	object.traverse(function (child) {
+		if (child.isMesh) {
+			let arr = child.geometry.attributes.position.array;
+			child.geometry.setAttribute('position', new THREE.BufferAttribute(Module["HEAPF32"].slice(heapGeometryPointer >> 2, (heapGeometryPointer >> 2) + arr.length), 3));
+		}
+	})
+
+	render();
+}
+unglueBtn.onclick = function () {
+	meshInstance.unglue();
+	object.traverse(function (child) {
+		if (child.isMesh) {
+			let arr = child.geometry.attributes.position.array;
+			child.geometry.setAttribute('position', new THREE.BufferAttribute(Module["HEAPF32"].slice(heapGeometryPointer >> 2, (heapGeometryPointer >> 2) + arr.length), 3));
+		}
+	})
+	render();
+}
 
 function updateUI() {
 	gluedElement.dispatchEvent(event);
@@ -162,8 +186,7 @@ debugIslandElement.onchange = function () {
 	object.traverse(function (child) {
 
 		if (child.isMesh) {
-			if (!debugIsland)
-			{
+			if (!debugIsland) {
 				child.material = new THREE.MeshStandardMaterial({ map: rtTextureTarget.texture })
 				child.material.side = THREE.DoubleSide;
 				child.castShadow = true;
@@ -183,16 +206,13 @@ temporizeElement.onchange = function () {
 	var value = temporizeElement.value;
 	if (value == "no")
 		meshInstance.resetTiming();
-	else if (value == "u")
-	{
+	else if (value == "u") {
 		meshInstance.setTimingWithU(parseFloat(flightTimeElement.value))
 	}
-	else if (value == "v")
-	{
+	else if (value == "v") {
 		meshInstance.setTimingWithV(parseFloat(flightTimeElement.value))
 	}
-	else if (value == "insideO")
-	{
+	else if (value == "insideO") {
 		meshInstance.setTimingInsideOut(parseFloat(flightTimeElement.value))
 	}
 	interpolate()
@@ -200,17 +220,15 @@ temporizeElement.onchange = function () {
 }
 gluingThresholdElement.oninput = function () {
 	meshInstance.setGluingThreshold(parseFloat(gluingThresholdElement.value));
-	if (parseInt(gluingThresholdElement.value) == 1)
-		{
-			meshInstance.updateCopyOfUsingThreshold(parseInt(gluedModElement.value));
-		}
+	if (parseInt(gluingThresholdElement.value) == 1) {
+		meshInstance.updateCopyOfUsingThreshold(parseInt(gluedModElement.value));
+	}
 	interpolate()
 	render();
 }
 
 bakingElement.onchange = function () {
-	if (bakingElement.checked)
-	{
+	if (bakingElement.checked) {
 		meshInstance.bake(101, splitResidual, linear)
 	}
 }
@@ -224,7 +242,7 @@ initHorPlane();
 
 function initHorPlane() {
 	const geometry = new THREE.PlaneGeometry(10, 10);
-	const material = new THREE.MeshStandardMaterial({ color: 0xfdfdfd});
+	const material = new THREE.MeshStandardMaterial({ color: 0xfdfdfd });
 	const plane = new THREE.Mesh(geometry, material);
 	plane.translateY(-3.0);
 	plane.rotateX(- PI / 2);
@@ -317,7 +335,7 @@ function init() {
 }
 
 function initLoadModel() {
-	
+
 	function loadModel() {
 
 		// heap pointer
@@ -438,8 +456,7 @@ function initLoadModel() {
 		obj.traverse(function (child) {
 
 			if (child.isMesh) {
-				if (!debugIsland)
-				{
+				if (!debugIsland) {
 					child.material = new THREE.MeshStandardMaterial({ map: rtTextureTarget.texture })
 				}
 				else
@@ -483,10 +500,10 @@ function containsFloatValue(array) {
 }
 
 function onWindowResize() {
-	
+
 	camera.aspect = window.innerWidth / window.innerHeight;
 	camera.updateProjectionMatrix();
-	
+
 	renderer.setSize(window.innerWidth, window.innerHeight);
 }
 
@@ -494,37 +511,30 @@ function interpolate() {
 	object.traverse(function (child) {
 		if (child.isMesh) {
 			console.log("Interpolating: " + interpolationSlider.value)
-			
+
 			let arr = child.geometry.attributes.position.array;
-			if (bakingElement.checked)
-			{
+			if (bakingElement.checked) {
 				meshInstance.applyBaked(parseInt(interpolationSlider.value));
 			}
-			else
-			{
+			else {
 				meshInstance.interpolatePerTriangle(parseInt(interpolationSlider.value), splitResidual, linear);
-				if (gluedElement.checked)
-					{
-						if (parseInt(gluingThresholdElement.value) < 1)
-							{
-								meshInstance.updateCopyOfUsingThreshold(parseInt(gluedModElement.value));
-							}
-						if(arapElement.checked)
-						{
-							meshInstance.glueTriangleArap()
-						}
-						else if (gluedWeightedElement.checked)
-						{
-							meshInstance.glueTrianglesWeighted()
-						}
-						else
-						{
-							meshInstance.glueTriangles();
-						}
+				if (gluedElement.checked) {
+					if (parseInt(gluingThresholdElement.value) < 1) {
+						meshInstance.updateCopyOfUsingThreshold(parseInt(gluedModElement.value));
 					}
+					if (arapElement.checked) {
+						meshInstance.glueTriangleArap()
+					}
+					else if (gluedWeightedElement.checked) {
+						meshInstance.glueTrianglesWeighted()
+					}
+					else {
+						meshInstance.glueTriangles();
+					}
+				}
 			}
 
-			
+
 
 			child.geometry.setAttribute('position', new THREE.BufferAttribute(Module["HEAPF32"].slice(heapGeometryPointer >> 2, (heapGeometryPointer >> 2) + arr.length), 3));
 			child.geometry.setAttribute('pathVerse', new THREE.BufferAttribute(Module["HEAPF32"].slice(heapPathVersesPointer >> 2, (heapPathVersesPointer >> 2) + child.geometry.attributes.position.length), 1));
