@@ -423,51 +423,32 @@ void Mesh::arap(std::vector<glm::vec3> &v_prime, Eigen::SparseMatrix<double> &A,
         for (int j = 0; j < 3; j++)
         {
             int next = (j + 1) % 3;
-            int vi = f[i][j];
-            int viNext = f[i][next];
+            int vi = f[i].vi[j];
+            int viNext = f[i].vi[next];
             for (int k = 0; k < 3; k++)
             {
                 tripletList.push_back({compactedBosses[v[vi].copyOf] * 3 + k, compactedBosses[v[vi].copyOf] * 3 + k, 1});
                 tripletList.push_back({compactedBosses[v[vi].copyOf] * 3 + k, compactedBosses[v[viNext].copyOf] * 3 + k, -1});
             }
             glm::vec3 diffVec = heapPosPtr[vi] - heapPosPtr[viNext];
-            b(compactedBosses[v[vi].copyOf] * 3 + 0) = diffVec.x; // metto punto moltiplicato per epsilon
+            b(compactedBosses[v[vi].copyOf] * 3 + 0) = diffVec.x;
             b(compactedBosses[v[vi].copyOf] * 3 + 1) = diffVec.y;
             b(compactedBosses[v[vi].copyOf] * 3 + 2) = diffVec.z;
         }
     }
 
-    for (int i = 0; i < compactedBosses.size(); i++)
+    for (const auto& [key, i] : compactedBosses)
     {
-        int offset = 3 * f.size();
-    }
-
-    for (int i = 0; i < v.size(); i++)
-    {
-        int j = i / 3; // face
-        int offset = i % 3;
-        int nextV = f[j].vi[(offset + 1) % 3];
-
-        glm::vec3 tempVec = heapPosPtr[v[i].copyOf] - heapPosPtr[v[nextV].copyOf];
-        float tempArr[] = {tempVec.x, tempVec.y, tempVec.z};
-
+        int offset = 3 * 3 * f.size();
         for (int k = 0; k < 3; k++)
         {
-            tripletList.push_back({compactedBosses[v[i].copyOf] * 3 + k, compactedBosses[v[i].copyOf] * 3 + k, 1}); // ne metto solo uno
-            tripletList.push_back({compactedBosses[v[i].copyOf] * 3 + k, compactedBosses[v[nextV].copyOf] * 3 + k, 1});
-            // regularization
-            tripletList.push_back({compactedBosses[v[i].copyOf] * 3 + k, compactedBosses[v[i].copyOf] * 3 + k, 1}); // ne metto solo uno
-            tripletList.push_back({compactedBosses[v[i].copyOf] * 3 + k, compactedBosses[v[nextV].copyOf] * 3 + k, 1});
+            tripletList.push_back({i * 3 + k + offset, i * 3 + k, 0.002});
         }
-
-        b(compactedBosses[v[i].copyOf] * 3 + 0) = tempVec[v[i].copyOf].x; // metto punto moltiplicato per epsilon
-        b(compactedBosses[v[i].copyOf] * 3 + 1) = tempVec[v[i].copyOf].y;
-        b(compactedBosses[v[i].copyOf] * 3 + 2) = tempVec[v[i].copyOf].z;
-        // regularization
-
-        // nel regolarizzatore solo eps su diagonali e su b = punto medio * epsilon
-        // righe = 3 * edge + 3 * k (regolarizzatori)
+        b(i * 3 + offset) = glued[key].x * 0.002;
+        b(i * 3 + offset + 1) = glued[key].y * 0.002;
+        b(i * 3 + offset + 2) = glued[key].z * 0.002;
     }
+
     A.setFromTriplets(tripletList.begin(), tripletList.end());
 
     // Eigen::MatrixXd denseA = A.toDense(); // Convert to dense if A is sparse
@@ -519,8 +500,8 @@ void Mesh::glueTriangleArap()
     v_prime.reserve(v.size());
     Eigen::SparseMatrix<double> A;
     Eigen::VectorXd b;
-    A.resize(v.size() * 3, compactedBosses.size() * 3);
-    b.resize(compactedBosses.size() * 3);
+    A.resize(f.size() * 3 * 3 + compactedBosses.size() * 3, compactedBosses.size() * 3);
+    b.resize(f.size() * 3 * 3 + compactedBosses.size() * 3);
 
     for (int i = 0; i < 1; i++)
     {
