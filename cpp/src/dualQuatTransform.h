@@ -11,6 +11,7 @@
 #include "glm/gtc/quaternion.hpp"
 #include "glm/gtx/dual_quaternion.hpp"
 #include "linearTransform.h"
+#include "utils.h"
 
 #include <iostream>
 

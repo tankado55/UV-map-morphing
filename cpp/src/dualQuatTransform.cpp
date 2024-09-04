@@ -1,4 +1,7 @@
 #include "dualQuatTransform.h"
+#include <Eigen/Dense>
+
+
 
 void DualQuatTransform::fromTo(glm::vec3 a3, glm::vec3 b3, glm::vec3 c3, glm::vec2 a2, glm::vec2 b2, glm::vec2 c2)
 {
@@ -11,7 +14,44 @@ void DualQuatTransform::fromTo(glm::vec3 a3, glm::vec3 b3, glm::vec3 c3, glm::ve
 {
     LinearTransform ln;
     ln.fromTo(a3, b3, c3, a2, b2, c2);
-    fromMatrix(ln.M);
+
+    glm::vec3 bari2 = (a2 + b2 + c2) / 3.0f;
+    glm::vec3 bari3 = (a3 + b3 + c3) / 3.0f;
+
+    glm::vec3 a2v = a2 - bari2;
+    glm::vec3 b2v = b2 - bari2;
+    glm::vec3 a3v = a3 - bari3;
+    glm::vec3 b3v = b3 - bari3;
+
+    glm::vec3 n2 = glm::cross(a2v, b2v);
+    glm::vec3 n3 = glm::cross(a3v, b3v);
+    if (glm::length(n2) == 0)
+    {
+        std::cout << "n2 is 0" << std::endl;
+        return;
+        n2 = glm::vec3(0, 1.0, 0);
+    }
+    if (glm::length(n3) == 0)
+    {
+        std::cout << "n3 is 0" << std::endl;
+    }
+
+    n2 = glm::normalize(n2);
+    n3 = glm::normalize(n3);
+
+    glm::mat3 T2(a2v, b2v, n2);
+    glm::mat3 T3(a3v, b3v, n3);
+
+    glm::mat3 R = T2 * glm::inverse(T3);
+
+    glm::mat3 rotationMatrix = utils::closestRotationSVD(R);
+    glm::vec3 translationVector = glm::vec3(bari2.x, 0.0, bari2.y) - rotationMatrix * bari3;
+
+    glm::quat rotationQuaternion = glm::quat_cast(rotationMatrix);
+    rotationQuaternion = glm::normalize(rotationQuaternion);
+    glm::quat translQuat(0.0, translationVector.x, translationVector.y, translationVector.z);
+    glm::quat dual = translQuat * rotationQuaternion * 0.5f;
+    dualQuaternion = glm::dualquat(rotationQuaternion, dual);
 }
 
 glm::vec3 DualQuatTransform::apply(glm::vec3 point) const

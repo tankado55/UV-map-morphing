@@ -111,8 +111,9 @@ struct Mesh
 	std::vector<glm::vec3> interpolateConst(int tPercent, bool spitResidual, bool linear) const;
 	void applyBaked(int t);
 	void setGluingThreshold(float threshold);
-	void arap(std::vector<glm::vec3>& v_prime, Eigen::SparseMatrix<double>& A, Eigen::VectorXd& b);
+	void arap(std::vector<glm::vec3>& v_prime, Eigen::SparseMatrix<double>& A, Eigen::VectorXd& b, std::map<int, int>& compactedBosses);
 	void unglue();
+	std::map<int, int> getCompactedBosses();
 };
 
 static float sigmoid(float t);
