@@ -82,6 +82,7 @@ var bakingElement = document.getElementById("baking");
 
 var glueBtn = document.getElementById("glueBtn");
 var unglueBtn = document.getElementById("unglueBtn");
+var arapBtn = document.getElementById("arapBtn");
 
 glueBtn.onclick = function () {
 	meshInstance.glueTrianglesWeighted();
@@ -96,6 +97,16 @@ glueBtn.onclick = function () {
 }
 unglueBtn.onclick = function () {
 	meshInstance.unglue();
+	object.traverse(function (child) {
+		if (child.isMesh) {
+			let arr = child.geometry.attributes.position.array;
+			child.geometry.setAttribute('position', new THREE.BufferAttribute(Module["HEAPF32"].slice(heapGeometryPointer >> 2, (heapGeometryPointer >> 2) + arr.length), 3));
+		}
+	})
+	render();
+}
+arapBtn.onclick = function () {
+	meshInstance.glueTriangleArap();
 	object.traverse(function (child) {
 		if (child.isMesh) {
 			let arr = child.geometry.attributes.position.array;
@@ -167,6 +178,10 @@ gluedElement.onchange = function () {
 	else {
 		gluedModElement.disabled = false;
 	}
+	interpolate()
+	render();
+}
+arapElement.onchange = function () {
 	interpolate()
 	render();
 }

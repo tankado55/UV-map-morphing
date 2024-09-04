@@ -276,7 +276,7 @@ std::map<int, int> Mesh::getCompactedBosses()
         if (v[i].copyOf == i)
         {
             compactedBosses[i] = compactedBosses.size();
-        } 
+        }
     }
     return compactedBosses;
 }
@@ -408,7 +408,7 @@ void Mesh::glueTriangleArapNaive()
     }
 }
 
-void Mesh::arap(std::vector<glm::vec3> &v_prime, Eigen::SparseMatrix<double> &A, Eigen::VectorXd &b, std::map<int, int>& compactedBosses)
+void Mesh::arap(std::vector<glm::vec3> &v_prime, Eigen::SparseMatrix<double> &A, Eigen::VectorXd &b, std::map<int, int> &compactedBosses)
 {
     std::vector<glm::vec3> glued = glueTrianglesWeightedRet();
 
@@ -417,6 +417,30 @@ void Mesh::arap(std::vector<glm::vec3> &v_prime, Eigen::SparseMatrix<double> &A,
     // Build System
 
     std::vector<Eigen::Triplet<double>> tripletList;
+
+    for (int i = 0; i < f.size(); i++)
+    {
+        for (int j = 0; j < 3; j++)
+        {
+            int next = (j + 1) % 3;
+            int vi = f[i][j];
+            int viNext = f[i][next];
+            for (int k = 0; k < 3; k++)
+            {
+                tripletList.push_back({compactedBosses[v[vi].copyOf] * 3 + k, compactedBosses[v[vi].copyOf] * 3 + k, 1});
+                tripletList.push_back({compactedBosses[v[vi].copyOf] * 3 + k, compactedBosses[v[viNext].copyOf] * 3 + k, -1});
+            }
+            glm::vec3 diffVec = heapPosPtr[vi] - heapPosPtr[viNext];
+            b(compactedBosses[v[vi].copyOf] * 3 + 0) = diffVec.x; // metto punto moltiplicato per epsilon
+            b(compactedBosses[v[vi].copyOf] * 3 + 1) = diffVec.y;
+            b(compactedBosses[v[vi].copyOf] * 3 + 2) = diffVec.z;
+        }
+    }
+
+    for (int i = 0; i < compactedBosses.size(); i++)
+    {
+        int offset = 3 * f.size();
+    }
 
     for (int i = 0; i < v.size(); i++)
     {
@@ -429,14 +453,20 @@ void Mesh::arap(std::vector<glm::vec3> &v_prime, Eigen::SparseMatrix<double> &A,
 
         for (int k = 0; k < 3; k++)
         {
-            //tripletList.push_back({compactedBosses[v[i].copyOf] * 3 + k, compactedBosses[v[i].copyOf] * 3 + k, -0.002}); // ne metto solo uno
-            tripletList.push_back({compactedBosses[v[i].copyOf] * 3 + k, compactedBosses[v[nextV].copyOf] * 3 + k, 0.002});
+            tripletList.push_back({compactedBosses[v[i].copyOf] * 3 + k, compactedBosses[v[i].copyOf] * 3 + k, 1}); // ne metto solo uno
+            tripletList.push_back({compactedBosses[v[i].copyOf] * 3 + k, compactedBosses[v[nextV].copyOf] * 3 + k, 1});
+            // regularization
+            tripletList.push_back({compactedBosses[v[i].copyOf] * 3 + k, compactedBosses[v[i].copyOf] * 3 + k, 1}); // ne metto solo uno
+            tripletList.push_back({compactedBosses[v[i].copyOf] * 3 + k, compactedBosses[v[nextV].copyOf] * 3 + k, 1});
         }
-        
 
-        b(compactedBosses[v[i].copyOf] * 3 + 0) = 0.0002 * glued[v[i].copyOf].x; // metto punto moltiplicato per epsilon
-        b(compactedBosses[v[i].copyOf] * 3 + 1) = 0.0002 * glued[v[i].copyOf].y;
-        b(compactedBosses[v[i].copyOf] * 3 + 2) = 0.0002 * glued[v[i].copyOf].z;
+        b(compactedBosses[v[i].copyOf] * 3 + 0) = tempVec[v[i].copyOf].x; // metto punto moltiplicato per epsilon
+        b(compactedBosses[v[i].copyOf] * 3 + 1) = tempVec[v[i].copyOf].y;
+        b(compactedBosses[v[i].copyOf] * 3 + 2) = tempVec[v[i].copyOf].z;
+        // regularization
+
+        // nel regolarizzatore solo eps su diagonali e su b = punto medio * epsilon
+        // righe = 3 * edge + 3 * k (regolarizzatori)
     }
     A.setFromTriplets(tripletList.begin(), tripletList.end());
 
@@ -477,10 +507,9 @@ void Mesh::arap(std::vector<glm::vec3> &v_prime, Eigen::SparseMatrix<double> &A,
     for (int i = 0; i < v.size(); i++)
     {
         Eigen::Vector3d newP = x.segment<3>(compactedBosses[v[i].copyOf]);
-        heapPosPtr[i] = heapPosPtr[i] + glm::vec3(newP.x(), newP.y(), newP.z());
+        heapPosPtr[i] = glm::vec3(newP.x(), newP.y(), newP.z());
     }
     std::cout << "System Done." << std::endl;
-
 }
 
 void Mesh::glueTriangleArap()
@@ -490,7 +519,7 @@ void Mesh::glueTriangleArap()
     v_prime.reserve(v.size());
     Eigen::SparseMatrix<double> A;
     Eigen::VectorXd b;
-    A.resize(compactedBosses.size() * 3, compactedBosses.size() * 3);
+    A.resize(v.size() * 3, compactedBosses.size() * 3);
     b.resize(compactedBosses.size() * 3);
 
     for (int i = 0; i < 1; i++)

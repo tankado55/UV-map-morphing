@@ -45,7 +45,7 @@ void DualQuatTransform::fromTo(glm::vec3 a3, glm::vec3 b3, glm::vec3 c3, glm::ve
     glm::mat3 R = T2 * glm::inverse(T3);
 
     glm::mat3 rotationMatrix = utils::closestRotationSVD(R);
-    glm::vec3 translationVector = glm::vec3(bari2.x, 0.0, bari2.y) - rotationMatrix * bari3;
+    glm::vec3 translationVector = bari2 - rotationMatrix * bari3;
 
     glm::quat rotationQuaternion = glm::quat_cast(rotationMatrix);
     rotationQuaternion = glm::normalize(rotationQuaternion);
