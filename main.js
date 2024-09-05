@@ -503,7 +503,7 @@ const TYPES = {
 function transferNumberArrayToHeap(array, type) {
 	const typedArray = type.array.from(array); // shallow
 	const heapPointer = Module._malloc(typedArray.length * typedArray.BYTES_PER_ELEMENT);
-	console.log(typedArray.length) //9k float
+	console.log(typedArray.length)
 
 	Module[type.heap].set(typedArray, heapPointer >> 2); // copy, This aligns the memory pointer to a 4-byte boundary, which is often necessary for proper memory access in low-level languages like C or C++.
 

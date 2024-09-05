@@ -427,22 +427,22 @@ void Mesh::arap(std::vector<glm::vec3> &v_prime, Eigen::SparseMatrix<double> &A,
             int viNext = f[i].vi[next];
             for (int k = 0; k < 3; k++)
             {
-                tripletList.push_back({compactedBosses[v[vi].copyOf] * 3 + k, compactedBosses[v[vi].copyOf] * 3 + k, 1});
-                tripletList.push_back({compactedBosses[v[vi].copyOf] * 3 + k, compactedBosses[v[viNext].copyOf] * 3 + k, -1});
+                tripletList.push_back({(i * 3 + j) * 3 + k, compactedBosses[v[vi].copyOf] * 3 + k, 1});
+                tripletList.push_back({(i * 3 + j) * 3 + k, compactedBosses[v[viNext].copyOf] * 3 + k, -1});
             }
             glm::vec3 diffVec = heapPosPtr[vi] - heapPosPtr[viNext];
-            b(compactedBosses[v[vi].copyOf] * 3 + 0) = diffVec.x;
-            b(compactedBosses[v[vi].copyOf] * 3 + 1) = diffVec.y;
-            b(compactedBosses[v[vi].copyOf] * 3 + 2) = diffVec.z;
+            b((i * 3 + j) * 3 + 0) = diffVec.x;
+            b((i * 3 + j) * 3 + 1) = diffVec.y;
+            b((i * 3 + j) * 3 + 2) = diffVec.z;
         }
     }
 
     for (const auto& [key, i] : compactedBosses)
     {
-        int offset = 3 * 3 * f.size();
+        int offset = f.size() * 3 * 3;
         for (int k = 0; k < 3; k++)
         {
-            tripletList.push_back({i * 3 + k + offset, i * 3 + k, 0.002});
+            tripletList.push_back({i * 3 + offset + k, i * 3 + k, 0.002});
         }
         b(i * 3 + offset) = glued[key].x * 0.002;
         b(i * 3 + offset + 1) = glued[key].y * 0.002;
@@ -487,7 +487,7 @@ void Mesh::arap(std::vector<glm::vec3> &v_prime, Eigen::SparseMatrix<double> &A,
     // Apply
     for (int i = 0; i < v.size(); i++)
     {
-        Eigen::Vector3d newP = x.segment<3>(compactedBosses[v[i].copyOf]);
+        Eigen::Vector3d newP = x.segment<3>(compactedBosses[v[i].copyOf] * 3);
         heapPosPtr[i] = glm::vec3(newP.x(), newP.y(), newP.z());
     }
     std::cout << "System Done." << std::endl;
