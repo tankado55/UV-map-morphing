@@ -412,24 +412,30 @@ void Mesh::arap(Eigen::SparseMatrix<double> &A, Eigen::VectorXd &b, std::map<int
 {
     std::vector<glm::vec3> glued = glueTrianglesWeightedRet();
 
-    std::cout << "starting System Solving..." << std::endl;
+    std::cout << "arap gluing..." << std::endl;
     // Build System
-
-    
-
-    for (const auto& [key, i] : compactedBosses)
+    for (int i = 0; i < f.size(); i++)
     {
-        int offset = f.size() * 3 * 3;
-        for (int k = 0; k < 3; k++)
+        for (int j = 0; j < 3; j++)
         {
-            tripletList.push_back({i * 3 + offset + k, i * 3 + k, 0.002});
+            int next = (j + 1) % 3;
+            int vi = f[i].vi[j];
+            int viNext = f[i].vi[next];
+
+            glm::vec3 diffVec = heapPosPtr[vi] - heapPosPtr[viNext];
+            b((i * 3 + j) * 3 + 0) = diffVec.x;
+            b((i * 3 + j) * 3 + 1) = diffVec.y;
+            b((i * 3 + j) * 3 + 2) = diffVec.z;
         }
+    }
+
+    int offset = f.size() * 3 * 3;
+    for (const auto &[key, i] : compactedBosses)
+    {
         b(i * 3 + offset) = glued[key].x * 0.002;
         b(i * 3 + offset + 1) = glued[key].y * 0.002;
         b(i * 3 + offset + 2) = glued[key].z * 0.002;
     }
-
-    A.setFromTriplets(tripletList.begin(), tripletList.end());
 
     // Eigen::MatrixXd denseA = A.toDense(); // Convert to dense if A is sparse
     // double det = denseA.determinant();
@@ -446,7 +452,6 @@ void Mesh::arap(Eigen::SparseMatrix<double> &A, Eigen::VectorXd &b, std::map<int
     // Solve
     // Eigen::SparseQR<Eigen::SparseMatrix<double>, Eigen::COLAMDOrdering<int>> solver;
     // Eigen::SparseLU<Eigen::SparseMatrix<double>> solver; I can't, it is singular
-    Eigen::LeastSquaresConjugateGradient<Eigen::SparseMatrix<double>> solver; // out of bound memory
 
     // solver.analyzePattern(A);
     // solver.factorize(A);
@@ -456,7 +461,7 @@ void Mesh::arap(Eigen::SparseMatrix<double> &A, Eigen::VectorXd &b, std::map<int
     //     std::cerr << "Factorization failed: " << std::endl;
     //     // Handle the error (e.g., return, throw an exception, etc.)
     // }
-    solver.compute(A);
+
     Eigen::VectorXd x = solver.solve(b);
     if (solver.info() != Eigen::Success)
     {
@@ -470,7 +475,7 @@ void Mesh::arap(Eigen::SparseMatrix<double> &A, Eigen::VectorXd &b, std::map<int
         Eigen::Vector3d newP = x.segment<3>(compactedBosses[v[i].copyOf] * 3);
         heapPosPtr[i] = glm::vec3(newP.x(), newP.y(), newP.z());
     }
-    std::cout << "System Done." << std::endl;
+    std::cout << "Arap Done." << std::endl;
 }
 
 void Mesh::glueTriangleArap()
@@ -501,12 +506,19 @@ void Mesh::precomputeARAP()
                 tripletList.push_back({(i * 3 + j) * 3 + k, compactedBosses[v[vi].copyOf] * 3 + k, 1});
                 tripletList.push_back({(i * 3 + j) * 3 + k, compactedBosses[v[viNext].copyOf] * 3 + k, -1});
             }
-            glm::vec3 diffVec = heapPosPtr[vi] - heapPosPtr[viNext];
-            b((i * 3 + j) * 3 + 0) = diffVec.x;
-            b((i * 3 + j) * 3 + 1) = diffVec.y;
-            b((i * 3 + j) * 3 + 2) = diffVec.z;
         }
     }
+
+    int offset = f.size() * 3 * 3;
+    for (const auto &[key, i] : compactedBosses)
+    {
+        for (int k = 0; k < 3; k++)
+        {
+            tripletList.push_back({i * 3 + offset + k, i * 3 + k, 0.002});
+        }
+    }
+    A.setFromTriplets(tripletList.begin(), tripletList.end());
+    solver.compute(A);
 }
 
 // void Mesh::glueTriangleArap()

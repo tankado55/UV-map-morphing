@@ -182,6 +182,8 @@ gluedElement.onchange = function () {
 	render();
 }
 arapElement.onchange = function () {
+	if (arapElement.checked)
+		meshInstance.precomputeARAP();
 	interpolate()
 	render();
 }

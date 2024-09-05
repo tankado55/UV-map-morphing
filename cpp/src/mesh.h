@@ -69,6 +69,9 @@ struct Mesh
 	std::vector<std::vector<glm::vec3>> bakedVertices;
 	bool weightedGluing = false;
 	std::map<int, int> compactedBosses;
+	Eigen::SparseMatrix<double> A;
+    Eigen::VectorXd b;
+	Eigen::LeastSquaresConjugateGradient<Eigen::SparseMatrix<double>> solver;
 
 	Mesh();
 	Mesh(int positions, int uvs, int pathVerse, int posSize, int uvSize);
@@ -115,8 +118,7 @@ struct Mesh
 	void arap(Eigen::SparseMatrix<double>& A, Eigen::VectorXd& b, std::map<int, int>& compactedBosses);
 	void unglue();
 	std::map<int, int> getCompactedBosses();
-	Eigen::SparseMatrix<double> A;
-    Eigen::VectorXd b;
+	void precomputeARAP();
 };
 
 static float sigmoid(float t);
@@ -145,5 +147,6 @@ EMSCRIPTEN_BINDINGS(my_class_example) {
 	.function("glueTrianglesWeighted", &Mesh::glueTrianglesWeighted)
 	.function("glueTriangleArap", &Mesh::glueTriangleArap)
 	.function("unglue", &Mesh::unglue)
+	.function("precomputeARAP", &Mesh::precomputeARAP)
     ;
 }
