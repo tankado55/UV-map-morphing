@@ -115,6 +115,8 @@ struct Mesh
 	void arap(Eigen::SparseMatrix<double>& A, Eigen::VectorXd& b, std::map<int, int>& compactedBosses);
 	void unglue();
 	std::map<int, int> getCompactedBosses();
+	Eigen::SparseMatrix<double> A;
+    Eigen::VectorXd b;
 };
 
 static float sigmoid(float t);
