@@ -408,34 +408,14 @@ void Mesh::glueTriangleArapNaive()
     }
 }
 
-void Mesh::arap(std::vector<glm::vec3> &v_prime, Eigen::SparseMatrix<double> &A, Eigen::VectorXd &b, std::map<int, int> &compactedBosses)
+void Mesh::arap(Eigen::SparseMatrix<double> &A, Eigen::VectorXd &b, std::map<int, int> &compactedBosses)
 {
     std::vector<glm::vec3> glued = glueTrianglesWeightedRet();
 
     std::cout << "starting System Solving..." << std::endl;
-    std::cout << "compacted bosses size: " << compactedBosses.size() << std::endl;
     // Build System
 
-    std::vector<Eigen::Triplet<double>> tripletList;
-
-    for (int i = 0; i < f.size(); i++)
-    {
-        for (int j = 0; j < 3; j++)
-        {
-            int next = (j + 1) % 3;
-            int vi = f[i].vi[j];
-            int viNext = f[i].vi[next];
-            for (int k = 0; k < 3; k++)
-            {
-                tripletList.push_back({(i * 3 + j) * 3 + k, compactedBosses[v[vi].copyOf] * 3 + k, 1});
-                tripletList.push_back({(i * 3 + j) * 3 + k, compactedBosses[v[viNext].copyOf] * 3 + k, -1});
-            }
-            glm::vec3 diffVec = heapPosPtr[vi] - heapPosPtr[viNext];
-            b((i * 3 + j) * 3 + 0) = diffVec.x;
-            b((i * 3 + j) * 3 + 1) = diffVec.y;
-            b((i * 3 + j) * 3 + 2) = diffVec.z;
-        }
-    }
+    
 
     for (const auto& [key, i] : compactedBosses)
     {
@@ -495,17 +475,37 @@ void Mesh::arap(std::vector<glm::vec3> &v_prime, Eigen::SparseMatrix<double> &A,
 
 void Mesh::glueTriangleArap()
 {
-    std::map<int, int> compactedBosses = getCompactedBosses();
-    std::vector<glm::vec3> v_prime;
-    v_prime.reserve(v.size());
-    Eigen::SparseMatrix<double> A;
-    Eigen::VectorXd b;
+    for (int i = 0; i < 1; i++)
+    {
+        arap(A, b, compactedBosses);
+    }
+}
+
+void Mesh::precomputeARAP()
+{
+    compactedBosses = getCompactedBosses();
     A.resize(f.size() * 3 * 3 + compactedBosses.size() * 3, compactedBosses.size() * 3);
     b.resize(f.size() * 3 * 3 + compactedBosses.size() * 3);
 
-    for (int i = 0; i < 1; i++)
+    std::vector<Eigen::Triplet<double>> tripletList;
+
+    for (int i = 0; i < f.size(); i++)
     {
-        arap(v_prime, A, b, compactedBosses);
+        for (int j = 0; j < 3; j++)
+        {
+            int next = (j + 1) % 3;
+            int vi = f[i].vi[j];
+            int viNext = f[i].vi[next];
+            for (int k = 0; k < 3; k++)
+            {
+                tripletList.push_back({(i * 3 + j) * 3 + k, compactedBosses[v[vi].copyOf] * 3 + k, 1});
+                tripletList.push_back({(i * 3 + j) * 3 + k, compactedBosses[v[viNext].copyOf] * 3 + k, -1});
+            }
+            glm::vec3 diffVec = heapPosPtr[vi] - heapPosPtr[viNext];
+            b((i * 3 + j) * 3 + 0) = diffVec.x;
+            b((i * 3 + j) * 3 + 1) = diffVec.y;
+            b((i * 3 + j) * 3 + 2) = diffVec.z;
+        }
     }
 }
 

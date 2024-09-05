@@ -68,6 +68,7 @@ struct Mesh
 	float gluingThreshold = 0.0;
 	std::vector<std::vector<glm::vec3>> bakedVertices;
 	bool weightedGluing = false;
+	std::map<int, int> compactedBosses;
 
 	Mesh();
 	Mesh(int positions, int uvs, int pathVerse, int posSize, int uvSize);
@@ -111,7 +112,7 @@ struct Mesh
 	std::vector<glm::vec3> interpolateConst(int tPercent, bool spitResidual, bool linear) const;
 	void applyBaked(int t);
 	void setGluingThreshold(float threshold);
-	void arap(std::vector<glm::vec3>& v_prime, Eigen::SparseMatrix<double>& A, Eigen::VectorXd& b, std::map<int, int>& compactedBosses);
+	void arap(Eigen::SparseMatrix<double>& A, Eigen::VectorXd& b, std::map<int, int>& compactedBosses);
 	void unglue();
 	std::map<int, int> getCompactedBosses();
 };
