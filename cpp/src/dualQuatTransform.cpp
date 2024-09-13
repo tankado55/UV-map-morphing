@@ -105,7 +105,7 @@ DualQuatTransform mix(const DualQuatTransform& a, const DualQuatTransform& b, fl
 DualQuatTransform mixNoShortestPath(const DualQuatTransform& a, const DualQuatTransform& b, float t)
 {
     glm::quat primal = glm::mix(a.dualQuaternion.real, b.dualQuaternion.real, t);
-    glm::quat dual = glm::mix(a.dualQuaternion.dual, b.dualQuaternion.dual, t);
+    glm::quat dual = a.dualQuaternion.dual * (1 - t) + b.dualQuaternion.dual * t;
 	return DualQuatTransform( myNormalized(glm::dualquat(primal, dual)));
 }
 
