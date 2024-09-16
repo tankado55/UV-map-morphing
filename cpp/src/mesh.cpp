@@ -862,19 +862,19 @@ void Mesh::updatePathVerse(int mode)
     for (Face &fi : f)
     {
 
-        if (mode == -1 && glm::dot(glm::quat(1.0f, 0.0f, 0.0f, 0.0f), fi.three2two.dqTransf.dualQuaternion.real) <= 0.0f)
+        if (mode == -1 && glm::dot(glm::quat(1.0f, 0.0f, 0.0f, 0.0f), fi.three2two.dqTransf.dualQuaternion.real) <= 0.0f) //short
         {
             fi.pathVerse = -1;
         }
-        else if (mode == 1 && glm::dot(glm::quat(1.0f, 0.0f, 0.0f, 0.0f), fi.three2two.dqTransf.dualQuaternion.real) >= 0.0f)
+        else if (mode == 1 && glm::dot(glm::quat(1.0f, 0.0f, 0.0f, 0.0f), fi.three2two.dqTransf.dualQuaternion.real) >= 0.0f) //long
         {
             fi.pathVerse = -1;
         }
-        else if (mode == 0)
+        else if (mode == 0) //neutral
         {
             fi.pathVerse = 1;
         }
-        else if (mode == 2) // neutral
+        else if (mode == 2) // neutral Inverse
         {
             fi.pathVerse = -1;
         }
@@ -901,7 +901,7 @@ void Mesh::updatePathVersePerIsland()
 {
     // il voto serve per isola
     // tutti i vertici di una faccia stanno nella stessa isola
-    updatePathVerse(-1);
+    updatePathVerse(-1); // parameter for short mode
 
     std::vector<int> votation(v.size(), 0);
 
