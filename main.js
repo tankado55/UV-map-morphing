@@ -117,7 +117,6 @@ arapBtn.onclick = function () {
 }
 
 function updateUI() {
-	gluedElement.dispatchEvent(event);
 	linearElement.dispatchEvent(event);
 	splitResidualElement.dispatchEvent(event);
 	shortestElement.dispatchEvent(event);
@@ -170,9 +169,8 @@ shortestElement.onchange = function () {
 	render();
 }
 gluedElement.onchange = function () {
-	glued = gluedElement.checked;
-	meshInstance.glued = glued;
-	if (!glued) {
+	meshInstance.glued = gluedElement.checked;
+	if (!gluedElement.checked) {
 		gluedModElement.disabled = true;
 	}
 	else {
@@ -404,6 +402,9 @@ function initLoadModel() {
 				child.position.set(0, 0, 0);
 				console.log(child.geometry)
 				console.log(child)
+
+				meshInstance.glued = gluedElement.checked
+
 
 				updateUI();
 
