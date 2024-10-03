@@ -257,10 +257,10 @@ initHorPlane();
 
 function initHorPlane() {
 	const geometry = new THREE.PlaneGeometry(10, 10);
-	const material = new THREE.MeshStandardMaterial({ color: 0xfdfdfd });
+	const material = new THREE.MeshStandardMaterial({ color: 0xffffff });
 	const plane = new THREE.Mesh(geometry, material);
-	plane.translateY(-3.0);
-	plane.rotateX(- PI / 2);
+	plane.translateY(-2.0);
+	plane.rotateX(-PI / 2);
 	plane.receiveShadow = true;
 	scene.add(plane);
 }

@@ -60,8 +60,13 @@ void Mesh::bake(int sampleCount, bool splitResidual, bool linear)
         bakedVertices[i] = std::move(interpolations);
     }
     // for sample count
-    // compute copyOf per sample
+    // compute copyOf per sample, posso usare lo stesso se non metto la soglia di gluing
     // compute gluing using copyOf per sample
+    for (int i = 0; i < sampleCount; i++)
+    {
+        std::vector<glm::vec3> interpolations = glueTrianglesWeightedRet(bakedVertices[i]);
+        bakedVertices[i] = std::move(interpolations);
+    }
     std::cout << "end of baking: " << bakedVertices.size() << std::endl;
 }
 
@@ -358,6 +363,29 @@ std::vector<glm::vec3> Mesh::glueTrianglesWeightedRet()
     {
         int j = v[i].copyOf;
         sum[j] += heapPosPtr[i] * ((v[i].area3D + v[i].area2D) / 2.0f);
+        areaSum[j] += (v[i].area3D + v[i].area2D) / 2.0f;
+    }
+
+    // Result
+    for (int i = 0; i < v.size(); ++i)
+    {
+        int j = v[i].copyOf;
+        result[i] = sum[j] / areaSum[j];
+    }
+
+    return result;
+}
+
+std::vector<glm::vec3> Mesh::glueTrianglesWeightedRet(std::vector<glm::vec3>& in)
+{
+    std::vector<glm::vec3> sum(v.size(), glm::vec3(0.0, 0.0, 0.0));
+    std::vector<float> areaSum(v.size(), 0.0);
+    std::vector<glm::vec3> result(v.size());
+
+    for (int i = 0; i < v.size(); ++i)
+    {
+        int j = v[i].copyOf;
+        sum[j] += in[i] * ((v[i].area3D + v[i].area2D) / 2.0f);
         areaSum[j] += (v[i].area3D + v[i].area2D) / 2.0f;
     }
 

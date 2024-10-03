@@ -94,6 +94,7 @@ struct Mesh
 	void glueTriangles() const;
 	void glueTrianglesWeighted();
 	std::vector<glm::vec3> glueTrianglesWeightedRet();
+	std::vector<glm::vec3> glueTrianglesWeightedRet(std::vector<glm::vec3>& in);
 	void glueTriangleArapNaive();
 	void glueTriangleArap();
 	void updateAverageQuaternionRotationAreaWeighted();
