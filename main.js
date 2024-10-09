@@ -476,6 +476,11 @@ function initLoadModel() {
 			if (child.isMesh) {
 				if (!debugIsland) {
 					child.material = new THREE.MeshStandardMaterial({ map: rtTextureTarget.texture })
+					// var geo = new THREE.EdgesGeometry( child.geometry );
+					// var mat = new THREE.LineBasicMaterial( { color: 0xffffff, linewidth: 2 } );
+					// child.geometry = geo
+					// child.material = mat
+
 				}
 				else
 					child.material = customShaderMaterial;
