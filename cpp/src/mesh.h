@@ -112,11 +112,12 @@ struct Mesh
 	void updateAreaPerVertex();
 	void updateCopyOfUsingThreshold(bool pathDependent);
 	void copyOfUsingThreshold(bool pathDependent, const std::vector<glm::vec3>& vertices, std::vector<int>& outCopyOf);
-	void bake(int sampleCount, bool splitResidual, bool linear);
+	void bake(int sampleCount, bool splitResidual, bool linear, bool glued, bool arap);
 	std::vector<glm::vec3> interpolateConst(int tPercent, bool spitResidual, bool linear) const;
 	void applyBaked(int t);
 	void setGluingThreshold(float threshold);
 	void arap(Eigen::SparseMatrix<double>& A, Eigen::VectorXd& b, std::map<int, int>& compactedBosses);
+	std::vector<glm::vec3> arapConst(std::vector<glm::vec3> &in);
 	void unglue();
 	std::map<int, int> getCompactedBosses();
 	void precomputeARAP();

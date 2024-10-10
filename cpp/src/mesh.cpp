@@ -49,7 +49,7 @@ Mesh::Mesh(int positions, int uvs, int pathVerse, int posCount, int uvCount) : m
     // bake(101, true, false);
 }
 
-void Mesh::bake(int sampleCount, bool splitResidual, bool linear)
+void Mesh::bake(int sampleCount, bool splitResidual, bool linear, bool glued, bool arap)
 {
     std::cout << "Baking ..." << std::endl;
     bakedVertices.clear();
@@ -62,11 +62,26 @@ void Mesh::bake(int sampleCount, bool splitResidual, bool linear)
     // for sample count
     // compute copyOf per sample, posso usare lo stesso se non metto la soglia di gluing
     // compute gluing using copyOf per sample
-    for (int i = 0; i < sampleCount; i++)
+    if (glued)
     {
-        std::vector<glm::vec3> interpolations = glueTrianglesWeightedRet(bakedVertices[i]);
-        bakedVertices[i] = std::move(interpolations);
+        if (arap)
+        {
+            for (int i = 0; i < sampleCount; i++)
+            {
+                std::vector<glm::vec3> interpolations = arapConst(bakedVertices[i]);
+                bakedVertices[i] = std::move(interpolations);
+            }
+        }
+        else
+        {
+            for (int i = 0; i < sampleCount; i++)
+            {
+                std::vector<glm::vec3> interpolations = glueTrianglesWeightedRet(bakedVertices[i]);
+                bakedVertices[i] = std::move(interpolations);
+            }
+        }
     }
+
     std::cout << "end of baking: " << bakedVertices.size() << std::endl;
 }
 
@@ -376,7 +391,7 @@ std::vector<glm::vec3> Mesh::glueTrianglesWeightedRet()
     return result;
 }
 
-std::vector<glm::vec3> Mesh::glueTrianglesWeightedRet(std::vector<glm::vec3>& in)
+std::vector<glm::vec3> Mesh::glueTrianglesWeightedRet(std::vector<glm::vec3> &in)
 {
     std::vector<glm::vec3> sum(v.size(), glm::vec3(0.0, 0.0, 0.0));
     std::vector<float> areaSum(v.size(), 0.0);
@@ -434,6 +449,53 @@ void Mesh::glueTriangleArapNaive()
         // heapPosPtr[j+1] = deformed[j+1];
         // heapPosPtr[j+2] = deformed[j+2];
     }
+}
+
+std::vector<glm::vec3> Mesh::arapConst(std::vector<glm::vec3> &in)
+{
+    std::vector<glm::vec3> glued = glueTrianglesWeightedRet(in);
+
+    std::cout << "arap gluing..." << std::endl;
+    // Build System
+    for (int i = 0; i < f.size(); i++)
+    {
+        for (int j = 0; j < 3; j++)
+        {
+            int next = (j + 1) % 3;
+            int vi = f[i].vi[j];
+            int viNext = f[i].vi[next];
+
+            glm::vec3 diffVec = in[vi] - in[viNext];
+            b((i * 3 + j) * 3 + 0) = diffVec.x;
+            b((i * 3 + j) * 3 + 1) = diffVec.y;
+            b((i * 3 + j) * 3 + 2) = diffVec.z;
+        }
+    }
+
+    int offset = f.size() * 3 * 3;
+    for (const auto &[key, i] : compactedBosses)
+    {
+        b(i * 3 + offset) = glued[key].x * 0.002;
+        b(i * 3 + offset + 1) = glued[key].y * 0.002;
+        b(i * 3 + offset + 2) = glued[key].z * 0.002;
+    }
+
+    Eigen::VectorXd x = solver.solve(b);
+    if (solver.info() != Eigen::Success)
+    {
+        std::cerr << "Solving failed!" << std::endl;
+        // return -1;
+    }
+
+    // Apply
+    std::vector<glm::vec3> result(v.size());
+    for (int i = 0; i < v.size(); i++)
+    {
+        Eigen::Vector3d newP = x.segment<3>(compactedBosses[v[i].copyOf] * 3);
+        result[i] = glm::vec3(newP.x(), newP.y(), newP.z());
+    }
+    std::cout << "Arap Done." << std::endl;
+    return result;
 }
 
 void Mesh::arap(Eigen::SparseMatrix<double> &A, Eigen::VectorXd &b, std::map<int, int> &compactedBosses)
@@ -890,15 +952,15 @@ void Mesh::updatePathVerse(int mode)
     for (Face &fi : f)
     {
 
-        if (mode == -1 && glm::dot(glm::quat(1.0f, 0.0f, 0.0f, 0.0f), fi.three2two.dqTransf.dualQuaternion.real) <= 0.0f) //short
+        if (mode == -1 && glm::dot(glm::quat(1.0f, 0.0f, 0.0f, 0.0f), fi.three2two.dqTransf.dualQuaternion.real) <= 0.0f) // short
         {
             fi.pathVerse = -1;
         }
-        else if (mode == 1 && glm::dot(glm::quat(1.0f, 0.0f, 0.0f, 0.0f), fi.three2two.dqTransf.dualQuaternion.real) >= 0.0f) //long
+        else if (mode == 1 && glm::dot(glm::quat(1.0f, 0.0f, 0.0f, 0.0f), fi.three2two.dqTransf.dualQuaternion.real) >= 0.0f) // long
         {
             fi.pathVerse = -1;
         }
-        else if (mode == 0) //neutral
+        else if (mode == 0) // neutral
         {
             fi.pathVerse = 1;
         }
