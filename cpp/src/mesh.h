@@ -17,6 +17,8 @@
 #include <unordered_set>
 #include <Eigen/Sparse>
 #include <Eigen/Dense>
+#include <fstream>
+#include <emscripten.h>
 
 struct Vertex
 {

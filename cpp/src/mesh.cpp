@@ -49,6 +49,29 @@ Mesh::Mesh(int positions, int uvs, int pathVerse, int posCount, int uvCount) : m
     // bake(101, true, false);
 }
 
+void download_file(const std::string& filename, const std::string& content) {
+    // Use EM_ASM to call JavaScript code from C++
+    EM_ASM({
+        var filename = UTF8ToString($0);   // Convert filename to JS string
+        var content = UTF8ToString($1);    // Convert file content to JS string
+
+        // Create a blob with the content
+        var blob = new Blob([content], { type: 'text/plain' });
+        
+        // Create a link element
+        var link = document.createElement('a');
+        link.href = URL.createObjectURL(blob);
+        link.download = filename;
+
+        // Trigger the download
+        document.body.appendChild(link);
+        link.click();
+
+        // Clean up
+        document.body.removeChild(link);
+    }, filename.c_str(), content.c_str());
+}
+
 void Mesh::bake(int sampleCount, bool splitResidual, bool linear, bool glued, bool arap)
 {
     std::cout << "Baking ..." << std::endl;
@@ -68,20 +91,35 @@ void Mesh::bake(int sampleCount, bool splitResidual, bool linear, bool glued, bo
         {
             for (int i = 0; i < sampleCount; i++)
             {
-                std::vector<glm::vec3> interpolations = arapConst(bakedVertices[i]);
-                bakedVertices[i] = std::move(interpolations);
+                bakedVertices[i] = arapConst(bakedVertices[i]);
             }
         }
         else
         {
             for (int i = 0; i < sampleCount; i++)
             {
-                std::vector<glm::vec3> interpolations = glueTrianglesWeightedRet(bakedVertices[i]);
-                bakedVertices[i] = std::move(interpolations);
+                bakedVertices[i] = glueTrianglesWeightedRet(bakedVertices[i]);
             }
         }
     }
 
+    std::ofstream myfile ("res/baking/example.txt");
+    for (int i = 0; i < bakedVertices.size(); i++)
+    {
+        for (int j = 0; j < bakedVertices[0].size(); j++)
+        {
+            myfile << bakedVertices[i][j].x << " ";
+            myfile << bakedVertices[i][j].y << " ";
+            myfile << bakedVertices[i][j].z << " ";
+        }
+        myfile << std::endl;
+    }
+    myfile.close();
+    std::string filename = "example.txt";
+    std::string content = "Hello from C++ and Emscripten!";
+    
+    // Trigger the file download
+    download_file(filename, content);
     std::cout << "end of baking: " << bakedVertices.size() << std::endl;
 }
 
