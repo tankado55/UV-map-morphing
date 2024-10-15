@@ -16,6 +16,201 @@ var Module = typeof Module != 'undefined' ? Module : {};
 
 // --pre-jses are emitted after the Module integration code, so that they can
 // refer to Module (if they choose; they can also define Module)
+// include: C:\Users\Gio95\AppData\Local\Temp\tmpshvkuu5t.js
+
+  if (!Module.expectedDataFileDownloads) {
+    Module.expectedDataFileDownloads = 0;
+  }
+
+  Module.expectedDataFileDownloads++;
+  (function() {
+    // Do not attempt to redownload the virtual filesystem data when in a pthread or a Wasm Worker context.
+    if (Module['ENVIRONMENT_IS_PTHREAD'] || Module['$ww']) return;
+    var loadPackage = function(metadata) {
+
+      var PACKAGE_PATH = '';
+      if (typeof window === 'object') {
+        PACKAGE_PATH = window['encodeURIComponent'](window.location.pathname.toString().substring(0, window.location.pathname.toString().lastIndexOf('/')) + '/');
+      } else if (typeof process === 'undefined' && typeof location !== 'undefined') {
+        // web worker
+        PACKAGE_PATH = encodeURIComponent(location.pathname.toString().substring(0, location.pathname.toString().lastIndexOf('/')) + '/');
+      }
+      var PACKAGE_NAME = 'main_wasm.data';
+      var REMOTE_PACKAGE_BASE = 'main_wasm.data';
+      if (typeof Module['locateFilePackage'] === 'function' && !Module['locateFile']) {
+        Module['locateFile'] = Module['locateFilePackage'];
+        err('warning: you defined Module.locateFilePackage, that has been renamed to Module.locateFile (using your locateFilePackage for now)');
+      }
+      var REMOTE_PACKAGE_NAME = Module['locateFile'] ? Module['locateFile'](REMOTE_PACKAGE_BASE, '') : REMOTE_PACKAGE_BASE;
+var REMOTE_PACKAGE_SIZE = metadata['remote_package_size'];
+
+      function fetchRemotePackage(packageName, packageSize, callback, errback) {
+        if (typeof process === 'object' && typeof process.versions === 'object' && typeof process.versions.node === 'string') {
+          require('fs').readFile(packageName, function(err, contents) {
+            if (err) {
+              errback(err);
+            } else {
+              callback(contents.buffer);
+            }
+          });
+          return;
+        }
+        var xhr = new XMLHttpRequest();
+        xhr.open('GET', packageName, true);
+        xhr.responseType = 'arraybuffer';
+        xhr.onprogress = function(event) {
+          var url = packageName;
+          var size = packageSize;
+          if (event.total) size = event.total;
+          if (event.loaded) {
+            if (!xhr.addedTotal) {
+              xhr.addedTotal = true;
+              if (!Module.dataFileDownloads) Module.dataFileDownloads = {};
+              Module.dataFileDownloads[url] = {
+                loaded: event.loaded,
+                total: size
+              };
+            } else {
+              Module.dataFileDownloads[url].loaded = event.loaded;
+            }
+            var total = 0;
+            var loaded = 0;
+            var num = 0;
+            for (var download in Module.dataFileDownloads) {
+            var data = Module.dataFileDownloads[download];
+              total += data.total;
+              loaded += data.loaded;
+              num++;
+            }
+            total = Math.ceil(total * Module.expectedDataFileDownloads/num);
+            if (Module['setStatus']) Module['setStatus'](`Downloading data... (${loaded}/${total})`);
+          } else if (!Module.dataFileDownloads) {
+            if (Module['setStatus']) Module['setStatus']('Downloading data...');
+          }
+        };
+        xhr.onerror = function(event) {
+          throw new Error("NetworkError for: " + packageName);
+        }
+        xhr.onload = function(event) {
+          if (xhr.status == 200 || xhr.status == 304 || xhr.status == 206 || (xhr.status == 0 && xhr.response)) { // file URLs can return 0
+            var packageData = xhr.response;
+            callback(packageData);
+          } else {
+            throw new Error(xhr.statusText + " : " + xhr.responseURL);
+          }
+        };
+        xhr.send(null);
+      };
+
+      function handleError(error) {
+        console.error('package error:', error);
+      };
+
+      var fetchedCallback = null;
+      var fetched = Module['getPreloadedPackage'] ? Module['getPreloadedPackage'](REMOTE_PACKAGE_NAME, REMOTE_PACKAGE_SIZE) : null;
+
+      if (!fetched) fetchRemotePackage(REMOTE_PACKAGE_NAME, REMOTE_PACKAGE_SIZE, function(data) {
+        if (fetchedCallback) {
+          fetchedCallback(data);
+          fetchedCallback = null;
+        } else {
+          fetched = data;
+        }
+      }, handleError);
+
+    function runWithFS() {
+
+      function assert(check, msg) {
+        if (!check) throw msg + new Error().stack;
+      }
+Module['FS_createPath']("/", "res", true, true);
+Module['FS_createPath']("/res", "baking", true, true);
+
+      /** @constructor */
+      function DataRequest(start, end, audio) {
+        this.start = start;
+        this.end = end;
+        this.audio = audio;
+      }
+      DataRequest.prototype = {
+        requests: {},
+        open: function(mode, name) {
+          this.name = name;
+          this.requests[name] = this;
+          Module['addRunDependency'](`fp ${this.name}`);
+        },
+        send: function() {},
+        onload: function() {
+          var byteArray = this.byteArray.subarray(this.start, this.end);
+          this.finish(byteArray);
+        },
+        finish: function(byteArray) {
+          var that = this;
+          // canOwn this data in the filesystem, it is a slide into the heap that will never change
+          Module['FS_createDataFile'](this.name, null, byteArray, true, true, true);
+          Module['removeRunDependency'](`fp ${that.name}`);
+          this.requests[this.name] = null;
+        }
+      };
+
+      var files = metadata['files'];
+      for (var i = 0; i < files.length; ++i) {
+        new DataRequest(files[i]['start'], files[i]['end'], files[i]['audio'] || 0).open('GET', files[i]['filename']);
+      }
+
+      function processPackageData(arrayBuffer) {
+        assert(arrayBuffer, 'Loading data file failed.');
+        assert(arrayBuffer.constructor.name === ArrayBuffer.name, 'bad input to processPackageData');
+        var byteArray = new Uint8Array(arrayBuffer);
+        var curr;
+        // Reuse the bytearray from the XHR as the source for file reads.
+          DataRequest.prototype.byteArray = byteArray;
+          var files = metadata['files'];
+          for (var i = 0; i < files.length; ++i) {
+            DataRequest.prototype.requests[files[i].filename].onload();
+          }          Module['removeRunDependency']('datafile_main_wasm.data');
+
+      };
+      Module['addRunDependency']('datafile_main_wasm.data');
+
+      if (!Module.preloadResults) Module.preloadResults = {};
+
+      Module.preloadResults[PACKAGE_NAME] = {fromCache: false};
+      if (fetched) {
+        processPackageData(fetched);
+        fetched = null;
+      } else {
+        fetchedCallback = processPackageData;
+      }
+
+    }
+    if (Module['calledRun']) {
+      runWithFS();
+    } else {
+      if (!Module['preRun']) Module['preRun'] = [];
+      Module["preRun"].push(runWithFS); // FS is not initialized yet, wait for it
+    }
+
+    }
+    loadPackage({"files": [{"filename": "/res/baking/simpleMeshes_cubeCross.obj1010010.txt", "start": 0, "end": 96393}], "remote_package_size": 96393});
+
+  })();
+
+// end include: C:\Users\Gio95\AppData\Local\Temp\tmpshvkuu5t.js
+// include: C:\Users\Gio95\AppData\Local\Temp\tmpg1ebciju.js
+
+    // All the pre-js content up to here must remain later on, we need to run
+    // it.
+    if (Module['ENVIRONMENT_IS_PTHREAD'] || Module['$ww']) Module['preRun'] = [];
+    var necessaryPreJSTasks = Module['preRun'].slice();
+  // end include: C:\Users\Gio95\AppData\Local\Temp\tmpg1ebciju.js
+// include: C:\Users\Gio95\AppData\Local\Temp\tmpb82h3u09.js
+
+    if (!Module['preRun']) throw 'Module.preRun should exist because file support used it; did a pre-js delete it?';
+    necessaryPreJSTasks.forEach(function(task) {
+      if (Module['preRun'].indexOf(task) < 0) throw 'All preRun tasks that exist before user pre-js code should remain after; did you replace Module or modify Module.preRun?';
+    });
+  // end include: C:\Users\Gio95\AppData\Local\Temp\tmpb82h3u09.js
 
 
 // Sometimes an existing Module object exists with properties
@@ -138,6 +333,70 @@ readAsync = (filename, onload, onerror, binary = true) => {
 if (ENVIRONMENT_IS_SHELL) {
 
   if ((typeof process == 'object' && typeof require === 'function') || typeof window == 'object' || typeof importScripts == 'function') throw new Error('not compiled for this environment (did you build to HTML and try to run it not on the web, or set ENVIRONMENT to something - like node - and run it someplace else - like on the web?)');
+
+  if (typeof read != 'undefined') {
+    read_ = read;
+  }
+
+  readBinary = (f) => {
+    if (typeof readbuffer == 'function') {
+      return new Uint8Array(readbuffer(f));
+    }
+    let data = read(f, 'binary');
+    assert(typeof data == 'object');
+    return data;
+  };
+
+  readAsync = (f, onload, onerror) => {
+    setTimeout(() => onload(readBinary(f)));
+  };
+
+  if (typeof clearTimeout == 'undefined') {
+    globalThis.clearTimeout = (id) => {};
+  }
+
+  if (typeof setTimeout == 'undefined') {
+    // spidermonkey lacks setTimeout but we use it above in readAsync.
+    globalThis.setTimeout = (f) => (typeof f == 'function') ? f() : abort();
+  }
+
+  if (typeof scriptArgs != 'undefined') {
+    arguments_ = scriptArgs;
+  } else if (typeof arguments != 'undefined') {
+    arguments_ = arguments;
+  }
+
+  if (typeof quit == 'function') {
+    quit_ = (status, toThrow) => {
+      // Unlike node which has process.exitCode, d8 has no such mechanism. So we
+      // have no way to set the exit code and then let the program exit with
+      // that code when it naturally stops running (say, when all setTimeouts
+      // have completed). For that reason, we must call `quit` - the only way to
+      // set the exit code - but quit also halts immediately.  To increase
+      // consistency with node (and the web) we schedule the actual quit call
+      // using a setTimeout to give the current stack and any exception handlers
+      // a chance to run.  This enables features such as addOnPostRun (which
+      // expected to be able to run code after main returns).
+      setTimeout(() => {
+        if (!(toThrow instanceof ExitStatus)) {
+          let toLog = toThrow;
+          if (toThrow && typeof toThrow == 'object' && toThrow.stack) {
+            toLog = [toThrow, toThrow.stack];
+          }
+          err(`exiting due to exception: ${toLog}`);
+        }
+        quit(status);
+      });
+      throw toThrow;
+    };
+  }
+
+  if (typeof print != 'undefined') {
+    // Prefer to use print/printErr where they exist, as they usually work better.
+    if (typeof console == 'undefined') console = /** @type{!Console} */({});
+    console.log = /** @type{!function(this:Console, ...*): undefined} */ (print);
+    console.warn = console.error = /** @type{!function(this:Console, ...*): undefined} */ (typeof printErr != 'undefined' ? printErr : print);
+  }
 
 } else
 
@@ -276,6 +535,32 @@ if (typeof WebAssembly != 'object') {
   err('no native wasm support detected');
 }
 
+// include: base64Utils.js
+// Converts a string of base64 into a byte array (Uint8Array).
+function intArrayFromBase64(s) {
+  if (typeof ENVIRONMENT_IS_NODE != 'undefined' && ENVIRONMENT_IS_NODE) {
+    var buf = Buffer.from(s, 'base64');
+    return new Uint8Array(buf.buffer, buf.byteOffset, buf.length);
+  }
+
+  var decoded = atob(s);
+  var bytes = new Uint8Array(decoded.length);
+  for (var i = 0 ; i < decoded.length ; ++i) {
+    bytes[i] = decoded.charCodeAt(i);
+  }
+  return bytes;
+}
+
+// If filename is a base64 data URI, parses and returns data (Buffer on node,
+// Uint8Array otherwise). If filename is not a base64 data URI, returns undefined.
+function tryParseAsDataURI(filename) {
+  if (!isDataURI(filename)) {
+    return;
+  }
+
+  return intArrayFromBase64(filename.slice(dataURIPrefix.length));
+}
+// end include: base64Utils.js
 // Wasm globals
 
 var wasmMemory;
@@ -601,13 +886,11 @@ var isDataURI = (filename) => filename.startsWith(dataURIPrefix);
  */
 var isFileURI = (filename) => filename.startsWith('file://');
 // end include: URIUtils.js
-function createExportWrapper(name, nargs) {
+function createExportWrapper(name) {
   return (...args) => {
     assert(runtimeInitialized, `native function \`${name}\` called before runtime initialization`);
     var f = wasmExports[name];
     assert(f, `exported native function \`${name}\` not found`);
-    // Only assert for too many arguments. Too few can be valid since the missing arguments will be zero filled.
-    assert(args.length <= nargs, `native function \`${name}\` called with ${args.length} args but expects ${nargs}`);
     return f(...args);
   };
 }
@@ -817,7 +1100,7 @@ function isExportedByForceFilesystem(name) {
 }
 
 function missingGlobal(sym, msg) {
-  if (typeof globalThis != 'undefined') {
+  if (typeof globalThis !== 'undefined') {
     Object.defineProperty(globalThis, sym, {
       configurable: true,
       get() {
@@ -832,7 +1115,7 @@ missingGlobal('buffer', 'Please use HEAP8.buffer or wasmMemory.buffer');
 missingGlobal('asm', 'Please use wasmExports instead');
 
 function missingLibrarySymbol(sym) {
-  if (typeof globalThis != 'undefined' && !Object.getOwnPropertyDescriptor(globalThis, sym)) {
+  if (typeof globalThis !== 'undefined' && !Object.getOwnPropertyDescriptor(globalThis, sym)) {
     Object.defineProperty(globalThis, sym, {
       configurable: true,
       get() {
@@ -885,7 +1168,7 @@ function dbg(...args) {
 // === Body ===
 
 var ASM_CONSTS = {
-  101844: ($0, $1) => { var filename = UTF8ToString($0); var content = UTF8ToString($1); var blob = new Blob([content], { type: 'text/plain' }); var link = document.createElement('a'); link.href = URL.createObjectURL(blob); link.download = filename; document.body.appendChild(link); link.click(); document.body.removeChild(link); }
+  103940: ($0, $1) => { var filename = UTF8ToString($0); var content = UTF8ToString($1); var blob = new Blob([content], { type: 'text/plain' }); var link = document.createElement('a'); link.href = URL.createObjectURL(blob); link.download = filename; document.body.appendChild(link); link.click(); document.body.removeChild(link); }
 };
 
 // end include: preamble.js
@@ -954,10 +1237,6 @@ var ASM_CONSTS = {
       default: abort(`invalid type for setValue: ${type}`);
     }
   }
-
-  var stackRestore = (val) => __emscripten_stack_restore(val);
-
-  var stackSave = () => _emscripten_stack_get_current();
 
   var warnOnce = (text) => {
       warnOnce.shown ||= {};
@@ -1130,17 +1409,6 @@ var ASM_CONSTS = {
       assert(false, 'Exception thrown, but exception catching is not enabled. Compile with -sNO_DISABLE_EXCEPTION_CATCHING or -sEXCEPTION_CATCHING_ALLOWED=[..] to catch.');
     };
 
-  /** @suppress {duplicate } */
-  function syscallGetVarargI() {
-      assert(SYSCALLS.varargs != undefined);
-      // the `+` prepended here is necessary to convince the JSCompiler that varargs is indeed a number.
-      var ret = HEAP32[((+SYSCALLS.varargs)>>2)];
-      SYSCALLS.varargs += 4;
-      return ret;
-    }
-  var syscallGetVarargP = syscallGetVarargI;
-  
-  
   var PATH = {
   isAbs:(path) => path.charAt(0) === '/',
   splitPath:(filename) => {
@@ -3914,167 +4182,67 @@ var ASM_CONSTS = {
         var buffer = HEAPU8.slice(addr, addr + len);
         FS.msync(stream, buffer, offset, len, flags);
       },
-  getStreamFromFD(fd) {
-        var stream = FS.getStreamChecked(fd);
-        return stream;
-      },
   varargs:undefined,
+  get() {
+        assert(SYSCALLS.varargs != undefined);
+        // the `+` prepended here is necessary to convince the JSCompiler that varargs is indeed a number.
+        var ret = HEAP32[((+SYSCALLS.varargs)>>2)];
+        SYSCALLS.varargs += 4;
+        return ret;
+      },
+  getp() { return SYSCALLS.get() },
   getStr(ptr) {
         var ret = UTF8ToString(ptr);
         return ret;
       },
+  getStreamFromFD(fd) {
+        var stream = FS.getStreamChecked(fd);
+        return stream;
+      },
   };
-  function ___syscall_fcntl64(fd, cmd, varargs) {
-  SYSCALLS.varargs = varargs;
+  function ___syscall_fstat64(fd, buf) {
   try {
   
       var stream = SYSCALLS.getStreamFromFD(fd);
-      switch (cmd) {
-        case 0: {
-          var arg = syscallGetVarargI();
-          if (arg < 0) {
-            return -28;
-          }
-          while (FS.streams[arg]) {
-            arg++;
-          }
-          var newStream;
-          newStream = FS.dupStream(stream, arg);
-          return newStream.fd;
-        }
-        case 1:
-        case 2:
-          return 0;  // FD_CLOEXEC makes no sense for a single process.
-        case 3:
-          return stream.flags;
-        case 4: {
-          var arg = syscallGetVarargI();
-          stream.flags |= arg;
-          return 0;
-        }
-        case 12: {
-          var arg = syscallGetVarargP();
-          var offset = 0;
-          // We're always unlocked.
-          HEAP16[(((arg)+(offset))>>1)] = 2;
-          return 0;
-        }
-        case 13:
-        case 14:
-          return 0; // Pretend that the locking is successful.
-      }
-      return -28;
+      return SYSCALLS.doStat(FS.stat, stream.path, buf);
     } catch (e) {
     if (typeof FS == 'undefined' || !(e.name === 'ErrnoError')) throw e;
     return -e.errno;
   }
   }
 
-  
-  function ___syscall_ioctl(fd, op, varargs) {
-  SYSCALLS.varargs = varargs;
-  try {
-  
-      var stream = SYSCALLS.getStreamFromFD(fd);
-      switch (op) {
-        case 21509: {
-          if (!stream.tty) return -59;
-          return 0;
-        }
-        case 21505: {
-          if (!stream.tty) return -59;
-          if (stream.tty.ops.ioctl_tcgets) {
-            var termios = stream.tty.ops.ioctl_tcgets(stream);
-            var argp = syscallGetVarargP();
-            HEAP32[((argp)>>2)] = termios.c_iflag || 0;
-            HEAP32[(((argp)+(4))>>2)] = termios.c_oflag || 0;
-            HEAP32[(((argp)+(8))>>2)] = termios.c_cflag || 0;
-            HEAP32[(((argp)+(12))>>2)] = termios.c_lflag || 0;
-            for (var i = 0; i < 32; i++) {
-              HEAP8[(argp + i)+(17)] = termios.c_cc[i] || 0;
-            }
-            return 0;
-          }
-          return 0;
-        }
-        case 21510:
-        case 21511:
-        case 21512: {
-          if (!stream.tty) return -59;
-          return 0; // no-op, not actually adjusting terminal settings
-        }
-        case 21506:
-        case 21507:
-        case 21508: {
-          if (!stream.tty) return -59;
-          if (stream.tty.ops.ioctl_tcsets) {
-            var argp = syscallGetVarargP();
-            var c_iflag = HEAP32[((argp)>>2)];
-            var c_oflag = HEAP32[(((argp)+(4))>>2)];
-            var c_cflag = HEAP32[(((argp)+(8))>>2)];
-            var c_lflag = HEAP32[(((argp)+(12))>>2)];
-            var c_cc = []
-            for (var i = 0; i < 32; i++) {
-              c_cc.push(HEAP8[(argp + i)+(17)]);
-            }
-            return stream.tty.ops.ioctl_tcsets(stream.tty, op, { c_iflag, c_oflag, c_cflag, c_lflag, c_cc });
-          }
-          return 0; // no-op, not actually adjusting terminal settings
-        }
-        case 21519: {
-          if (!stream.tty) return -59;
-          var argp = syscallGetVarargP();
-          HEAP32[((argp)>>2)] = 0;
-          return 0;
-        }
-        case 21520: {
-          if (!stream.tty) return -59;
-          return -28; // not supported
-        }
-        case 21531: {
-          var argp = syscallGetVarargP();
-          return FS.ioctl(stream, op, argp);
-        }
-        case 21523: {
-          // TODO: in theory we should write to the winsize struct that gets
-          // passed in, but for now musl doesn't read anything on it
-          if (!stream.tty) return -59;
-          if (stream.tty.ops.ioctl_tiocgwinsz) {
-            var winsize = stream.tty.ops.ioctl_tiocgwinsz(stream.tty);
-            var argp = syscallGetVarargP();
-            HEAP16[((argp)>>1)] = winsize[0];
-            HEAP16[(((argp)+(2))>>1)] = winsize[1];
-          }
-          return 0;
-        }
-        case 21524: {
-          // TODO: technically, this ioctl call should change the window size.
-          // but, since emscripten doesn't have any concept of a terminal window
-          // yet, we'll just silently throw it away as we do TIOCGWINSZ
-          if (!stream.tty) return -59;
-          return 0;
-        }
-        case 21515: {
-          if (!stream.tty) return -59;
-          return 0;
-        }
-        default: return -28; // not supported
-      }
-    } catch (e) {
-    if (typeof FS == 'undefined' || !(e.name === 'ErrnoError')) throw e;
-    return -e.errno;
-  }
-  }
-
-  
-  function ___syscall_openat(dirfd, path, flags, varargs) {
-  SYSCALLS.varargs = varargs;
+  function ___syscall_lstat64(path, buf) {
   try {
   
       path = SYSCALLS.getStr(path);
-      path = SYSCALLS.calculateAt(dirfd, path);
-      var mode = varargs ? syscallGetVarargI() : 0;
-      return FS.open(path, flags, mode).fd;
+      return SYSCALLS.doStat(FS.lstat, path, buf);
+    } catch (e) {
+    if (typeof FS == 'undefined' || !(e.name === 'ErrnoError')) throw e;
+    return -e.errno;
+  }
+  }
+
+  function ___syscall_newfstatat(dirfd, path, buf, flags) {
+  try {
+  
+      path = SYSCALLS.getStr(path);
+      var nofollow = flags & 256;
+      var allowEmpty = flags & 4096;
+      flags = flags & (~6400);
+      assert(!flags, `unknown flags in __syscall_newfstatat: ${flags}`);
+      path = SYSCALLS.calculateAt(dirfd, path, allowEmpty);
+      return SYSCALLS.doStat(nofollow ? FS.lstat : FS.stat, path, buf);
+    } catch (e) {
+    if (typeof FS == 'undefined' || !(e.name === 'ErrnoError')) throw e;
+    return -e.errno;
+  }
+  }
+
+  function ___syscall_stat64(path, buf) {
+  try {
+  
+      path = SYSCALLS.getStr(path);
+      return SYSCALLS.doStat(FS.stat, path, buf);
     } catch (e) {
     if (typeof FS == 'undefined' || !(e.name === 'ErrnoError')) throw e;
     return -e.errno;
@@ -4856,7 +5024,6 @@ var ASM_CONSTS = {
   
   
   var dynCallLegacy = (sig, ptr, args) => {
-      sig = sig.replace(/p/g, 'i')
       assert(('dynCall_' + sig) in Module, `bad function pointer type - dynCall function not found for sig '${sig}'`);
       if (args?.length) {
         // j (64-bit integer) must be passed in as two numbers [low 32, high 32].
@@ -5988,8 +6155,6 @@ var ASM_CONSTS = {
       });
     };
 
-  var __emscripten_memcpy_js = (dest, src, num) => HEAPU8.copyWithin(dest, src, src + num);
-
   var _abort = () => {
       abort('native code called abort()');
     };
@@ -6032,6 +6197,8 @@ var ASM_CONSTS = {
   var _emscripten_asm_const_int = (code, sigPtr, argbuf) => {
       return runEmAsmFunction(code, sigPtr, argbuf);
     };
+
+  var _emscripten_memcpy_js = (dest, src, num) => HEAPU8.copyWithin(dest, src, src + num);
 
   var getHeapMax = () =>
       // Stay one Wasm page short of 4GB: while e.g. Chrome is able to allocate
@@ -6197,7 +6364,7 @@ var ASM_CONSTS = {
         if (curr < 0) return -1;
         ret += curr;
         if (curr < len) break; // nothing more to read
-        if (typeof offset != 'undefined') {
+        if (typeof offset !== 'undefined') {
           offset += curr;
         }
       }
@@ -6252,7 +6419,7 @@ var ASM_CONSTS = {
         var curr = FS.write(stream, HEAP8, ptr, len, offset);
         if (curr < 0) return -1;
         ret += curr;
-        if (typeof offset != 'undefined') {
+        if (typeof offset !== 'undefined') {
           offset += curr;
         }
       }
@@ -6575,6 +6742,7 @@ var ASM_CONSTS = {
       return _strftime(s, maxsize, format, tm); // no locale support yet
     };
 
+
   var getCFunc = (ident) => {
       var func = Module['_' + ident]; // closure exported function
       assert(func, 'Cannot call unknown function ' + ident + ', make sure it is exported');
@@ -6583,8 +6751,6 @@ var ASM_CONSTS = {
   
   
   
-  
-  var stackAlloc = (sz) => __emscripten_stack_alloc(sz);
   var stringToUTF8OnStack = (str) => {
       var size = lengthBytesUTF8(str) + 1;
       var ret = stackAlloc(size);
@@ -6665,8 +6831,12 @@ var ASM_CONSTS = {
       return (...args) => ccall(ident, returnType, argTypes, args, opts);
     };
 
+
+
+  var FS_unlink = (path) => FS.unlink(path);
+
   FS.createPreloadedFile = FS_createPreloadedFile;
-  FS.staticInit();;
+  FS.staticInit();Module["FS_createPath"] = FS.createPath;Module["FS_createDataFile"] = FS.createDataFile;Module["FS_createPreloadedFile"] = FS.createPreloadedFile;Module["FS_unlink"] = FS.unlink;Module["FS_createLazyFile"] = FS.createLazyFile;Module["FS_createDevice"] = FS.createDevice;;
 embind_init_charCodes();
 BindingError = Module['BindingError'] = class BindingError extends Error { constructor(message) { super(message); this.name = 'BindingError'; }};
 InternalError = Module['InternalError'] = class InternalError extends Error { constructor(message) { super(message); this.name = 'InternalError'; }};
@@ -6684,11 +6854,13 @@ var wasmImports = {
   /** @export */
   __cxa_throw: ___cxa_throw,
   /** @export */
-  __syscall_fcntl64: ___syscall_fcntl64,
+  __syscall_fstat64: ___syscall_fstat64,
   /** @export */
-  __syscall_ioctl: ___syscall_ioctl,
+  __syscall_lstat64: ___syscall_lstat64,
   /** @export */
-  __syscall_openat: ___syscall_openat,
+  __syscall_newfstatat: ___syscall_newfstatat,
+  /** @export */
+  __syscall_stat64: ___syscall_stat64,
   /** @export */
   _embind_register_bigint: __embind_register_bigint,
   /** @export */
@@ -6716,11 +6888,11 @@ var wasmImports = {
   /** @export */
   _embind_register_void: __embind_register_void,
   /** @export */
-  _emscripten_memcpy_js: __emscripten_memcpy_js,
-  /** @export */
   abort: _abort,
   /** @export */
   emscripten_asm_const_int: _emscripten_asm_const_int,
+  /** @export */
+  emscripten_memcpy_js: _emscripten_memcpy_js,
   /** @export */
   emscripten_resize_heap: _emscripten_resize_heap,
   /** @export */
@@ -6739,32 +6911,41 @@ var wasmImports = {
   strftime_l: _strftime_l
 };
 var wasmExports = createWasm();
-var ___wasm_call_ctors = createExportWrapper('__wasm_call_ctors', 0);
-var _interpolate = Module['_interpolate'] = createExportWrapper('interpolate', 5);
-var _free = Module['_free'] = createExportWrapper('free', 1);
-var _malloc = Module['_malloc'] = createExportWrapper('malloc', 1);
-var ___getTypeName = createExportWrapper('__getTypeName', 1);
-var _fflush = createExportWrapper('fflush', 1);
+var ___wasm_call_ctors = createExportWrapper('__wasm_call_ctors');
+var _interpolate = Module['_interpolate'] = createExportWrapper('interpolate');
+var _free = Module['_free'] = createExportWrapper('free');
+var _malloc = Module['_malloc'] = createExportWrapper('malloc');
+var ___getTypeName = createExportWrapper('__getTypeName');
+var _fflush = createExportWrapper('fflush');
 var _emscripten_stack_init = () => (_emscripten_stack_init = wasmExports['emscripten_stack_init'])();
 var _emscripten_stack_get_free = () => (_emscripten_stack_get_free = wasmExports['emscripten_stack_get_free'])();
 var _emscripten_stack_get_base = () => (_emscripten_stack_get_base = wasmExports['emscripten_stack_get_base'])();
 var _emscripten_stack_get_end = () => (_emscripten_stack_get_end = wasmExports['emscripten_stack_get_end'])();
-var __emscripten_stack_restore = (a0) => (__emscripten_stack_restore = wasmExports['_emscripten_stack_restore'])(a0);
-var __emscripten_stack_alloc = (a0) => (__emscripten_stack_alloc = wasmExports['_emscripten_stack_alloc'])(a0);
+var stackSave = createExportWrapper('stackSave');
+var stackRestore = createExportWrapper('stackRestore');
+var stackAlloc = createExportWrapper('stackAlloc');
 var _emscripten_stack_get_current = () => (_emscripten_stack_get_current = wasmExports['emscripten_stack_get_current'])();
-var ___cxa_is_pointer_type = createExportWrapper('__cxa_is_pointer_type', 1);
-var dynCall_jiji = Module['dynCall_jiji'] = createExportWrapper('dynCall_jiji', 5);
-var dynCall_viijii = Module['dynCall_viijii'] = createExportWrapper('dynCall_viijii', 7);
-var dynCall_iiiiij = Module['dynCall_iiiiij'] = createExportWrapper('dynCall_iiiiij', 7);
-var dynCall_iiiiijj = Module['dynCall_iiiiijj'] = createExportWrapper('dynCall_iiiiijj', 9);
-var dynCall_iiiiiijj = Module['dynCall_iiiiiijj'] = createExportWrapper('dynCall_iiiiiijj', 10);
+var ___cxa_is_pointer_type = createExportWrapper('__cxa_is_pointer_type');
+var dynCall_viijii = Module['dynCall_viijii'] = createExportWrapper('dynCall_viijii');
+var dynCall_jiji = Module['dynCall_jiji'] = createExportWrapper('dynCall_jiji');
+var dynCall_iiiiij = Module['dynCall_iiiiij'] = createExportWrapper('dynCall_iiiiij');
+var dynCall_iiiiijj = Module['dynCall_iiiiijj'] = createExportWrapper('dynCall_iiiiijj');
+var dynCall_iiiiiijj = Module['dynCall_iiiiiijj'] = createExportWrapper('dynCall_iiiiiijj');
 
 
 // include: postamble.js
 // === Auto-generated postamble setup entry stuff ===
 
+Module['addRunDependency'] = addRunDependency;
+Module['removeRunDependency'] = removeRunDependency;
+Module['FS_createPath'] = FS.createPath;
+Module['FS_createLazyFile'] = FS.createLazyFile;
+Module['FS_createDevice'] = FS.createDevice;
 Module['ccall'] = ccall;
 Module['cwrap'] = cwrap;
+Module['FS_createPreloadedFile'] = FS.createPreloadedFile;
+Module['FS_createDataFile'] = FS.createDataFile;
+Module['FS_unlink'] = FS.unlink;
 var missingLibrarySymbols = [
   'writeI53ToI64',
   'writeI53ToI64Clamped',
@@ -6775,8 +6956,6 @@ var missingLibrarySymbols = [
   'readI53FromU64',
   'convertI32PairToI53',
   'convertU32PairToI53',
-  'getTempRet0',
-  'setTempRet0',
   'exitJS',
   'ydayFromDate',
   'inetPton4',
@@ -6785,7 +6964,9 @@ var missingLibrarySymbols = [
   'inetNtop6',
   'readSockaddr',
   'writeSockaddr',
+  'getCallstack',
   'emscriptenLog',
+  'convertPCtoSourceLocation',
   'runMainThreadEmAsm',
   'jstoi_q',
   'listenOnce',
@@ -6862,8 +7043,7 @@ var missingLibrarySymbols = [
   'setCanvasElementSize',
   'getCanvasElementSize',
   'jsStackTrace',
-  'getCallstack',
-  'convertPCtoSourceLocation',
+  'stackTrace',
   'checkWasiClock',
   'wasiRightsToMuslOFlags',
   'wasiOFlagsToMuslOFlags',
@@ -6881,7 +7061,6 @@ var missingLibrarySymbols = [
   'setMainLoop',
   'getSocketFromFD',
   'getSocketAddress',
-  'FS_unlink',
   'FS_mkdirTree',
   '_setNetworkCallback',
   'heapObjectForWebGLType',
@@ -6910,7 +7089,6 @@ var missingLibrarySymbols = [
   'writeAsciiToMemory',
   'setErrNo',
   'demangle',
-  'stackTrace',
   'getFunctionArgsName',
   'requireRegisteredType',
   'createJsInvokerSignature',
@@ -6932,13 +7110,8 @@ var unexportedSymbols = [
   'addOnPreMain',
   'addOnExit',
   'addOnPostRun',
-  'addRunDependency',
-  'removeRunDependency',
   'FS_createFolder',
-  'FS_createPath',
-  'FS_createLazyFile',
   'FS_createLink',
-  'FS_createDevice',
   'FS_readFile',
   'out',
   'err',
@@ -6946,12 +7119,14 @@ var unexportedSymbols = [
   'abort',
   'wasmMemory',
   'wasmExports',
+  'stackAlloc',
+  'stackSave',
+  'stackRestore',
+  'getTempRet0',
+  'setTempRet0',
   'writeStackCookie',
   'checkStackCookie',
   'convertI32PairToI53Checked',
-  'stackSave',
-  'stackRestore',
-  'stackAlloc',
   'ptrToString',
   'zeroMemory',
   'getHeapMax',
@@ -6973,6 +7148,7 @@ var unexportedSymbols = [
   'randomFill',
   'timers',
   'warnOnce',
+  'UNWIND_CACHE',
   'readEmAsmArgsArray',
   'readEmAsmArgs',
   'runEmAsmFunction',
@@ -7015,7 +7191,6 @@ var unexportedSymbols = [
   'findCanvasEventTarget',
   'currentFullscreenStrategy',
   'restoreOldWindowedStyle',
-  'UNWIND_CACHE',
   'ExitStatus',
   'getEnvStrings',
   'doReadv',
@@ -7030,13 +7205,11 @@ var unexportedSymbols = [
   'wget',
   'SYSCALLS',
   'preloadPlugins',
-  'FS_createPreloadedFile',
   'FS_modeStringToFlags',
   'FS_getMode',
   'FS_stdin_getChar_buffer',
   'FS_stdin_getChar',
   'FS',
-  'FS_createDataFile',
   'MEMFS',
   'TTY',
   'PIPEFS',

@@ -86,7 +86,8 @@
         "fstream": "cpp",
         "future": "cpp",
         "numeric": "cpp",
-        "valarray": "cpp"
+        "valarray": "cpp",
+        "filesystem": "cpp"
     },
     "C_Cpp.errorSquiggles": "disabled"
 }

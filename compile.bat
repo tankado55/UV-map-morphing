@@ -1,4 +1,5 @@
 em++ -g -fdebug-compilation-dir='.' ^
+    --preload-file res/baking ^
     cpp/src/hello.cpp cpp/src/mesh.cpp cpp/src/linearTransform.cpp cpp/src/dualQuatTransform.cpp cpp/src/smartTransform.cpp cpp/src/utils.cpp --bind -o main_wasm.js ^
     -s EXPORTED_FUNCTIONS=_interpolate,_free,_malloc ^
     -s EXPORTED_RUNTIME_METHODS=ccall,cwrap ^
@@ -7,5 +8,3 @@ em++ -g -fdebug-compilation-dir='.' ^
     -I D:\dev\my_libs\eigen-3.4.0 ^
     -s ALLOW_MEMORY_GROWTH ^
     -std=c++20
-
-    

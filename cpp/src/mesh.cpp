@@ -72,9 +72,24 @@ void download_file(const std::string& filename, const std::string& content) {
     }, filename.c_str(), content.c_str());
 }
 
-void Mesh::bake(int sampleCount, bool splitResidual, bool linear, bool glued, bool arap)
+void Mesh::readBake(std::string fileName)
+{
+
+}
+
+void Mesh::bake(int sampleCount, bool splitResidual, bool linear, bool glued, bool arap, std::string meshName)
 {
     std::cout << "Baking ..." << std::endl;
+    std::replace( meshName.begin(), meshName.end(), '/', '_');
+    std::string filename = meshName + std::to_string(sampleCount) + std::to_string(splitResidual) + std::to_string(linear) + std::to_string(glued) + std::to_string(arap) + ".txt";
+    std::string path = "res/baking/" + filename;
+    if (std::filesystem::exists(path)) {
+        std::cout << "File exists.\n";
+    } else {
+        std::cout << "File does not exist.\n";
+        std::cout << "path: " << path << std::endl;
+    }
+
     bakedVertices.clear();
     bakedVertices.resize(sampleCount);
     for (int i = 0; i < sampleCount; i++)
@@ -103,23 +118,20 @@ void Mesh::bake(int sampleCount, bool splitResidual, bool linear, bool glued, bo
         }
     }
 
-    std::ofstream myfile ("res/baking/example.txt");
+    std::ostringstream contentStream;
     for (int i = 0; i < bakedVertices.size(); i++)
     {
         for (int j = 0; j < bakedVertices[0].size(); j++)
         {
-            myfile << bakedVertices[i][j].x << " ";
-            myfile << bakedVertices[i][j].y << " ";
-            myfile << bakedVertices[i][j].z << " ";
+            contentStream << bakedVertices[i][j].x << " ";
+            contentStream << bakedVertices[i][j].y << " ";
+            contentStream << bakedVertices[i][j].z << " ";
         }
-        myfile << std::endl;
+        contentStream << std::endl;
     }
-    myfile.close();
-    std::string filename = "example.txt";
-    std::string content = "Hello from C++ and Emscripten!";
     
     // Trigger the file download
-    download_file(filename, content);
+    download_file(filename, contentStream.str());
     std::cout << "end of baking: " << bakedVertices.size() << std::endl;
 }
 

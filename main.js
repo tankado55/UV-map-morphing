@@ -244,7 +244,7 @@ gluingThresholdElement.oninput = function () {
 
 bakingElement.onchange = function () {
 	if (bakingElement.checked) {
-		meshInstance.bake(101, splitResidual, linear, gluedElement.checked, arapElement.checked)
+		meshInstance.bake(101, splitResidual, linear, gluedElement.checked, arapElement.checked, JSON.parse(objSelect.value).model)
 	}
 }
 

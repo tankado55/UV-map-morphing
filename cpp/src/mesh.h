@@ -19,6 +19,10 @@
 #include <Eigen/Dense>
 #include <fstream>
 #include <emscripten.h>
+#include <string.h>
+#include <sstream>
+#include <filesystem>
+#include <algorithm>
 
 struct Vertex
 {
@@ -114,7 +118,7 @@ struct Mesh
 	void updateAreaPerVertex();
 	void updateCopyOfUsingThreshold(bool pathDependent);
 	void copyOfUsingThreshold(bool pathDependent, const std::vector<glm::vec3>& vertices, std::vector<int>& outCopyOf);
-	void bake(int sampleCount, bool splitResidual, bool linear, bool glued, bool arap);
+	void bake(int sampleCount, bool splitResidual, bool linear, bool glued, bool arap, std::string meshName);
 	std::vector<glm::vec3> interpolateConst(int tPercent, bool spitResidual, bool linear) const;
 	void applyBaked(int t);
 	void setGluingThreshold(float threshold);
@@ -123,6 +127,7 @@ struct Mesh
 	void unglue();
 	std::map<int, int> getCompactedBosses();
 	void precomputeARAP();
+	void readBake(std::string fileName);
 };
 
 static float sigmoid(float t);
