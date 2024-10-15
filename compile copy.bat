@@ -6,7 +6,5 @@ em++ -g -fdebug-compilation-dir='.' ^
     -I /D:/dev/emsdk/upstream/emscripten/system/include ^
     -I D:\dev\my_libs\eigen-3.4.0 ^
     -s ALLOW_MEMORY_GROWTH ^
-    --preload-file /res/baking@/res/baking ^
+    --preload-file /res/baking@/r ^
     -std=c++20
-
-    
