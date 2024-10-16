@@ -118,7 +118,7 @@ struct Mesh
 	void updateAreaPerVertex();
 	void updateCopyOfUsingThreshold(bool pathDependent);
 	void copyOfUsingThreshold(bool pathDependent, const std::vector<glm::vec3>& vertices, std::vector<int>& outCopyOf);
-	void bake(int sampleCount, bool splitResidual, bool linear, bool glued, bool arap, std::string meshName);
+	void bake(int sampleCount, bool splitResidual, bool linear, bool glued, bool arap, std::string temporize, std::string meshName);
 	std::vector<glm::vec3> interpolateConst(int tPercent, bool spitResidual, bool linear) const;
 	void applyBaked(int t);
 	void setGluingThreshold(float threshold);

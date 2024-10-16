@@ -74,24 +74,63 @@ void download_file(const std::string& filename, const std::string& content) {
 
 void Mesh::readBake(std::string fileName)
 {
+    std::vector<std::vector<float>> result;
+    std::ifstream file(fileName);
 
+    if (!file.is_open()) {
+        std::cerr << "Error opening file: " << fileName << std::endl;
+        return;
+    }
+
+    std::string line;
+    size_t row = 0;
+
+    while (std::getline(file, line)) {
+        if (row >= bakedVertices.size()) {
+            std::cerr << "Error: More lines in file than pre-allocated rows in vector" << std::endl;
+            break;
+        }
+
+        std::stringstream ss(line);
+        float value;
+        std::vector<glm::vec3> lineData;
+
+        // Read floats from the line
+        while (ss >> value) {
+            glm::vec3 vertex;
+            vertex.x = value;
+            ss >> value;
+            vertex.y = value;
+            ss >> value;
+            vertex.z = value;
+            lineData.push_back(vertex);
+        }
+        bakedVertices[row] = lineData;
+
+        row++;
+    }
+
+    file.close();
 }
 
-void Mesh::bake(int sampleCount, bool splitResidual, bool linear, bool glued, bool arap, std::string meshName)
+void Mesh::bake(int sampleCount, bool splitResidual, bool linear, bool glued, bool arap, std::string temporize, std::string meshName)
 {
     std::cout << "Baking ..." << std::endl;
+    bakedVertices.clear();
+    bakedVertices.resize(sampleCount);
+
     std::replace( meshName.begin(), meshName.end(), '/', '_');
-    std::string filename = meshName + std::to_string(sampleCount) + std::to_string(splitResidual) + std::to_string(linear) + std::to_string(glued) + std::to_string(arap) + ".txt";
+    std::string filename = meshName + std::to_string(sampleCount) + std::to_string(splitResidual) + std::to_string(linear) + std::to_string(glued) + std::to_string(arap) + temporize + ".txt";
     std::string path = "res/baking/" + filename;
     if (std::filesystem::exists(path)) {
         std::cout << "File exists.\n";
+        readBake(path);
+        return;
     } else {
         std::cout << "File does not exist.\n";
         std::cout << "path: " << path << std::endl;
     }
 
-    bakedVertices.clear();
-    bakedVertices.resize(sampleCount);
     for (int i = 0; i < sampleCount; i++)
     {
         std::vector<glm::vec3> interpolations = interpolateConst(i, splitResidual, linear);
