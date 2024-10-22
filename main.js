@@ -262,7 +262,7 @@ function initHorPlane() {
 	plane.translateY(-2.0);
 	plane.rotateX(-PI / 2);
 	plane.receiveShadow = true;
-	//scene.add(plane);
+	scene.add(plane);
 }
 
 function renderQuadTexture() {
